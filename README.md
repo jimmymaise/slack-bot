@@ -12,7 +12,7 @@ pip install -r requirements.txt
 ```
 Or using the Docker file
 ## Usage
-###Setup environment variables
+### Setup environment variables
 
 `SLACK_SIGNING_SECRET`: Slack signs its requests using this secret that's unique to our app. It has format like a1bc2345.....
 
@@ -24,7 +24,7 @@ Or using the Docker file
 
 `MANAGER_LEAVE_APPROVAL_CHANNEL`: The manager's channel to push the leave of request for approval. We should also invite the bot to this channel
 
-###How to create an internal bot
+### How to create an internal bot
 1. Visit: https://api.slack.com/
 
 2. Click "Start Building"
