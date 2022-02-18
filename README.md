@@ -56,15 +56,19 @@ Or using the Docker file
 
 Assume that we have deployed the bot to the server and have the `fixed address`: https://bimodal-bot-example.com/slack-bot/events
 
-9. Then go to 'Event Subscriptions' under 'Features'. In the 'Request URL' field type https://bimodal-bot-example.com/slack-bot/events. We should see a green 'Verified' checkmark above the text-field
+9. Then go to 'Event Subscriptions' under 'Features'. In the 'Request URL' field type https://bimodal-bot-example.com/slack-bot/events. We should see a green 'Verified' checkmark above the text-field 
 
-10. Go to 'Interactivity & Shortcuts' under 'Features'. In the 'Request URL' field type the above address
+10. Check the 'Subscribe to bot events' section below, add some events:
+    1. message.channels
+    2. message.groups
+   
+11. Go to 'Interactivity & Shortcuts' under 'Features'. In the 'Request URL' field type the above address
 
-11. Go to 'Slash Commands' under 'Features'.Fill in the information:
+12. Go to 'Slash Commands' under 'Features'.Fill in the information:
     1. In the 'Command' field type in: "/vacation
     2. Continue to the above link for Requests URL 
 
-12. Add the bot to the manager approval channel for posting the message
+13. Add the bot to the manager approval channel for posting the message
 
 ## How to use the bot
 Currently, the bot just support only one command `/vacation`. Let's play with it.
