@@ -18,7 +18,7 @@ Or using the Docker file
 
 `SLACK_BOT_TOKEN`: The OAuth token we use to call the Slack API has access to the data on the workspace where it is installed. It has format like xoxb-123....
 
-`GOOGLE_SERVICE_BASE64_FILE_CONTENT`: The Base64 encoded of Google Service Account File. Read [this instruction](https://support.google.com/a/answer/7378726?hl=en) to know how to invite
+`GOOGLE_SERVICE_BASE64_FILE_CONTENT`: The Base64 encoded of the content of Google Service Account File (Json File). Read [this instruction](https://support.google.com/a/answer/7378726?hl=en) to know how to create service account
 
 `LEAVE_REGISTER_SHEET`: The url of the Google sheet that the bot uses to put the leave record. We also need to invite the Service account to access this file (Example jimmy-301@elated-chariot-341105.iam.gserviceaccount.com)
 
