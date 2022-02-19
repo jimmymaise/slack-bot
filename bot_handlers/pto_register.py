@@ -1,17 +1,10 @@
-""" Slacky bot for slack """
 import datetime
 import uuid
 
-from dotenv import load_dotenv
-
-from handlers.database.google_sheet import GoogleSheetDB
-
-load_dotenv()
-
-""" Slacky bot for slack """
-
 from slack_bolt import App
 from slack_sdk import WebClient
+
+from handlers.database.google_sheet import GoogleSheetDB
 
 
 class PTORegister:
@@ -316,13 +309,6 @@ class PTORegister:
                      """
         print(query)
         self.google_sheet_db.cursor.execute(query)
-
-        # query = f"""SELECT "Leave Id"
-        # FROM "{leave_register_attempts}"
-        # """
-        #
-        # for row in self.google_sheet_db.cursor.execute(query):
-        #     print(row)
 
     def approve_pto(self, ack, body, logger):
         self._process_pto_actions(body, ack)

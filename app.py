@@ -1,4 +1,3 @@
-""" Slacky bot for slack """
 import os
 
 from dotenv import load_dotenv
