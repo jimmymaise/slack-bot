@@ -16,9 +16,16 @@ class PTORegister:
         self.leave_register_sheet = leave_register_sheet
         self.approval_channel = approval_channel
         app.command('/vacation')(self.request_leave_command)
-        app.view('view_1')(self.handle_submission)
-        app.block_action({"block_id": "approve_deny_vacation", "action_id": "approve"})(self.approve_pto)
-        app.block_action({"block_id": "approve_deny_vacation", "action_id": "deny"})(self.deny_pto)
+        app.view('view_1')(ack=self.respond_to_slack_within_3_seconds, lazy=[self.handle_submission])
+        app.block_action({"block_id": "approve_deny_vacation", "action_id": "approve"})(
+            ack=self.respond_to_slack_within_3_seconds, lazy=[self.approve_pto])
+        app.block_action({"block_id": "approve_deny_vacation", "action_id": "deny"})(
+            ack=self.respond_to_slack_within_3_seconds,
+            lazy=[self.deny_pto])
+
+    @staticmethod
+    def respond_to_slack_within_3_seconds(ack):
+        ack()
 
     def request_leave_command(self, body, ack):
         self.client.views_open(
@@ -156,8 +163,7 @@ class PTORegister:
         ack()
 
     # Update the view on submission
-    def handle_submission(self, ack, body, logger):
-        ack()
+    def handle_submission(self, body, logger):
         time_now = datetime.datetime.now()
         workspace_domain = f"https://{self.client.team_info().get('team').get('domain')}.slack.com/team/"
         user = body.get("user")
@@ -178,6 +184,7 @@ class PTORegister:
 
         self.client.chat_postMessage(
             channel=self.approval_channel,
+            text=f"You have a new request:\n*<{user_profile_url}|{user_name} - New vacation request>*",
             blocks=[
                 {
                     "type": "section",
@@ -253,7 +260,8 @@ class PTORegister:
             ])
         logger.info(body)
         self.client.chat_postMessage(channel=user_id,
-
+                                     text=f"You have sent a new vacation request. "
+                                          f"Please wait to manager approve",
                                      blocks=[{
                                          "type": "section",
                                          "text": {
