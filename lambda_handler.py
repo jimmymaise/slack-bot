@@ -1,14 +1,12 @@
 import os
 
-from dotenv import load_dotenv
 from slack_bolt import App
 from slack_bolt.adapter.aws_lambda import SlackRequestHandler
 from slack_sdk import WebClient
 from application.handlers.bot.pto_register import PTORegister
 from application.handlers.database.google_sheet import GoogleSheetDB
 
-if not os.getenv('ENV'):
-    load_dotenv()
+
 
 client = WebClient(token=os.environ.get("SLACK_BOT_TOKEN"))
 bolt_app = App(token=os.environ.get("SLACK_BOT_TOKEN"),

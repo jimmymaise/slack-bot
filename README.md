@@ -4,20 +4,7 @@ BIP Bot is a slack bot providing a better way to implement the Bimodal Internal 
 
 At the very first MVP, BIP Bot will help us to schedule the PTO time
 Read the [BIP - leave management & attendance management](https://docs.google.com/document/d/1ruRofzWX7pkLEdNZ9T7N71tEV6AL0zmx5DcLW2OSNb8/edit) for understanding requirements
-## Installation
-Deploy this one to Lambda
-## Usage
-### Setup environment variables
 
-`SLACK_SIGNING_SECRET`: Slack signs its requests using this secret that's unique to our app. It has format like a1bc2345.....
-
-`SLACK_BOT_TOKEN`: The OAuth token we use to call the Slack API has access to the data on the workspace where it is installed. It has format like xoxb-123....
-
-`GOOGLE_SERVICE_BASE64_FILE_CONTENT`: The Base64 encoded of the content of Google Service Account File (Json File). Read [this instruction](https://support.google.com/a/answer/7378726?hl=en) to know how to create service account
-
-`LEAVE_REGISTER_SHEET`: The url of the Google sheet that the bot uses to put the leave record. We also need to invite the Service account to access this file (Example jimmy-301@elated-chariot-341105.iam.gserviceaccount.com)
-
-`MANAGER_LEAVE_APPROVAL_CHANNEL`: The manager's channel to push the leave of request for approval. We should also invite the bot to this channel
 
 ### How to create an internal bot
 1. Visit: https://api.slack.com/
@@ -49,7 +36,7 @@ Deploy this one to Lambda
 
 8. In the same section, click 'Install our app' into the workspace. Allow the requested access.
 
-Assume that we have deployed the bot to the server and have the `fixed address`: https://bimodal-bot-example.com/slack-bot/events
+Assume that we have deployed the bot to the server and have the `permanent address`: https://bimodal-bot-example.com/slack-bot/events
 
 9. Then go to 'Event Subscriptions' under 'Features'. In the 'Request URL' field type https://bimodal-bot-example.com/slack-bot/events. We should see a green 'Verified' checkmark above the text-field 
 
@@ -64,6 +51,24 @@ Assume that we have deployed the bot to the server and have the `fixed address`:
     2. Continue to the above link for Requests URL 
 
 13. Add the bot to the manager approval channel for posting the message
+
+
+## Deployment
+Enter folder terraform and check variables in variables.tf. Create a secret.tfvars for these variables
+
+`SLACK_SIGNING_SECRET`: Slack signs its requests using this secret that's unique to our app. It has format like a1bc2345.....
+
+`SLACK_BOT_TOKEN`: The OAuth token we use to call the Slack API has access to the data on the workspace where it is installed. It has format like xoxb-123....
+
+`GOOGLE_SERVICE_BASE64_FILE_CONTENT`: The Base64 encoded of the content of Google Service Account File (Json File). Read [this instruction](https://support.google.com/a/answer/7378726?hl=en) to know how to create service account
+
+`LEAVE_REGISTER_SHEET`: The url of the Google sheet that the bot uses to put the leave record. We also need to invite the Service account to access this file (Example jimmy-301@elated-chariot-341105.iam.gserviceaccount.com)
+
+`MANAGER_LEAVE_APPROVAL_CHANNEL`: The manager's channel to push the leave of request for approval. We should also invite the bot to this channel
+
+Deploy  
+`terraform apply --var-file=secret.tfvars`
+Get the permanent URL and use it to update slack bot (step 9, 11, 12)
 
 ## How to use the bot
 Currently, the bot just support only one command `/vacation`. Let's play with it.

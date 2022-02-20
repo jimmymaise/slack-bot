@@ -1,9 +1,12 @@
+from dotenv import load_dotenv
 from slack_bolt import BoltRequest
 from slack_bolt.app import App
 from slack_bolt.oauth import OAuthFlow
 from slack_bolt.response import BoltResponse
 
 from lambda_handler import bolt_app
+
+load_dotenv()
 
 
 def run(app: App):
