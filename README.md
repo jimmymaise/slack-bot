@@ -5,12 +5,7 @@ BIP Bot is a slack bot providing a better way to implement the Bimodal Internal 
 At the very first MVP, BIP Bot will help us to schedule the PTO time
 Read the [BIP - leave management & attendance management](https://docs.google.com/document/d/1ruRofzWX7pkLEdNZ9T7N71tEV6AL0zmx5DcLW2OSNb8/edit) for understanding requirements
 ## Installation
-Install the packages
-
-```bash
-pip install -r requirements.txt
-```
-Or using the Docker file
+Deploy this one to Lambda
 ## Usage
 ### Setup environment variables
 
@@ -81,3 +76,4 @@ Please make sure to update tests as appropriate.
 
 ## License
 [MIT](https://choosealicense.com/licenses/mit/)
+

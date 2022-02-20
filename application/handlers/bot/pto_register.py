@@ -4,7 +4,7 @@ import uuid
 from slack_bolt import App
 from slack_sdk import WebClient
 
-from handlers.database.google_sheet import GoogleSheetDB
+from application.handlers.database.google_sheet import GoogleSheetDB
 
 
 class PTORegister:
