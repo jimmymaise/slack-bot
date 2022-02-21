@@ -1,4 +1,4 @@
-# Introduction
+## Introduction
 
 BIP Bot is a slack bot providing a better way to implement the Bimodal Internal Process
 
@@ -6,7 +6,7 @@ At the very first MVP, BIP Bot will help us to schedule the PTO time
 Read the [BIP - leave management & attendance management](https://docs.google.com/document/d/1ruRofzWX7pkLEdNZ9T7N71tEV6AL0zmx5DcLW2OSNb8/edit) for understanding requirements
 
 
-### How to create an internal bot
+## How to create an internal bot
 1. Visit: https://api.slack.com/
 
 2. Click "Start Building"
@@ -43,14 +43,19 @@ Assume that we have deployed the bot to the server and have the `permanent addre
 10. Check the 'Subscribe to bot events' section below, add some events:
     1. message.channels
     2. message.groups
+    3. app_home_opened
    
 11. Go to 'Interactivity & Shortcuts' under 'Features'. In the 'Request URL' field type the above address
 
 12. Go to 'Slash Commands' under 'Features'.Fill in the information:
     1. In the 'Command' field type in: "/vacation
     2. Continue to the above link for Requests URL 
+    
+13. Go to 'App Home' under 'Features'. Enable tabs in Show Tabs
+    1. Home Tab
+    2. Message Tab
 
-13. Add the bot to the manager approval channel for posting the message
+14. Add the bot to the manager approval channel for posting the message
 
 
 ## Deployment
@@ -66,8 +71,10 @@ Enter folder terraform and check variables in variables.tf. Create a secret.tfva
 
 `MANAGER_LEAVE_APPROVAL_CHANNEL`: The manager's channel to push the leave of request for approval. We should also invite the bot to this channel
 
-Deploy  
+Deploy
+
 `terraform apply --var-file=secret.tfvars`
+
 Get the permanent URL and use it to update slack bot (step 9, 11, 12)
 
 ## How to use the bot

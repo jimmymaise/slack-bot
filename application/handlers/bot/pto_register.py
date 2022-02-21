@@ -1,4 +1,5 @@
 import datetime
+import json
 import uuid
 
 from slack_bolt import App
@@ -16,7 +17,9 @@ class PTORegister:
         self.leave_register_sheet = leave_register_sheet
         self.approval_channel = approval_channel
         app.command('/vacation')(self.request_leave_command)
-        app.view('view_1')(ack=self.respond_to_slack_within_3_seconds, lazy=[self.handle_submission])
+        app.view('view_1')(self.leave_confirmation_view)
+        app.view('view_2')(ack=lambda ack: ack(response_action="clear"), lazy=[self.handle_submission])
+
         app.block_action({"block_id": "approve_deny_vacation", "action_id": "approve"})(
             ack=self.respond_to_slack_within_3_seconds, lazy=[self.approve_pto])
         app.block_action({"block_id": "approve_deny_vacation", "action_id": "deny"})(
@@ -27,10 +30,12 @@ class PTORegister:
     def respond_to_slack_within_3_seconds(ack):
         ack()
 
-    def request_leave_command(self, body, ack):
-        self.client.views_open(
+    @staticmethod
+    def request_leave_command(client, body, ack):
+        client.views_open(
             trigger_id=body.get('trigger_id'),
             view={
+
                 "type": "modal",
                 "callback_id": "view_1",
 
@@ -160,9 +165,78 @@ class PTORegister:
             }
         )
 
-        ack()
+    @staticmethod
+    def leave_confirmation_view(body, ack):
 
-    # Update the view on submission
+        values = body.get("view").get("state").get("values")
+
+        reason_of_leave = values.get("reason_of_leave").get("reason_for_leave").get("value")
+        leave_type = values.get("leave_type").get("leave_type").get("selected_option").get('value')
+
+        start_date_str = values.get("vacation_start_date").get("vacation_start_date_picker").get("selected_date")
+        end_date_str = values.get("vacation_end_date").get("vacation_end_date_picker").get("selected_date")
+        leave_view = {
+            "callback_id": "view_2",
+            "private_metadata": json.dumps({
+                "reason_of_leave": reason_of_leave,
+                "leave_type": leave_type,
+                "start_date_str": start_date_str,
+                "end_date_str": end_date_str
+
+            }),
+            "type": "modal",
+            "blocks": [
+                {
+                    "type": "section",
+                    "block_id": "B/i",
+                    "text": {
+                        "type": "mrkdwn",
+                        "text": f"*What?*\n:palm_tree: {leave_type}",
+                        "verbatim": False
+                    }
+                },
+                {
+                    "type": "section",
+                    "block_id": "8PS",
+                    "text": {
+                        "type": "mrkdwn",
+                        "text": f"*When?*\n:calendar: {start_date_str} - {end_date_str}",
+                        "verbatim": False
+                    }
+                },
+                {
+                    "type": "section",
+                    "block_id": "g0W",
+                    "text": {
+                        "type": "mrkdwn",
+                        "text": f"*Comment*\n:speech_balloon: {reason_of_leave}",
+                        "verbatim": False
+                    }
+                }
+            ],
+            "title": {
+                "type": "plain_text",
+                "text": "Your time off",
+                "emoji": True
+            },
+            "clear_on_close": False,
+            "notify_on_close": False,
+            "close": {
+                "type": "plain_text",
+                "text": "Back",
+                "emoji": True
+            },
+            "submit": {
+                "type": "plain_text",
+                "text": "Confirm",
+                "emoji": True
+            },
+        }
+        ack(response_action="push",
+            view=leave_view)
+
+        # Update the view on submission
+
     def handle_submission(self, body, logger):
         time_now = datetime.datetime.now()
         workspace_domain = f"https://{self.client.team_info().get('team').get('domain')}.slack.com/team/"
@@ -172,12 +246,12 @@ class PTORegister:
         user_name = user_info.get("user").get("real_name")
         user_profile_url = workspace_domain + user_id
 
-        values = body.get("view").get("state").get("values")
-        reason_of_leave = values.get("reason_of_leave").get("reason_for_leave").get("value")
-        leave_type = values.get("leave_type").get("leave_type").get("selected_option").get('value')
+        private_metadata = json.loads(body['view']['private_metadata'])
+        reason_of_leave = private_metadata["reason_of_leave"]
+        leave_type = private_metadata["leave_type"]
 
-        start_date_str = values.get("vacation_start_date").get("vacation_start_date_picker").get("selected_date")
-        end_date_str = values.get("vacation_end_date").get("vacation_end_date_picker").get("selected_date")
+        start_date_str = private_metadata["start_date_str"]
+        end_date_str = private_metadata["end_date_str"]
         start_date = datetime.datetime.strptime(start_date_str, '%Y-%m-%d')
         end_date = datetime.datetime.strptime(end_date_str, '%Y-%m-%d')
         leave_id = uuid.uuid4()
