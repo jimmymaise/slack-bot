@@ -8,7 +8,7 @@ class HomeTab:
     def __init__(self, app: App, client: WebClient):
         self.app = app
         self.client = client
-        app.event("app_home_opened")(ack=self.respond_to_slack_within_3_seconds, lazy=[self.app_home_opened_lazy])
+        app.event("app_home_opened")(ack=self.respond_to_slack_within_3_seconds, lazy=[self.open_app_home_lazy])
         app.block_action({"block_id": "home_tab", "action_id": "book_vacation"})(
             ack=self.respond_to_slack_within_3_seconds, lazy=[PTORegister.request_leave_command])
 
@@ -16,13 +16,14 @@ class HomeTab:
     def respond_to_slack_within_3_seconds(ack):
         ack()
 
-    def app_home_opened_lazy(self, event, context: BoltContext, client: WebClient):
+    def open_app_home_lazy(self, event, context: BoltContext, client: WebClient):
         if event["tab"] == "home":
             # and event.get("view") is None
-            client.views_publish(user_id=context.user_id, view=self.home_view())
+            client.views_publish(user_id=context.user_id, view=self.get_home_view())
 
+    # Return a home view
     @staticmethod
-    def home_view() -> dict:
+    def get_home_view() -> dict:
         print('Update home view')
         blocks = [
             {

@@ -44,6 +44,7 @@ def run(app: App):
     flask_app = Flask(__name__)
     handler = LocalFlaskAppHandler(app)
 
+    # Run server locally: http://localhost:5000
     @flask_app.route("/slack-bot/events", methods=["GET", "POST"])
     def slack_events():
         return handler.handle(request)
