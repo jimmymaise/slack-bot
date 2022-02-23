@@ -16,9 +16,9 @@ class PTORegister:
         self.google_sheet_db = google_sheet_db
         self.leave_register_sheet = leave_register_sheet
         self.approval_channel = approval_channel
-        app.command('/vacation')(self.request_leave_command)
-        app.view('view_1')(self.leave_confirmation_view)
-        app.view('view_2')(ack=lambda ack: ack(response_action="clear"), lazy=[self.handle_submission])
+        app.command('/vacation')(self.trigger_request_leave_command)
+        app.view('leave_input_view')(self.get_leave_confirmation_view)
+        app.view('leave_confirmation_view')(ack=lambda ack: ack(response_action="clear"), lazy=[self.handle_leave_request_submission])
 
         app.block_action({"block_id": "approve_deny_vacation", "action_id": "approve"})(
             ack=self.respond_to_slack_within_3_seconds, lazy=[self.approve_pto])
@@ -31,13 +31,13 @@ class PTORegister:
         ack()
 
     @staticmethod
-    def request_leave_command(client, body, ack):
+    def trigger_request_leave_command(client, body, ack):
         client.views_open(
             trigger_id=body.get('trigger_id'),
             view={
 
                 "type": "modal",
-                "callback_id": "view_1",
+                "callback_id": "leave_input_view",
 
                 "title": {"type": "plain_text", "text": "Request a leave"},
                 "close": {"type": "plain_text", "text": "Close"},
@@ -166,7 +166,7 @@ class PTORegister:
         )
 
     @staticmethod
-    def leave_confirmation_view(body, ack):
+    def get_leave_confirmation_view(body, ack):
 
         values = body.get("view").get("state").get("values")
 
@@ -176,7 +176,7 @@ class PTORegister:
         start_date_str = values.get("vacation_start_date").get("vacation_start_date_picker").get("selected_date")
         end_date_str = values.get("vacation_end_date").get("vacation_end_date_picker").get("selected_date")
         leave_view = {
-            "callback_id": "view_2",
+            "callback_id": "leave_confirmation_view",
             "private_metadata": json.dumps({
                 "reason_of_leave": reason_of_leave,
                 "leave_type": leave_type,
@@ -235,9 +235,8 @@ class PTORegister:
         ack(response_action="push",
             view=leave_view)
 
-        # Update the view on submission
-
-    def handle_submission(self, body, logger):
+    # Update the view on submission
+    def handle_leave_request_submission(self, body, logger):
         time_now = datetime.datetime.now()
         workspace_domain = f"https://{self.client.team_info().get('team').get('domain')}.slack.com/team/"
         user = body.get("user")
@@ -420,10 +419,6 @@ class PTORegister:
         # Delete responded message
         self.client.chat_delete(channel=channel_id, ts=message_ts)
         if decision == "Approve":
-            # leave_detail_query = f"""INSERT
-            #        INTO "{self.leave_register_sheet}" (Staff, "Leave type","Date","Approved by")
-            #        VALUES ("Duyet Mai","PTO","01/04/2022","Kame")
-            #        """
 
             self.client.chat_postMessage(channel="#manager_leave_approval",
                                          text=f":tada:Leave Request for {user_name} (From {start_date} To {end_date}) "
