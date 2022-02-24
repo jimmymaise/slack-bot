@@ -39,7 +39,7 @@ for understanding requirements
 
 8. In the same section, click 'Install our app' into the workspace. Allow the requested access.
 
-Assume that we have deployed the bot to the Lambda and have
+Assume that we have deployed the bot to the Lambda (Check Deployment stage below) and have
 the `permanent address`: https://xyz123.execute-api.us-west-1.amazonaws.com/slack-bot-bip
 
 
@@ -74,14 +74,17 @@ a1bc2345.....
 `SLACK_BOT_TOKEN`: The OAuth token we use to call the Slack API has access to the data on the workspace where it is
 installed. It has format like xoxb-123....
 
-`GOOGLE_SERVICE_BASE64_FILE_CONTENT`: The Base64 encoded of the content of Google Service Account File (Json File).
-Read [this instruction](https://support.google.com/a/answer/7378726?hl=en) to know how to create service account
+`GOOGLE_SERVICE_BASE64_FILE_CONTENT`: The Base64 encoded of the content of Google Service Account Key File (Json File).
+As this account needs to access Google sheet, so we must enable the Google Sheets API
+Read [this instruction](https://support.google.com/a/answer/7378726?hl=en) to know how to create service account 
+and enable Google Sheets API. After having the service account, go to key tab and click Add key. 
+A new key file will be downloaded. Open this file and encode its content as base64
 
 `LEAVE_REGISTER_SHEET`: The url of the Google sheet that the bot uses to put the leave record. We also need to invite
 the Service account to access this file (Example jimmy-301@elated-chariot-341105.iam.gserviceaccount.com)
 
 `MANAGER_LEAVE_APPROVAL_CHANNEL`: The manager's channel to push the leave of request for approval. We should also invite
-the bot to this channel
+the bot to this channel. For example #my_testing_channel (Should have #)
 
 Deploy
 
