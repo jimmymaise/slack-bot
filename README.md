@@ -86,9 +86,10 @@ the Service account to access this file (Example jimmy-301@elated-chariot-341105
 `MANAGER_LEAVE_APPROVAL_CHANNEL`: The manager's channel to push the leave of request for approval. We should also invite
 the bot to this channel. For example #my_testing_channel (Should have #)
 
-Deploy
-
-`terraform apply --var-file=secret.tfvars`
+1. Install Docker if don't have
+2. docker pull lambci/lambda:build-python3.8
+3. terraform init
+4. terraform apply --var-file=secret.tfvars
 
 Get the permanent URL and use it to update slack bot (step 9, 11, 12)
 
