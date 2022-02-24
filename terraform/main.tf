@@ -1,7 +1,12 @@
 provider "aws" {
-  region = var.region
+  region = var.REGION
 }
 
+terraform {
+  backend "s3" {
+    key="bimodal_slack_bot"
+  }
+}
 
 module "lambda_function" {
   source                = "registry.terraform.io/terraform-aws-modules/lambda/aws"

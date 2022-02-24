@@ -16,7 +16,7 @@ variable "MANAGER_LEAVE_APPROVAL_CHANNEL" {
   type    = string
 }
 
-variable "region" {
+variable "REGION" {
   default = "us-west-2"
   type    = string
 }

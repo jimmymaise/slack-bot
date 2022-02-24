@@ -86,10 +86,21 @@ the Service account to access this file (Example jimmy-301@elated-chariot-341105
 `MANAGER_LEAVE_APPROVAL_CHANNEL`: The manager's channel to push the leave of request for approval. We should also invite
 the bot to this channel. For example #my_testing_channel (Should have #)
 
-1. Install Docker if don't have
-2. docker pull lambci/lambda:build-python3.8
-3. terraform init
-4. terraform apply --var-file=secret.tfvars
+`REGION`: The AWS region
+
+1. Setup backend bucket
+   1. Add below environment variable to the deployment machine
+      1. export REGION="<the aws region>"
+      2. export S3_BACKEND_BUCKET=<"The s3 bucket name to store the bucket">
+   2. aws s3api create-bucket --bucket ${S3_BACKEND_BUCKET} --region ${REGION} --create-bucket-configuration LocationConstraint=${REGION}
+   
+2. Install Docker if don't have
+
+3. docker pull lambci/lambda:build-python3.8
+
+4. terraform init  -backend-config="bucket="${S3_BACKEND_BUCKET}"" -backend-config="region="${REGION}""
+
+5. terraform apply --var-file=secret.tfvars
 
 Get the permanent URL and use it to update slack bot (step 9, 11, 12)
 
