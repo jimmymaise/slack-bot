@@ -39,11 +39,12 @@ for understanding requirements
 
 8. In the same section, click 'Install our app' into the workspace. Allow the requested access.
 
-Assume that we have deployed the bot to the server and have
-the `permanent address`: https://bimodal-bot-example.com/slack-bot/events
+Assume that we have deployed the bot to the Lambda and have
+the `permanent address`: https://xyz123.execute-api.us-west-1.amazonaws.com/slack-bot-bip
+
 
 9. Then go to 'Event Subscriptions' under 'Features'. In the 'Request URL' field
-   type https://bimodal-bot-example.com/slack-bot/events. We should see a green 'Verified' checkmark above the
+   type the above address. We should see a green 'Verified' checkmark above the
    text-field
 
 10. Check the 'Subscribe to bot events' section below, add some events:
@@ -92,7 +93,7 @@ Get the permanent URL and use it to update slack bot (step 9, 11, 12)
 
 1. Run file local_run.py
 2. Using application like ngrok to map a localhost address to an internet address
-3. Using this internet address to bot configuration
+3. Using this internet address to bot configuration (http://xyz.com/slack-bot/events)
 
 ## How to use the bot
 
