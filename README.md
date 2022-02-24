@@ -88,21 +88,21 @@ the bot to this channel. For example #my_testing_channel (Should have #)
 
 `REGION`: The AWS region
 
-1. Setup backend bucket
+
+1. Install Docker if don't have
+
+2. docker pull lambci/lambda:build-python3.8 
+
+3. Setup backend bucket
    1. Add below environment variable to the deployment machine
       1. export REGION="<the aws region>"
       2. export S3_BACKEND_BUCKET=<"The s3 bucket name to store the bucket">
-   2. aws s3api create-bucket --bucket ${S3_BACKEND_BUCKET} --region ${REGION} --create-bucket-configuration LocationConstraint=${REGION}
-   
-2. Install Docker if don't have
+   2. aws s3api create-bucket --bucket ${S3_BACKEND_BUCKET} --region ${REGION} --create-bucket-configuration LocationConstraint=${REGION} 
+   3. terraform init  -backend-config="bucket="${S3_BACKEND_BUCKET}"" -backend-config="region="${REGION}""
 
-3. docker pull lambci/lambda:build-python3.8
+4. terraform apply --var-file=secret.tfvars 
 
-4. terraform init  -backend-config="bucket="${S3_BACKEND_BUCKET}"" -backend-config="region="${REGION}""
-
-5. terraform apply --var-file=secret.tfvars
-
-Get the permanent URL and use it to update slack bot (step 9, 11, 12)
+5. Get the permanent URL and use it to update slack bot (step 9, 11, 12)
 
 ## How to run the bot locally for debuging
 

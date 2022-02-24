@@ -4,7 +4,7 @@ provider "aws" {
 
 terraform {
   backend "s3" {
-    key="bimodal_slack_bot"
+    key = "bimodal_slack_bot"
   }
 }
 
@@ -44,7 +44,8 @@ module "lambda_function" {
   allowed_triggers      = {
     APIGatewayAny = {
       service    = "apigateway"
-      source_arn = "${module.api_gateway.apigatewayv2_api_execution_arn}/*/*/slack-bot-bip"
+      source_arn = "${module.api_gateway.apigatewayv2_api_execution_arn}/*/*/${module.lambda_function.lambda_function_name}"
+      stage      = ""
     }
   }
   tags                  = {
@@ -76,7 +77,7 @@ module "api_gateway" {
 
   # Routes and integrations
   integrations = {
-    "POST /" = {
+    "ANY /${module.lambda_function.lambda_function_name}" = {
       lambda_arn             = module.lambda_function.lambda_function_invoke_arn
       payload_format_version = "2.0"
       timeout_milliseconds   = 12000
@@ -132,3 +133,13 @@ module "trigger_today_ooo" {
 }
 
 
+output "lambda_url" {
+  description = "lambda_url"
+  value       = "${module.api_gateway.apigatewayv2_api_api_endpoint}/${module.lambda_function.lambda_function_name}"
+}
+
+
+output "bot-lambda-address" {
+  description = "apigatewayv2_api_execution_arn"
+  value       = module.api_gateway.apigatewayv2_api_execution_arn
+}
