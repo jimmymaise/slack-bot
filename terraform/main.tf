@@ -14,7 +14,7 @@ module "lambda_function" {
     MANAGER_LEAVE_APPROVAL_CHANNEL     = var.MANAGER_LEAVE_APPROVAL_CHANNEL
   }
   function_name         = "slack-bot-bip"
-  description           = "My awesome lambda function"
+  description           = "Slack bot bip for lambda"
   handler               = "lambda_handler.handler"
   build_in_docker       = true
   docker_image          = "lambci/lambda:build-python3.8"
@@ -113,3 +113,17 @@ resource "aws_iam_role_policy_attachment" "add_permission_for_lambda_invoke_itse
   role       = module.lambda_function.lambda_role_name
   policy_arn = aws_iam_policy.lambda_invoke_itself.arn
 }
+
+//Schedule
+
+module "trigger_today_ooo" {
+  source                      = "./modules/cloud_watch_event_trigger_lambda_schedule"
+  schedule_name               = "trigger_today_ooo"
+  schedule_desc               = "trigger_today_ooo"
+  schedule_expression         = "cron(5 8 * * ? *)"
+  schedule_lambda_target_arn  = module.lambda_function.lambda_function_arn
+  schedule_lambda_target_name = module.lambda_function.lambda_function_name
+  trigger_input               = { "lambda_trigger_event" : "TODAY_OOO" }
+}
+
+

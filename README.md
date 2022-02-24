@@ -10,7 +10,7 @@ for understanding requirements
 
 1. Visit: https://api.slack.com/
 
-2. Click "Start Building"
+2. Click "Create an app", select from Scratch
 
 3. Fill in the request information
     1. Make sure we are saving changes as we follow these next steps
