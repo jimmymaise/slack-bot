@@ -10,7 +10,7 @@ for understanding requirements
 
 1. Visit: https://api.slack.com/
 
-2. Click "Start Building"
+2. Click "Create an app", select from Scratch
 
 3. Fill in the request information
     1. Make sure we are saving changes as we follow these next steps
@@ -39,11 +39,12 @@ for understanding requirements
 
 8. In the same section, click 'Install our app' into the workspace. Allow the requested access.
 
-Assume that we have deployed the bot to the server and have
-the `permanent address`: https://bimodal-bot-example.com/slack-bot/events
+Assume that we have deployed the bot to the Lambda (Check Deployment stage below) and have
+the `permanent address`: https://xyz123.execute-api.us-west-1.amazonaws.com/slack-bot-bip
+
 
 9. Then go to 'Event Subscriptions' under 'Features'. In the 'Request URL' field
-   type https://bimodal-bot-example.com/slack-bot/events. We should see a green 'Verified' checkmark above the
+   type the above address. We should see a green 'Verified' checkmark above the
    text-field
 
 10. Check the 'Subscribe to bot events' section below, add some events:
@@ -73,18 +74,33 @@ a1bc2345.....
 `SLACK_BOT_TOKEN`: The OAuth token we use to call the Slack API has access to the data on the workspace where it is
 installed. It has format like xoxb-123....
 
-`GOOGLE_SERVICE_BASE64_FILE_CONTENT`: The Base64 encoded of the content of Google Service Account File (Json File).
-Read [this instruction](https://support.google.com/a/answer/7378726?hl=en) to know how to create service account
+`GOOGLE_SERVICE_BASE64_FILE_CONTENT`: The Base64 encoded of the content of Google Service Account Key File (Json File).
+As this account needs to access Google sheet, so we must enable the Google Sheets API
+Read [this instruction](https://support.google.com/a/answer/7378726?hl=en) to know how to create service account 
+and enable Google Sheets API. After having the service account, go to key tab and click Add key. 
+A new key file will be downloaded. Open this file and encode its content as base64
 
 `LEAVE_REGISTER_SHEET`: The url of the Google sheet that the bot uses to put the leave record. We also need to invite
 the Service account to access this file (Example jimmy-301@elated-chariot-341105.iam.gserviceaccount.com)
 
 `MANAGER_LEAVE_APPROVAL_CHANNEL`: The manager's channel to push the leave of request for approval. We should also invite
-the bot to this channel
+the bot to this channel. For example #my_testing_channel (Should have #)
 
-Deploy
+`REGION`: The AWS region
 
-`terraform apply --var-file=secret.tfvars`
+1. Setup backend bucket
+   1. Add below environment variable to the deployment machine
+      1. export REGION="<the aws region>"
+      2. export S3_BACKEND_BUCKET=<"The s3 bucket name to store the bucket">
+   2. aws s3api create-bucket --bucket ${S3_BACKEND_BUCKET} --region ${REGION} --create-bucket-configuration LocationConstraint=${REGION}
+   
+2. Install Docker if don't have
+
+3. docker pull lambci/lambda:build-python3.8
+
+4. terraform init  -backend-config="bucket="${S3_BACKEND_BUCKET}"" -backend-config="region="${REGION}""
+
+5. terraform apply --var-file=secret.tfvars
 
 Get the permanent URL and use it to update slack bot (step 9, 11, 12)
 
@@ -92,7 +108,7 @@ Get the permanent URL and use it to update slack bot (step 9, 11, 12)
 
 1. Run file local_run.py
 2. Using application like ngrok to map a localhost address to an internet address
-3. Using this internet address to bot configuration
+3. Using this internet address to bot configuration (http://xyz.com/slack-bot/events)
 
 ## How to use the bot
 
