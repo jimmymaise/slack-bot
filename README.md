@@ -66,6 +66,7 @@ the `permanent address`: https://xyz123.execute-api.us-west-1.amazonaws.com/slac
 
 ## Deployment
 
+### Preparation 
 Enter folder terraform and check variables in variables.tf. Create a secret.tfvars for these variables
 
 `SLACK_SIGNING_SECRET`: Slack signs its requests using this secret that's unique to our app. It has format like
@@ -88,6 +89,7 @@ the bot to this channel. For example #my_testing_channel (Should have #)
 
 `REGION`: The AWS region
 
+### Deploy steps 
 
 1. Install Docker if don't have
 
@@ -95,8 +97,8 @@ the bot to this channel. For example #my_testing_channel (Should have #)
 
 3. Setup backend bucket
    1. Add below environment variable to the deployment machine
-      1. export REGION="<the aws region>"
-      2. export S3_BACKEND_BUCKET=<"The s3 bucket name to store the bucket">
+      1. export REGION=`<the aws region>`
+      2. export S3_BACKEND_BUCKET=`<The s3 bucket name to store the bucket>`
    2. aws s3api create-bucket --bucket ${S3_BACKEND_BUCKET} --region ${REGION} --create-bucket-configuration LocationConstraint=${REGION} 
    3. terraform init  -backend-config="bucket="${S3_BACKEND_BUCKET}"" -backend-config="region="${REGION}""
 
