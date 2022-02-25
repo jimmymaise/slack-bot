@@ -11,6 +11,7 @@ terraform {
 module "lambda_function" {
   source                = "registry.terraform.io/terraform-aws-modules/lambda/aws"
   publish               = true
+  timeout               = 900
   environment_variables = {
     SLACK_SIGNING_SECRET               = var.SLACK_SIGNING_SECRET
     SLACK_BOT_TOKEN                    = var.SLACK_BOT_TOKEN
