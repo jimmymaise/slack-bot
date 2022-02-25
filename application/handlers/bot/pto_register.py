@@ -4,6 +4,7 @@ import uuid
 
 from slack_bolt import App
 from slack_sdk import WebClient
+from tenacity import retry, wait_fixed, stop_after_attempt
 
 from application.handlers.database.google_sheet import GoogleSheetDB
 
@@ -18,7 +19,8 @@ class PTORegister:
         self.approval_channel = approval_channel
         app.command('/vacation')(ack=self.respond_to_slack_within_3_seconds, lazy=[self.trigger_request_leave_command])
         app.view('leave_input_view')(self.get_leave_confirmation_view)
-        app.view('leave_confirmation_view')(ack=lambda ack: ack(response_action="clear"), lazy=[self.handle_leave_request_submission])
+        app.view('leave_confirmation_view')(ack=lambda ack: ack(response_action="clear"),
+                                            lazy=[self.handle_leave_request_submission])
 
         app.block_action({"block_id": "approve_deny_vacation", "action_id": "approve"})(
             ack=self.respond_to_slack_within_3_seconds, lazy=[self.approve_pto])
@@ -255,6 +257,8 @@ class PTORegister:
         end_date = datetime.datetime.strptime(end_date_str, '%Y-%m-%d')
         leave_id = uuid.uuid4()
 
+        self._insert_item(leave_id, leave_type, reason_of_leave, user_name, start_date_str, end_date_str, time_now)
+
         self.client.chat_postMessage(
             channel=self.approval_channel,
             text=f"You have a new request:\n*<{user_profile_url}|{user_name} - New vacation request>*",
@@ -382,15 +386,6 @@ class PTORegister:
 
                                      ])
 
-        query = f"""INSERT INTO 
-        "{self.leave_register_sheet}" ("Leave Id","Username","Start date","End date",
-        "Leave type","Reason","Created time","Status")
-        VALUES ("{leave_id}","{user_name}","{start_date_str}","{end_date_str}","{leave_type}",
-        "{reason_of_leave}","{time_now}","Wait for Approval")
-                     """
-        print(query)
-        self.google_sheet_db.cursor.execute(query)
-
     def approve_pto(self, ack, body, logger):
         self._process_pto_actions(body, ack)
 
@@ -416,6 +411,8 @@ class PTORegister:
         user_info = self.client.users_info(user=user_id)
         user_name = user_info.get("user").get("real_name")
 
+        self._update_pto_register(manager_name, decision, leave_id)
+
         # Delete responded message
         self.client.chat_delete(channel=channel_id, ts=message_ts)
         if decision == "Approve":
@@ -433,11 +430,46 @@ class PTORegister:
             self.client.chat_postMessage(channel=user_id,
                                          text=f":x:Your leave request (From {start_date} To {end_date}) has been denied by {manager_name} :cry: . Leave Id: {leave_id}")
 
+        ack()
+
+    @retry(wait=wait_fixed(30), stop=stop_after_attempt(4), reraise=True)
+    def _update_pto_register(self, manager_name, decision, leave_id):
         update_approve = f"""UPDATE "{self.leave_register_sheet}"
-             SET "Approver" = "{manager_name}" , "Status" ="{decision}"
-              where "Leave Id" = "{leave_id}"
-             """
+              SET "Approver" = "{manager_name}" , "Status" ="{decision}"
+               where "Leave Id" = "{leave_id}"
+              """
 
         self.google_sheet_db.cursor.execute(update_approve)
 
-        ack()
+        select = f"""SELECT * FROM "{self.leave_register_sheet}"
+                    where "Leave Id" = "{leave_id}" and "Status" ="{decision}"
+                   """
+        if not self.google_sheet_db.cursor.execute(select).rowcount:
+            print("Cannot update")
+            raise Exception(f"Can't update. Perhaps item {leave_id} not exist")
+        print('Update approve successfully')
+
+    @retry(stop=stop_after_attempt(4), reraise=True)
+    def _insert_item(self, leave_id, leave_type, reason_of_leave, user_name, start_date_str,
+                     end_date_str,
+                     time_now):
+
+        query = f"""INSERT INTO 
+          "{self.leave_register_sheet}" ("Leave Id","Username","Start date","End date",
+          "Leave type","Reason","Created time","Status")
+          VALUES ("{leave_id}","{user_name}","{start_date_str}","{end_date_str}","{leave_type}",
+          "{reason_of_leave}","{time_now}","Wait for Approval")
+                       """
+        self.google_sheet_db.cursor.execute(query)
+        self._find_item(leave_id)
+
+    @retry(wait=wait_fixed(30), stop=stop_after_attempt(4), reraise=True)
+    def _find_item(self, leave_id):
+
+        select = f"""SELECT * FROM "{self.leave_register_sheet}"
+                           where "Leave Id" = "{leave_id}"
+                          """
+        if not self.google_sheet_db.cursor.execute(select).rowcount:
+            print("Cannot find item")
+            raise Exception(f"Cannot find item")
+        print('find item successfully')
