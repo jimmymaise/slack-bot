@@ -16,7 +16,7 @@ class PTORegister:
         self.google_sheet_db = google_sheet_db
         self.leave_register_sheet = leave_register_sheet
         self.approval_channel = approval_channel
-        app.command('/vacation')(self.trigger_request_leave_command)
+        app.command('/vacation')(ack=self.respond_to_slack_within_3_seconds, lazy=[self.trigger_request_leave_command])
         app.view('leave_input_view')(self.get_leave_confirmation_view)
         app.view('leave_confirmation_view')(ack=lambda ack: ack(response_action="clear"), lazy=[self.handle_leave_request_submission])
 
