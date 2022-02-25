@@ -420,14 +420,14 @@ class PTORegister:
         self.client.chat_delete(channel=channel_id, ts=message_ts)
         if decision == "Approve":
 
-            self.client.chat_postMessage(channel="#manager_leave_approval",
+            self.client.chat_postMessage(channel=self.approval_channel,
                                          text=f":tada:Leave Request for {user_name} (From {start_date} To {end_date}) "
                                               f"has been approved by {manager_name}. Leave Id: {leave_id}")
             self.client.chat_postMessage(channel=user_id,
                                          text=f":tada:Your leave request (From {start_date} to {end_date}) "
                                               f"has been approved by {manager_name}:smiley: . Leave Id: {leave_id}")
         else:
-            self.client.chat_postMessage(channel="#manager_leave_approval",
+            self.client.chat_postMessage(channel=self.approval_channel,
                                          text=f":x:Leave Request for {user_name} (From {start_date} To {end_date}) "
                                               f"has been denied by {manager_name} . Leave Id: {leave_id}")
             self.client.chat_postMessage(channel=user_id,
