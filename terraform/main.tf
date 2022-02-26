@@ -133,10 +133,10 @@ module "trigger_today_ooo" {
   trigger_input               = { "lambda_trigger_event" : "TODAY_OOO" }
 }
 
-module "trigger_today_ooo" {
+module "trigger_lambda_warm_up" {
   source                      = "./modules/cloud_watch_event_trigger_lambda_schedule"
-  schedule_name               = "trigger_today_ooo"
-  schedule_desc               = "trigger_today_ooo"
+  schedule_name               = "trigger_lambda_warm_up"
+  schedule_desc               = "trigger_lambda_warm_up"
   schedule_expression         = "cron(5 * * * *)"
   schedule_lambda_target_arn  = module.lambda_function.lambda_function_arn
   schedule_lambda_target_name = module.lambda_function.lambda_function_name
