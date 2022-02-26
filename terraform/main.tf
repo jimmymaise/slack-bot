@@ -137,7 +137,7 @@ module "trigger_lambda_warm_up" {
   source                      = "./modules/cloud_watch_event_trigger_lambda_schedule"
   schedule_name               = "trigger_lambda_warm_up"
   schedule_desc               = "trigger_lambda_warm_up"
-  schedule_expression         = "cron(5 * * * *)"
+  schedule_expression         = "rate(5 minutes)"
   schedule_lambda_target_arn  = module.lambda_function.lambda_function_arn
   schedule_lambda_target_name = module.lambda_function.lambda_function_name
   trigger_input               = { "lambda_trigger_event" : "WARM_UP_LAMBDA" }
