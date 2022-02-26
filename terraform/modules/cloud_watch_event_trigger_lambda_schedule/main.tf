@@ -11,7 +11,7 @@ resource "aws_cloudwatch_event_target" "this" {
 }
 
 resource "aws_lambda_permission" "allow_cloudwatch_to_call_lambda_function" {
-  statement_id  = "AllowExecutionFromCloudWatch"
+  statement_id  = aws_cloudwatch_event_rule.this.name
   action        = "lambda:InvokeFunction"
   function_name = var.schedule_lambda_target_name
   principal     = "events.amazonaws.com"
