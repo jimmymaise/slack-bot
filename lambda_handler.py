@@ -26,5 +26,7 @@ HomeTab(bolt_app, client)
 
 
 def handler(event, context):
+    if event.get('lambda_trigger_event'):
+        pass
     slack_handler = SlackRequestHandler(app=bolt_app)
     return slack_handler.handle(event, context)
