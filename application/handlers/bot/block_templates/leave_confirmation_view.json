@@ -1,0 +1,51 @@
+{
+  "callback_id": "leave_confirmation_view",
+  "private_metadata": "{{private_metadata}}",
+  "type": "modal",
+  "blocks": [
+    {
+      "type": "section",
+      "block_id": "B/i",
+      "text": {
+        "type": "mrkdwn",
+        "text": "*What?*\n:palm_tree: {{leave_type}}",
+        "verbatim": false
+      }
+    },
+    {
+      "type": "section",
+      "block_id": "8PS",
+      "text": {
+        "type": "mrkdwn",
+        "text": "*When?*\n:calendar: {{start_date_str}} - {{end_date_str}}",
+        "verbatim": false
+      }
+    },
+    {
+      "type": "section",
+      "block_id": "g0W",
+      "text": {
+        "type": "mrkdwn",
+        "text": "*Comment*\n:speech_balloon: {{reason_of_leave}}",
+        "verbatim": false
+      }
+    }
+  ],
+  "title": {
+    "type": "plain_text",
+    "text": "Your time off",
+    "emoji": true
+  },
+  "clear_on_close": false,
+  "notify_on_close": false,
+  "close": {
+    "type": "plain_text",
+    "text": "Back",
+    "emoji": true
+  },
+  "submit": {
+    "type": "plain_text",
+    "text": "Confirm",
+    "emoji": true
+  }
+}

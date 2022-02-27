@@ -1,0 +1,44 @@
+[
+  {
+    "type": "section",
+    "text": {
+      "type": "mrkdwn",
+      "text": "You have sent a new vacation request. Please wait to manager approve"
+    }
+  },
+  {
+    "type": "section",
+    "fields": [
+      {
+        "type": "mrkdwn",
+        "text": "*Leave Type:*\n{{leave_type}}"
+      },
+      {
+        "type": "mrkdwn",
+        "text": "*Leave Id:*\n{{leave_id}}"
+      }
+    ]
+  },
+  {
+    "type": "section",
+    "fields": [
+      {
+        "type": "mrkdwn",
+        "text": "*Start Date:*\n{{start_date.strftime('%A, %B, %d, %Y')}}"
+      },
+      {
+        "type": "mrkdwn",
+        "text": "*End Date:*\n{{end_date.strftime('%A, %B, %d, %Y')}}"
+      }
+    ]
+  },
+  {
+    "type": "section",
+    "fields": [
+      {
+        "type": "mrkdwn",
+        "text": "*Reason:*\n{{reason_of_leave}}"
+      }
+    ]
+  }
+]
