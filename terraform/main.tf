@@ -23,7 +23,7 @@ module "lambda_function" {
   function_name         = "slack-bot-bip"
   description           = "Slack bot bip for lambda"
   handler               = "lambda_handler.handler"
-  build_in_docker       = true
+  build_in_docker       = var.BUILD_IN_DOCKER
   docker_image          = "lambci/lambda:build-python3.8"
   runtime               = "python3.8"
   source_path           = [

@@ -25,3 +25,6 @@ variable "OOO_CHANNEL" {
   default = "#bimodal-qpto-internal-project"
   type    = string
 }
+variable "BUILD_IN_DOCKER" {
+  default = true
+}
