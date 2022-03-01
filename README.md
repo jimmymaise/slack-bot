@@ -119,6 +119,31 @@ the bot to this channel. For example #my_testing_channel (Should have #)
 
 Currently, the bot just support two commands `/vacation` and `/ooo-today`. Let's play with it.
 
+## How to setup Github Action
+Go to Settings->Secrets->Action and add below secrets
+AWS_ACCESS_KEY_ID
+
+AWS_REGION
+
+AWS_SECRET_ACCESS_KEY
+
+TF_VAR_BUILD_IN_DOCKER
+
+TF_VAR_GOOGLE_SERVICE_BASE64_FILE_CONTENT
+
+TF_VAR_LEAVE_REGISTER_SHEET
+
+TF_VAR_MANAGER_LEAVE_APPROVAL_CHANNEL
+
+TF_VAR_OOO_CHANNEL
+
+TF_VAR_S3_BACKEND_BUCKET
+
+TF_VAR_SLACK_BOT_TOKEN
+
+TF_VAR_SLACK_SIGNING_SECRET
+
+
 ## Contributing
 
 Pull requests are welcome. For major changes, please open an issue first to discuss what we would like to change.
