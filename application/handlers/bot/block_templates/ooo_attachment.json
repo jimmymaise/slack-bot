@@ -1,0 +1,31 @@
+{
+  "color": "0099ff",
+  "fallback": "New Message",
+  "fields": [
+    {
+        "value": "{{username}}",
+      "title": "Who?",
+      "short": true
+    },
+    {
+      "value": "{{leave_type}}",
+      "title": "What?",
+      "short": true
+    },
+    {
+      "value": "{{status}}",
+      "title": "Status?",
+      "short": true
+    },
+    {
+      "value": "{{start_date.strftime('%A, %B, %d, %Y')}} to {{end_date.strftime('%A, %B, %d, %Y')}}",
+      "title": "When?",
+      "short": true
+    }
+  ],
+  "mrkdwn_in": [
+    "fields",
+    "pretext",
+    "text"
+  ]
+}

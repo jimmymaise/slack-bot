@@ -1,7 +1,7 @@
 from slack_bolt import App, BoltContext
 from slack_sdk import WebClient
 
-from application.handlers.bot.pto_register import PTORegister
+from application.handlers.bot.leave_register import LeaveRegister
 
 
 class HomeTab:
@@ -10,7 +10,7 @@ class HomeTab:
         self.client = client
         app.event("app_home_opened")(ack=self.respond_to_slack_within_3_seconds, lazy=[self.open_app_home_lazy])
         app.block_action({"block_id": "home_tab", "action_id": "book_vacation"})(
-            ack=self.respond_to_slack_within_3_seconds, lazy=[PTORegister.trigger_request_leave_command])
+            ack=self.respond_to_slack_within_3_seconds, lazy=[LeaveRegister.trigger_request_leave_command])
 
     @staticmethod
     def respond_to_slack_within_3_seconds(ack):

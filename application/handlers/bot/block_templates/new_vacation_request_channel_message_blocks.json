@@ -44,7 +44,7 @@
                 },
                 {
                     "type": "actions",
-                    "block_id": "approve_deny_vacation",
+                    "block_id": "approve_reject_vacation",
                     "elements": [
                         {
                             "type": "button",
@@ -62,11 +62,11 @@
                             "text": {
                                 "type": "plain_text",
                                 "emoji": true,
-                                "text": "Deny"
+                                "text": "Reject"
                             },
-                            "action_id": "deny",
+                            "action_id": "reject",
                             "style": "danger",
-                            "value": "deny_vacation_request"
+                            "value": "reject_vacation_request"
                         }
                     ]
                 }
