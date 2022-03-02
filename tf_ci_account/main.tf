@@ -37,12 +37,11 @@ resource "aws_iam_user_policy" "deploy_slack_bot_lambda" {
 EOF
 }
 
-data "template_file" "secret" {
-  template = aws_iam_access_key.slack_bot_key.secret
-}
+
 output "aws_access_key" {
-  value     = aws_iam_access_key.slack_bot_key.id
+  value = aws_iam_access_key.slack_bot_key.id
 }
 output "aws_access_secret" {
-  value     = data.template_file.secret.rendered
+  value = "Run command in Readme doc to get the secret case. Remember install jq before doing so"
 }
+
