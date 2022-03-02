@@ -31,6 +31,7 @@ class LeaveLookup:
         statuses = [Constant.LEAVE_REQUEST_STATUS_APPROVED,
                     Constant.LEAVE_REQUEST_STATUS_WAIT]
         respond(response_type="in_channel",
+                text="As your request, Here is the list of users OOO today",
                 attachments=self.build_response_today_ooo(statuses)
                 )
 
@@ -38,6 +39,7 @@ class LeaveLookup:
         statuses = [Constant.LEAVE_REQUEST_STATUS_APPROVED,
                     Constant.LEAVE_REQUEST_STATUS_WAIT]
         self.client.chat_postMessage(channel=channel,
+                                     text="Hey, the following users are OOO today",
                                      attachments=self.build_response_today_ooo(statuses)
                                      )
 

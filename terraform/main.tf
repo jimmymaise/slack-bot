@@ -32,9 +32,11 @@ module "lambda_function" {
       pip_requirements = true,
       patterns         = [
         "!terraform/.*",
+        "!tf_ci_account/.*",
+        "!.github/.*",
         "!.env",
-        "!.idea/*",
-        "!.git/*",
+        "!.idea/.*",
+        "!.git/.*",
         "!node_modules/.*",
         "application/.*",
         "lambda_handler.py",
