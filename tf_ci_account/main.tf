@@ -1,3 +1,7 @@
+provider "aws" {
+  region = var.REGION
+}
+
 terraform {
   backend "s3" {
     key = "ci_account_bimodal_slack_bot"
