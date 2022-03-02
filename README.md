@@ -98,13 +98,15 @@ the bot to this channel. For example #my_testing_channel (Should have #)
 2. docker pull lambci/lambda:build-python3.8
 
 3. Setup backend bucket
-    1. Add below environment variable to the deployment machine
-        1. export REGION=`<the aws region>`
-        2. export S3_BACKEND_BUCKET=`<The s3 bucket name to store the bucket>`
-    2. aws s3api create-bucket --bucket ${S3_BACKEND_BUCKET} --region ${REGION} --create-bucket-configuration
-       LocationConstraint=${REGION}
-    3. terraform init -backend-config="bucket="${S3_BACKEND_BUCKET}"" -backend-config="region="${REGION}""
 
+   1. Add below environment variable to the deployment machine. Replace us-west-2 and leave-management-bimodal depend 
+   on environment you are working for.
+        1. export REGION=us-west-2
+        2. export S3_BACKEND_BUCKET=leave-management-bimodal
+   2. aws s3api create-bucket --bucket ${S3_BACKEND_BUCKET} --region ${REGION} --create-bucket-configuration
+      LocationConstraint=${REGION}
+   3. terraform init -backend-config="bucket="${S3_BACKEND_BUCKET}"" -backend-config="region="${REGION}""
+ 
 4. terraform apply --var-file=secret.tfvars
 
 5. Get the permanent URL and use it to update slack bot (step 9, 11, 12)
@@ -146,14 +148,15 @@ TF_VAR_SLACK_SIGNING_SECRET
 
 ## How to create CI user
 1. Cd to folder tf_ci_account
-2. Add below environment variable to the deployment machine
-    1. export REGION=`<the aws region>`
-    2. export S3_BACKEND_BUCKET=`<The s3 bucket name to store the bucket>`
-3. terraform init -backend-config="bucket="${S3_BACKEND_BUCKET}"" -backend-config="region="${REGION}""
-4. terraform apply
-5. Run below command to get the secret key
-   1. terraform state pull | jq '.resources[] | select(.type == "aws_iam_access_key") | .instances[0].attributes.secret'
-6. copy aws access key, aws secret key and use them for Github actions
+2. Add below environment variable to the deployment machine. Replace us-west-2 and leave-management-bimodal depend 
+on environment you are working for.
+    1. export REGION=us-west-2
+    2. export S3_BACKEND_BUCKET=leave-management-bimodal
+3.terraform init -backend-config="bucket="${S3_BACKEND_BUCKET}"" -backend-config="region="${REGION}""
+4.terraform apply
+5.Run below command to get the secret key (You must have jq)
+    3. terraform state pull | jq '.resources[] | select(.type == "aws_iam_access_key") | .instances[0].attributes.secret'
+6.copy aws access key, aws secret key and use them for Github actions
 
 ## Contributing
 
