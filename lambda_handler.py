@@ -21,12 +21,12 @@ bolt_app = App(token=os.environ.get("SLACK_BOT_TOKEN"),
 google_sheet_db = GoogleSheetDB(
     service_account_file_content=os.getenv('GOOGLE_SERVICE_BASE64_FILE_CONTENT'), is_encode_base_64=True)
 
-LeaveRegister(bolt_app, client, google_sheet_db,
-              leave_register_sheet=os.getenv('LEAVE_REGISTER_SHEET'),
-              approval_channel=os.getenv('MANAGER_LEAVE_APPROVAL_CHANNEL'))
+leave_register = LeaveRegister(bolt_app, client, google_sheet_db,
+                               leave_register_sheet=os.getenv('LEAVE_REGISTER_SHEET'),
+                               approval_channel=os.getenv('MANAGER_LEAVE_APPROVAL_CHANNEL'))
 leave_lookup = LeaveLookup(bolt_app, client, google_sheet_db, os.getenv('LEAVE_REGISTER_SHEET'))
 
-HomeTab(bolt_app, client)
+HomeTab(bolt_app, client, leave_lookup, leave_register)
 
 
 def handler(event, context):
