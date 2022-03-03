@@ -1,16 +1,23 @@
+import json
+
 from slack_bolt import App, BoltContext
 from slack_sdk import WebClient
 
-from application.handlers.bot.pto_register import PTORegister
+from application.handlers.bot.block_template_handler import BlockTemplateHandler
+from application.handlers.bot.leave_lookup import LeaveLookup
+from application.handlers.bot.leave_register import LeaveRegister
 
 
 class HomeTab:
-    def __init__(self, app: App, client: WebClient):
+    def __init__(self, app: App, client: WebClient, leave_lookup: LeaveLookup, leave_register: LeaveRegister):
         self.app = app
         self.client = client
         app.event("app_home_opened")(ack=self.respond_to_slack_within_3_seconds, lazy=[self.open_app_home_lazy])
         app.block_action({"block_id": "home_tab", "action_id": "book_vacation"})(
-            ack=self.respond_to_slack_within_3_seconds, lazy=[PTORegister.trigger_request_leave_command])
+            ack=self.respond_to_slack_within_3_seconds, lazy=[leave_register.trigger_request_leave_command])
+        app.block_action({"block_id": "home_tab", "action_id": "check_ooo_today"})(
+            ack=self.respond_to_slack_within_3_seconds, lazy=[leave_lookup.trigger_today_ooo_command])
+        self.block_kit = BlockTemplateHandler('./application/handlers/bot/block_templates').get_object_templates()
 
     @staticmethod
     def respond_to_slack_within_3_seconds(ack):
@@ -18,40 +25,5 @@ class HomeTab:
 
     def open_app_home_lazy(self, event, context: BoltContext, client: WebClient):
         if event["tab"] == "home":
-            # and event.get("view") is None
-            client.views_publish(user_id=context.user_id, view=self.get_home_view())
-
-    # Return a home view
-    @staticmethod
-    def get_home_view() -> dict:
-        print('Update home view')
-        blocks = [
-            {
-                "type": "section",
-
-                "text": {
-                    "type": "mrkdwn",
-                    "text": "BIP Bot is a slack bot providing a better way to implement the Bimodal Internal Process "
-                            "At the very first MVP, BIP Bot will help us to schedule the PTO time "
-                            "Read the <https://docs.google.com/document/d/1ruRofzWX7pkLEdNZ9T7N71tEV6AL0zmx5DcLW2OSNb8/edit|*[BIP - leave management & attendance management]> for understanding requirements"
-                }
-            },
-            {
-                "block_id": "home_tab",
-                "type": "actions",
-                "elements": [
-                    {
-                        "type": "button",
-                        "action_id": "book_vacation",
-
-                        "text": {
-                            "type": "plain_text",
-                            "text": "Book vacation",
-                            "emoji": True
-                        }
-                    }
-                ]
-            }
-        ]
-
-        return {"type": "home", "blocks": blocks}
+            client.views_publish(user_id=context.user_id, view={"type": "home",
+                                                                "blocks": json.loads(self.block_kit.home_tab())})

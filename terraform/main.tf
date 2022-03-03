@@ -18,11 +18,12 @@ module "lambda_function" {
     GOOGLE_SERVICE_BASE64_FILE_CONTENT = var.GOOGLE_SERVICE_BASE64_FILE_CONTENT
     LEAVE_REGISTER_SHEET               = var.LEAVE_REGISTER_SHEET
     MANAGER_LEAVE_APPROVAL_CHANNEL     = var.MANAGER_LEAVE_APPROVAL_CHANNEL
+    OOO_CHANNEL                        = var.OOO_CHANNEL
   }
   function_name         = "slack-bot-bip"
   description           = "Slack bot bip for lambda"
   handler               = "lambda_handler.handler"
-  build_in_docker       = true
+  build_in_docker       = var.BUILD_IN_DOCKER
   docker_image          = "lambci/lambda:build-python3.8"
   runtime               = "python3.8"
   source_path           = [
@@ -31,9 +32,11 @@ module "lambda_function" {
       pip_requirements = true,
       patterns         = [
         "!terraform/.*",
+        "!tf_ci_account/.*",
+        "!.github/.*",
         "!.env",
-        "!.idea/*",
-        "!.git/*",
+        "!.idea/.*",
+        "!.git/.*",
         "!node_modules/.*",
         "application/.*",
         "lambda_handler.py",
@@ -130,7 +133,7 @@ module "trigger_today_ooo" {
   schedule_expression         = "cron(5 8 * * ? *)"
   schedule_lambda_target_arn  = module.lambda_function.lambda_function_arn
   schedule_lambda_target_name = module.lambda_function.lambda_function_name
-  trigger_input               = { "lambda_trigger_event" : "TODAY_OOO" }
+  trigger_input               = { "lambda_trigger_event" : "SCHEDULER_OOO_TODAY" }
 }
 
 module "trigger_lambda_warm_up" {
@@ -140,7 +143,7 @@ module "trigger_lambda_warm_up" {
   schedule_expression         = "rate(5 minutes)"
   schedule_lambda_target_arn  = module.lambda_function.lambda_function_arn
   schedule_lambda_target_name = module.lambda_function.lambda_function_name
-  trigger_input               = { "lambda_trigger_event" : "WARM_UP_LAMBDA" }
+  trigger_input               = { "lambda_trigger_event" : "SCHEDULER_WARM_UP_LAMBDA" }
 }
 
 

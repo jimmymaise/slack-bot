@@ -1,0 +1,73 @@
+[
+                {
+                    "type": "section",
+                    "text": {
+                        "type": "mrkdwn",
+                        "text": "You have a new request:\n*<{{user_profile_url}}|{{user_name}} - New vacation request>*"
+                    }
+                },
+                {
+                    "type": "section",
+                    "text": {
+                        "type": "mrkdwn",
+                        "text": "*Reason:*\n{{reason_of_leave}}"
+                    }
+                },
+                {
+                    "type": "section",
+                    "fields": [
+                        {
+                            "type": "mrkdwn",
+                            "text": "*Leave Type:*\n{{leave_type}}"
+                        },
+                        {
+                            "type": "mrkdwn",
+                            "text": "*Leave Id:*\n{{leave_id}}"
+                        }
+                    ]
+                },
+                {
+                    "type": "section",
+                    "fields": [
+                        {
+
+                            "type": "mrkdwn",
+                            "text": "*Start Date:*\n{{start_date.strftime('%A, %B, %d, %Y')}}"
+
+                        },
+                        {
+                            "type": "mrkdwn",
+                            "text": "*End Date:*\n{{end_date.strftime('%A, %B, %d, %Y')}}"
+
+                        }
+                    ]
+                },
+                {
+                    "type": "actions",
+                    "block_id": "approve_reject_vacation",
+                    "elements": [
+                        {
+                            "type": "button",
+                            "text": {
+                                "type": "plain_text",
+                                "emoji": true,
+                                "text": "Approve"
+                            },
+                            "action_id": "approve",
+                            "style": "primary",
+                            "value": "approve_vacation_request"
+                        },
+                        {
+                            "type": "button",
+                            "text": {
+                                "type": "plain_text",
+                                "emoji": true,
+                                "text": "Reject"
+                            },
+                            "action_id": "reject",
+                            "style": "danger",
+                            "value": "reject_vacation_request"
+                        }
+                    ]
+                }
+            ]

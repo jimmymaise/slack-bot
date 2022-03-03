@@ -1,4 +1,7 @@
 shillelagh==1.0.6
-shillelagh[gsheetsapi]
 slack-bolt==1.11.4
 tenacity==8.0.1
+jinja2
+PyPika
+google-auth==2.6.0
+requests==2.27.1
