@@ -22,7 +22,7 @@ class LeaveRegistryDBHandler(BaseDBHandler):
         if statuses:
             select_query = select_query.where(self.table["status"].isin(statuses))
         select_query = select_query.get_sql()
-        return self.google_sheet_db.cursor.execute(select_query)
+        return self.execute(select_query)
 
     def change_leave_status(self, leave_id, manager_name, status):
         update_data = {
@@ -43,3 +43,33 @@ class LeaveRegistryDBHandler(BaseDBHandler):
             'created_time': datetime.now()
         }
         return self.add_item_with_retry(data=leave_data)
+
+    def get_overlap_leaves_by_date_ranges(self, username, start_date, end_date):
+        select_query = Query.from_(self.table).select('*') \
+            .where(
+            ((self.table.start_date <= start_date) & (self.table.end_date >= start_date))
+            | ((self.table.start_date <= end_date) & (self.table.end_date >= end_date))
+            | ((self.table.start_date >= start_date) & (self.table.end_date <= end_date))
+        ) \
+            .where(self.table.username == username) \
+            .where(self.table.status != Constant.LEAVE_REQUEST_STATUS_REJECTED)
+
+        select_query = select_query.get_sql()
+        print(select_query)
+        return self.execute(select_query)
+
+# from dotenv import load_dotenv
+#
+# load_dotenv()
+#
+# from application.handlers.database.google_sheet import GoogleSheetDB
+# import os
+#
+# google_sheet_db = GoogleSheetDB(
+#     service_account_file_content=os.getenv('GOOGLE_SERVICE_BASE64_FILE_CONTENT'), is_encode_base_64=True)
+#
+# items = LeaveRegistryDBHandler(google_sheet_db, os.getenv('LEAVE_REGISTER_SHEET')).get_overlap_leaves_by_date_ranges(
+#     'Duyet Mai', '2022-01-05', '2022-09-02'
+# )
+# for item in items:
+#     print(item)

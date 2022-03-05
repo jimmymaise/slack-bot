@@ -7,6 +7,7 @@ from slack_sdk import WebClient
 from application.handlers.bot.block_template_handler import BlockTemplateHandler
 from application.handlers.database.google_sheet import GoogleSheetDB
 from application.handlers.database.leave_registry_db_handler import LeaveRegistryDBHandler
+from application.utils.cache import LambdaCache
 from application.utils.constant import Constant
 
 
@@ -44,8 +45,19 @@ class LeaveRegister:
             view=json.loads(self.block_kit.leave_input_view(callback_id='leave_input_view'))
         )
 
-    def get_leave_confirmation_view(self, body, ack):
+    def _get_username_by_user_id(self, user_id):
 
+        user_name = LambdaCache.get_cache(f"slack_cache_{user_id}_user_name", False)
+        if user_name:
+            return user_name
+
+        user_info = self.client.users_info(user=user_id)
+        user_name = user_info.get("user").get("real_name")
+        LambdaCache.set_cache(f"slack_cache_{user_id}_user_name", user_name)
+        return user_name
+
+    def get_leave_confirmation_view(self, body, ack):
+        errors = {}
         values = body.get("view").get("state").get("values")
 
         reason_of_leave = values.get("reason_of_leave").get("reason_for_leave").get("value")
@@ -53,6 +65,16 @@ class LeaveRegister:
 
         start_date_str = values.get("vacation_start_date").get("vacation_start_date_picker").get("selected_date")
         end_date_str = values.get("vacation_end_date").get("vacation_end_date_picker").get("selected_date")
+
+        start_date = datetime.datetime.strptime(start_date_str, '%Y-%m-%d')
+        end_date = datetime.datetime.strptime(end_date_str, '%Y-%m-%d')
+        if start_date > end_date:
+            errors["vacation_start_date"] = "Start date can't be later than the end date"
+
+            return ack(response_action='errors',
+                       errors=errors
+                       )
+
         private_metadata = json.dumps({
             "reason_of_leave": reason_of_leave,
             "leave_type": leave_type,
@@ -60,6 +82,31 @@ class LeaveRegister:
             "end_date_str": end_date_str
 
         })
+        user = body.get("user")
+        user_id = user.get("id")
+        user_name = self._get_username_by_user_id(user_id)
+        user_overlap_leave_key = f'db_cache_{user_name}_{start_date_str}{end_date_str}_overlap_leave_key'
+        overlap_leaves = []
+        is_query_db = False
+
+        if LambdaCache.is_exist_cache(user_overlap_leave_key):
+            leave_overlap_value = LambdaCache.get_cache(user_overlap_leave_key)
+            if leave_overlap_value:
+                overlap_leaves.append(leave_overlap_value)
+                print('Getting overlap leave from cache')
+        else:
+            overlap_leaves = self.leave_register_db_handler.get_overlap_leaves_by_date_ranges(user_name, start_date_str,
+                                                                                              end_date_str)
+            is_query_db = True
+
+        for overlap_leave in overlap_leaves:
+            errors["vacation_start_date"] = f"Oh no! You already have time off scheduled for these dates" \
+                                            f" (leave id: {overlap_leave[0]}, from cache: {not is_query_db})"
+            if is_query_db:
+                LambdaCache.set_cache(user_overlap_leave_key, overlap_leave)
+            return ack(response_action='errors',
+                       errors=errors
+                       )
         leave_confirmation_view = self.block_kit.leave_confirmation_view(callback_id='leave_confirmation_view',
                                                                          leave_type=leave_type,
                                                                          start_date_str=start_date_str,
@@ -75,12 +122,10 @@ class LeaveRegister:
 
     # Update the view on submission
     def handle_leave_request_submission(self, body, logger):
-        time_now = datetime.datetime.now()
         workspace_domain = f"https://{self.client.team_info().get('team').get('domain')}.slack.com/team/"
         user = body.get("user")
         user_id = user.get("id")
-        user_info = self.client.users_info(user=user_id)
-        user_name = user_info.get("user").get("real_name")
+        user_name = self._get_username_by_user_id(user_id)
         user_profile_url = workspace_domain + user_id
 
         private_metadata = json.loads(body['view']['private_metadata'])

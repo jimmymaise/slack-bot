@@ -18,5 +18,3 @@ class BlockTemplateHandler:
                 template_dict[file_name_without_ext] = Template(file.read()).render
 
         return Dict2Obj(template_dict)
-
-

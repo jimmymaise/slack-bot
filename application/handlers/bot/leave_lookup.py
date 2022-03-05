@@ -30,22 +30,35 @@ class LeaveLookup:
     def trigger_today_ooo_command(self, client, body, ack, respond):
         statuses = [Constant.LEAVE_REQUEST_STATUS_APPROVED,
                     Constant.LEAVE_REQUEST_STATUS_WAIT]
-        respond(response_type="in_channel",
-                text="As your request, Here is the list of users OOO today",
-                attachments=self.build_response_today_ooo(statuses)
+        attachments = self.build_response_today_ooo(statuses)
+        if attachments:
+            text = "As your request, Here is the list of users OOO today"
+        else:
+            text = "Sorry but nobody is OOO today"
+        respond(response_type="ephemeral",
+                text=text,
+                attachments=attachments
                 )
 
     def today_ooo_schedule(self, channel):
         statuses = [Constant.LEAVE_REQUEST_STATUS_APPROVED,
                     Constant.LEAVE_REQUEST_STATUS_WAIT]
-        self.client.chat_postMessage(channel=channel,
-                                     text="Hey, the following users are OOO today",
-                                     attachments=self.build_response_today_ooo(statuses)
+
+        attachments = self.build_response_today_ooo(statuses)
+        if attachments:
+            text = "Hey, the following users are OOO today"
+        else:
+            text = "Huray!, Nobody is OOO today"
+        self.client.chat_postMessage(channel="in_channel",
+                                     text=text,
+                                     attachments=attachments
                                      )
 
     def build_response_today_ooo(self, statuses):
         today_ooo_items = self.leave_register_db_handler.get_today_ooo(statuses)
         attachments = []
+        if not today_ooo_items.description:
+            return attachments
         item_keys = [column[0] for column in today_ooo_items.description]
         for item_values in today_ooo_items:
             item_dict = dict(zip(item_keys, item_values))
