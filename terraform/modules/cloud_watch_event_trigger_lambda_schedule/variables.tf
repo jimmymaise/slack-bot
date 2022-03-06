@@ -17,8 +17,5 @@ variable "schedule_lambda_target_name" {
 }
 
 variable "trigger_input" {
-  type = map
+  type = map(any)
 }
-
-
-

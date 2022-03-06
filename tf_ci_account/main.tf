@@ -48,4 +48,3 @@ output "aws_access_key" {
 output "aws_access_secret" {
   value = "Run command in Readme doc to get the secret case. Remember install jq before doing so"
 }
-

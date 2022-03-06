@@ -1,8 +1,11 @@
+from __future__ import annotations
+
 import re
 import uuid
 
 import tenacity
-from pypika import Table, Query
+from pypika import Query
+from pypika import Table
 
 from application.utils.cache import LambdaCache
 from application.utils.constant import Constant
@@ -28,14 +31,16 @@ class BaseDBHandler:
         retry = tenacity.Retrying(
             wait=tenacity.wait_fixed(wait_fixed),
             stop=tenacity.stop_after_attempt(stop_after_attempt),
-            reraise=True)
+            reraise=True,
+        )
         retry(self.update_item_by_id_and_verify_success, _id, update_data)
 
     def add_item_with_retry(self, data: dict, wait_fixed=10, stop_after_attempt=2):
         retry = tenacity.Retrying(
             wait=tenacity.wait_fixed(wait_fixed),
             stop=tenacity.stop_after_attempt(stop_after_attempt),
-            reraise=True)
+            reraise=True,
+        )
         return retry(self.add_item_and_verify_success, data)
 
     def update_item_by_id_and_verify_success(self, _id, update_data: dict):
@@ -52,14 +57,15 @@ class BaseDBHandler:
         retry = tenacity.Retrying(
             wait=tenacity.wait_fixed(wait_fixed),
             stop=tenacity.stop_after_attempt(stop_after_attempt),
-            reraise=True)
+            reraise=True,
+        )
         return retry(self.find_item_by_multi_keys, data)
 
     def update_item_by_id(self, _id, update_data: dict):
         update_query = Query.update(self.table)
         for column, value in update_data.items():
             update_query = update_query.set(
-                self.table[column], value
+                self.table[column], value,
             )
         update_query = update_query.where(self.table['id'] == _id).get_sql()
         self.execute(update_query)
@@ -78,11 +84,11 @@ class BaseDBHandler:
     def find_item_by_id(self, _id):
 
         q = Query.from_(self.table).select('*'). \
-            where(self.table["id"] == _id).get_sql()
+            where(self.table['id'] == _id).get_sql()
         result = self.execute(q)
         if not result.rowcount:
-            print("Cannot find item")
-            raise Exception(f"Cannot find item")
+            print('Cannot find item')
+            raise Exception('Cannot find item')
         print('find item successfully')
 
     def find_item_by_multi_keys(self, key_value_dict: dict):
@@ -92,8 +98,8 @@ class BaseDBHandler:
         q = q.get_sql()
         result = self.execute(q)
         if not result.rowcount:
-            print("Cannot find item")
-            raise Exception(f"Cannot find item")
+            print('Cannot find item')
+            raise Exception('Cannot find item')
         print('find item successfully')
         return result
 

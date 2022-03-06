@@ -1,3 +1,6 @@
+from __future__ import annotations
+
+
 class LambdaCache:
     _lambda_cache = {}
 
@@ -21,5 +24,5 @@ class LambdaCache:
     @classmethod
     def reset_all_db_cache(cls):
         for key in cls._lambda_cache.keys():
-            if key.startswith("db_cache"):
+            if key.startswith('db_cache'):
                 del cls._lambda_cache[key]

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import os
 
 from slack_bolt import App
@@ -10,20 +12,24 @@ from application.handlers.bot.leave_register import LeaveRegister
 from application.handlers.database.google_sheet import GoogleSheetDB
 from application.utils.constant import Constant
 
-client = WebClient(token=os.environ.get("SLACK_BOT_TOKEN"))
-bolt_app = App(token=os.environ.get("SLACK_BOT_TOKEN"),
-               signing_secret=os.environ.get("SLACK_SIGNING_SECRET"),
-               url_verification_enabled=True,
-               request_verification_enabled=False,
-               process_before_response=True
-               )
+client = WebClient(token=os.environ.get('SLACK_BOT_TOKEN'))
+bolt_app = App(
+    token=os.environ.get('SLACK_BOT_TOKEN'),
+    signing_secret=os.environ.get('SLACK_SIGNING_SECRET'),
+    url_verification_enabled=True,
+    request_verification_enabled=False,
+    process_before_response=True,
+)
 
 google_sheet_db = GoogleSheetDB(
-    service_account_file_content=os.getenv('GOOGLE_SERVICE_BASE64_FILE_CONTENT'), is_encode_base_64=True)
+    service_account_file_content=os.getenv('GOOGLE_SERVICE_BASE64_FILE_CONTENT'), is_encode_base_64=True,
+)
 
-leave_register = LeaveRegister(bolt_app, client, google_sheet_db,
-                               leave_register_sheet=os.getenv('LEAVE_REGISTER_SHEET'),
-                               approval_channel=os.getenv('MANAGER_LEAVE_APPROVAL_CHANNEL'))
+leave_register = LeaveRegister(
+    bolt_app, client, google_sheet_db,
+    leave_register_sheet=os.getenv('LEAVE_REGISTER_SHEET'),
+    approval_channel=os.getenv('MANAGER_LEAVE_APPROVAL_CHANNEL'),
+)
 leave_lookup = LeaveLookup(bolt_app, client, google_sheet_db, os.getenv('LEAVE_REGISTER_SHEET'))
 
 HomeTab(bolt_app, client, leave_lookup, leave_register)

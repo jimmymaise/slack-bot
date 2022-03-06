@@ -101,10 +101,10 @@ the bot to this channel. For example #my_testing_channel (Should have #)
 
     1. Add below environment variable to the deployment machine. Replace us-west-2 and leave-management-bimodal depend
        on environment you are working for.
-        1. export REGION=us-west-2
-        2. export S3_BACKEND_BUCKET=leave-management-bimodal
-    2. aws s3api create-bucket --bucket ${S3_BACKEND_BUCKET} --region ${REGION} --create-bucket-configuration
-       LocationConstraint=${REGION}
+        1. export REGION="us-west-2"
+        2. export S3_BACKEND_BUCKET="leave-management-bimodal"
+    2. aws s3api create-bucket --bucket "${S3_BACKEND_BUCKET}" --region "${REGION}" --create-bucket-configuration
+       LocationConstraint="${REGION}"
     3. terraform init -backend-config="bucket="${S3_BACKEND_BUCKET}"" -backend-config="region="${REGION}""
 
 4. terraform apply --var-file=secret.tfvars
@@ -129,7 +129,7 @@ AWS_REGION
 
 AWS_SECRET_ACCESS_KEY
 
-TF_VAR_BUILD_IN_DOCKER
+TF_VAR_BUILD_IN_DOCKER (value should be false as Github Action runner doesn't have Docker)
 
 TF_VAR_GOOGLE_SERVICE_BASE64_FILE_CONTENT
 
@@ -150,13 +150,14 @@ TF_VAR_SLACK_SIGNING_SECRET
 1. Cd to folder tf_ci_account
 2. Add below environment variable to the deployment machine. Replace us-west-2 and leave-management-bimodal depend on
    environment you are working for.
-    1. export REGION=us-west-2
-    2. export S3_BACKEND_BUCKET=leave-management-bimodal
+    1. export REGION="us-west-2"
+    2. export S3_BACKEND_BUCKET="leave-management-bimodal"
 3. terraform init -backend-config="bucket="
    ${S3_BACKEND_BUCKET}"" -backend-config="region="${REGION}""
-4. terraform apply 
+4. terraform apply
 5. Run below command to get the secret key (You must have jq)
-   1. terraform state pull | jq '.resources[] | select(.type == "aws_iam_access_key") | .instances[0].attributes.secret'
+    1. terraform state pull | jq '.resources[] | select(.type == "aws_iam_access_key") | .instances[0]
+       .attributes.secret'
 6. copy aws access key, aws secret key and use them for Github actions
 
 ## Contributing
@@ -168,4 +169,3 @@ Please make sure to update tests as appropriate.
 ## License
 
 [MIT](https://choosealicense.com/licenses/mit/)
-
