@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from pathlib import Path
 
 from jinja2 import Template
@@ -18,5 +20,3 @@ class BlockTemplateHandler:
                 template_dict[file_name_without_ext] = Template(file.read()).render
 
         return Dict2Obj(template_dict)
-
-

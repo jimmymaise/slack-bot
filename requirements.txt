@@ -1,7 +1,7 @@
+google-auth==2.6.0
+jinja2
+PyPika
+requests==2.27.1
 shillelagh==1.0.6
 slack-bolt==1.11.4
 tenacity==8.0.1
-jinja2
-PyPika
-google-auth==2.6.0
-requests==2.27.1

@@ -9,9 +9,9 @@ terraform {
 }
 
 module "lambda_function" {
-  source                = "registry.terraform.io/terraform-aws-modules/lambda/aws"
-  publish               = true
-  timeout               = 900
+  source  = "registry.terraform.io/terraform-aws-modules/lambda/aws"
+  publish = true
+  timeout = 900
   environment_variables = {
     SLACK_SIGNING_SECRET               = var.SLACK_SIGNING_SECRET
     SLACK_BOT_TOKEN                    = var.SLACK_BOT_TOKEN
@@ -20,17 +20,17 @@ module "lambda_function" {
     MANAGER_LEAVE_APPROVAL_CHANNEL     = var.MANAGER_LEAVE_APPROVAL_CHANNEL
     OOO_CHANNEL                        = var.OOO_CHANNEL
   }
-  function_name         = "slack-bot-bip"
-  description           = "Slack bot bip for lambda"
-  handler               = "lambda_handler.handler"
-  build_in_docker       = var.BUILD_IN_DOCKER
-  docker_image          = "lambci/lambda:build-python3.8"
-  runtime               = "python3.8"
-  source_path           = [
+  function_name   = "slack-bot-bip"
+  description     = "Slack bot bip for lambda"
+  handler         = "lambda_handler.handler"
+  build_in_docker = var.BUILD_IN_DOCKER
+  docker_image    = "lambci/lambda:build-python3.8"
+  runtime         = "python3.8"
+  source_path = [
     {
       path             = "..",
       pip_requirements = true,
-      patterns         = [
+      patterns = [
         "!terraform/.*",
         "!tf_ci_account/.*",
         "!.github/.*",
@@ -45,14 +45,14 @@ module "lambda_function" {
 
     }
   ]
-  allowed_triggers      = {
+  allowed_triggers = {
     APIGatewayAny = {
       service    = "apigateway"
       source_arn = "${module.api_gateway.apigatewayv2_api_execution_arn}/*/*/${module.lambda_function.lambda_function_name}"
       stage      = ""
     }
   }
-  tags                  = {
+  tags = {
     Name = "slack-bot-bip"
   }
 }
@@ -130,7 +130,7 @@ module "trigger_today_ooo" {
   source                      = "./modules/cloud_watch_event_trigger_lambda_schedule"
   schedule_name               = "trigger_today_ooo"
   schedule_desc               = "trigger_today_ooo"
-  schedule_expression         = "cron(5 8 * * ? *)"
+  schedule_expression         = "cron(0 16 ? * MON-FRI *)"
   schedule_lambda_target_arn  = module.lambda_function.lambda_function_arn
   schedule_lambda_target_name = module.lambda_function.lambda_function_name
   trigger_input               = { "lambda_trigger_event" : "SCHEDULER_OOO_TODAY" }

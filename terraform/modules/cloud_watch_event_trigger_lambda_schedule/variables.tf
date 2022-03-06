@@ -13,12 +13,9 @@ variable "schedule_lambda_target_arn" {
   type = string
 }
 variable "schedule_lambda_target_name" {
-  type    = string
+  type = string
 }
 
 variable "trigger_input" {
-  type = map
+  type = map(any)
 }
-
-
-

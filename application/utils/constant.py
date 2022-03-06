@@ -1,3 +1,6 @@
+from __future__ import annotations
+
+
 class Constant:
     SCHEDULER_OOO_TODAY = 'SCHEDULER_OOO_TODAY'
     SCHEDULER_WARM_UP_LAMBDA = 'SCHEDULER_WARM_UP_LAMBDA'
@@ -8,7 +11,7 @@ class Constant:
         'Sick': ':thermometer:',
         'Approved': ':heavy_check_mark:',
         'Rejected': ':X:',
-        'Wait for Approval': ':eye:'
+        'Wait for Approval': ':eye:',
 
     }
 
@@ -19,6 +22,6 @@ class Constant:
     LEAVE_REQUEST_ACTION_APPROVE = 'Approve'
     LEAVE_DECISION_TO_STATUS = {
         LEAVE_REQUEST_ACTION_REJECT: LEAVE_REQUEST_STATUS_REJECTED,
-        LEAVE_REQUEST_ACTION_APPROVE: LEAVE_REQUEST_STATUS_APPROVED
+        LEAVE_REQUEST_ACTION_APPROVE: LEAVE_REQUEST_STATUS_APPROVED,
     }
-
+    RE_SQL_SPLIT_STMTS = ''';(?=(?:[^"'`]*["'`][^"'`]*["'`])*[^"'`]*$)'''

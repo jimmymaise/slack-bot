@@ -3,7 +3,7 @@
   "fallback": "New Message",
   "fields": [
     {
-        "value": "{{username}}",
+      "value": "{{username}}",
       "title": "Who?",
       "short": true
     },
