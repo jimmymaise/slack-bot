@@ -110,7 +110,6 @@ class LeaveRegister:
                 end_date_str,
             )
             is_query_db = True
-
         for overlap_leave in overlap_leaves:
             errors['vacation_start_date'] = f'Oh no! You already have time off scheduled for these dates' \
                                             f' (leave id: {overlap_leave[0]}, from cache: {not is_query_db})'

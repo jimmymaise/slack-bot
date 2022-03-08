@@ -2,7 +2,7 @@ from __future__ import annotations
 
 
 class LambdaCache:
-    _lambda_cache = {}
+    _lambda_cache: dict = {}
 
     @classmethod
     def get_cache(cls, key, is_delete_after_get=False):
@@ -23,6 +23,7 @@ class LambdaCache:
 
     @classmethod
     def reset_all_db_cache(cls):
-        for key in cls._lambda_cache.keys():
+        keys = cls._lambda_cache.keys()
+        for key in keys:
             if key.startswith('db_cache'):
                 del cls._lambda_cache[key]

@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import os
 
-from slack_bolt import App
 from slack_bolt.adapter.aws_lambda import SlackRequestHandler
+from slack_bolt.app import App
 from slack_sdk import WebClient
 
 from application.handlers.bot.home_tab import HomeTab

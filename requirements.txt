@@ -1,6 +1,5 @@
 google-auth==2.6.0
 jinja2
-PyPika
 requests==2.27.1
 shillelagh==1.0.6
 slack-bolt==1.11.4

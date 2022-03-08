@@ -3,7 +3,7 @@ from __future__ import annotations
 import base64
 import datetime
 
-from shillelagh.backends.apsw.db import connect
+from sqlalchemy import create_engine
 
 
 class GoogleSheetDB:
@@ -13,11 +13,5 @@ class GoogleSheetDB:
         file_path = f'/tmp/file_{datetime.datetime.now().timestamp() * 1000}'
         with open(file_path, 'w') as f:
             f.write(service_account_file_content)
-
-        self.connection = connect(
-            ':memory:',
-            adapter_kwargs={
-                'gsheetsapi': {'service_account_file': file_path},
-            },
-        )
-        self.cursor = self.connection.cursor()
+        self.engine = create_engine('gsheets://', service_account_file=file_path)
+        self.cursor = self.connection = self.engine.connect()

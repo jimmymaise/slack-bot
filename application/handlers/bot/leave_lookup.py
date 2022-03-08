@@ -13,8 +13,8 @@ from application.utils.constant import Constant
 
 class LeaveLookup:
     def __init__(
-        self, app: App, client: WebClient, google_sheet_db: GoogleSheetDB,
-        leave_register_sheet,
+            self, app: App, client: WebClient, google_sheet_db: GoogleSheetDB,
+            leave_register_sheet,
     ):
         self.app = app
         self.client = client
@@ -68,10 +68,11 @@ class LeaveLookup:
     def build_response_today_ooo(self, statuses):
         today_ooo_items = self.leave_register_db_handler.get_today_ooo(statuses)
         attachments = []
-        if not today_ooo_items.description:
+        if not today_ooo_items:
             return attachments
-        item_keys = [column[0] for column in today_ooo_items.description]
-        for item_values in today_ooo_items:
+        for item in today_ooo_items:
+            item_keys = getattr(item, '_fields')
+            item_values = getattr(item, '_data')
             item_dict = dict(zip(item_keys, item_values))
             attachments.append(
                 json.loads(
