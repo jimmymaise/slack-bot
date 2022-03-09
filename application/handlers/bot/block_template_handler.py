@@ -12,7 +12,7 @@ class BlockTemplateHandler:
         self.template_folder_path = template_folder_path
 
     def get_object_templates(self):
-        file_paths = Path(self.template_folder_path).glob('*')
+        file_paths = Path(self.template_folder_path).glob('*.json')
         template_dict = {}
         for file_path in file_paths:
             with open(file_path) as file:
