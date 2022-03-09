@@ -1,31 +1,39 @@
 from __future__ import annotations
 
 import re
-import uuid
 
 import tenacity
-from pypika import Query
-from pypika import Table
+from sqlalchemy import Table
 
 from application.utils.cache import LambdaCache
 from application.utils.constant import Constant
 
 
 class BaseDBHandler:
-    def __init__(self, google_sheet_db, google_sheet):
-        self.table = Table(google_sheet)
+    def __init__(self, google_sheet_db, google_sheet, table_schema):
         self.google_sheet_db = google_sheet_db
+        self.table_schema = table_schema
+        self.google_sheet = google_sheet
+        self.table: Table = self.create_table_from_google_sheet()
 
-    def execute(self, query):
+    def create_table_from_google_sheet(self) -> Table:
+        from sqlalchemy import MetaData
+        return Table(
+            self.google_sheet,
+            MetaData(bind=self.google_sheet_db.engine), *self.table_schema,
+        )
+
+    def execute(self, query, **kwargs):
         is_select_query = True
-        executed_list = self.get_query_list_from_sql_command(query)
+        str_query = str(query)
+        executed_list = self.get_query_list_from_sql_command(str_query)
         for command in executed_list:
             if not command.strip().lower().startswith('select'):
                 is_select_query = False
                 break
         if not is_select_query:
             LambdaCache.reset_all_db_cache()
-        return self.google_sheet_db.cursor.execute(query)
+        return self.google_sheet_db.cursor.execute(query, kwargs)
 
     def update_item_with_retry(self, _id, update_data: dict, wait_fixed=10, stop_after_attempt=2):
         retry = tenacity.Retrying(
@@ -62,29 +70,18 @@ class BaseDBHandler:
         return retry(self.find_item_by_multi_keys, data)
 
     def update_item_by_id(self, _id, update_data: dict):
-        update_query = Query.update(self.table)
-        for column, value in update_data.items():
-            update_query = update_query.set(
-                self.table[column], value,
-            )
-        update_query = update_query.where(self.table['id'] == _id).get_sql()
+
+        update_query = self.table.update().where(self.table.c.id == _id).values(**update_data)
         self.execute(update_query)
 
     def add_item(self, data: dict):
-        data['id'] = str(uuid.uuid4())
-        keys = data.keys()
-        values = data.values()
-
-        q = Query.into(self.table). \
-            columns(*keys). \
-            insert(*values).get_sql()
-        self.execute(q)
-        return data['id']
+        result = self.execute(self.table.insert(), **data)
+        return getattr(result.inserted_primary_key, '_data')[0]
 
     def find_item_by_id(self, _id):
 
-        q = Query.from_(self.table).select('*'). \
-            where(self.table['id'] == _id).get_sql()
+        q = self.table.select(). \
+            filter(self.table.c.id == _id)
         result = self.execute(q)
         if not result.rowcount:
             print('Cannot find item')
@@ -92,10 +89,9 @@ class BaseDBHandler:
         print('find item successfully')
 
     def find_item_by_multi_keys(self, key_value_dict: dict):
-        q = Query.from_(self.table).select('*')
-        for key, value in key_value_dict.items():
-            q = q.where(self.table[key] == value)
-        q = q.get_sql()
+        q = self.table.select().filter_by(
+            **key_value_dict,
+        )
         result = self.execute(q)
         if not result.rowcount:
             print('Cannot find item')
