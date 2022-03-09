@@ -1,0 +1,327 @@
+[
+  {
+    "type": "section",
+    "block_id": "6wn",
+    "text": {
+      "type": "mrkdwn",
+      "text": "*Personal panel*",
+      "verbatim": false
+    },
+    "accessory": {
+      "type": "button",
+      "action_id": "become_manager_home",
+      "text": {
+        "type": "plain_text",
+        "text": "Become Manager",
+        "emoji": true
+      }
+    }
+  },
+  {
+    "type": "divider",
+    "block_id": "Rw0"
+  },
+  {
+    "type": "context",
+    "block_id": "zzEK",
+    "elements": [
+      {
+        "type": "plain_text",
+        "text": "You've used 0 total time offs including 0 vacation days (out of 24 days) in 2022.",
+        "emoji": true
+      }
+    ]
+  },
+  {
+    "type": "actions",
+    "block_id": "e2bK",
+    "elements": [
+      {
+        "type": "button",
+        "action_id": "absence_new",
+        "text": {
+          "type": "plain_text",
+          "text": "Add Time Off",
+          "emoji": true
+        },
+        "style": "primary"
+      },
+      {
+        "type": "button",
+        "action_id": "absence_list",
+        "text": {
+          "type": "plain_text",
+          "text": "All Time Offs",
+          "emoji": true
+        }
+      },
+      {
+        "type": "button",
+        "action_id": "holiday_list",
+        "text": {
+          "type": "plain_text",
+          "text": "All Holidays",
+          "emoji": true
+        }
+      }
+    ]
+  },
+  {
+    "type": "section",
+    "block_id": "jRpPM",
+    "text": {
+      "type": "plain_text",
+      "text": " ",
+      "emoji": true
+    }
+  },
+  {
+    "type": "section",
+    "block_id": "0kKhF",
+    "text": {
+      "type": "plain_text",
+      "text": " ",
+      "emoji": true
+    }
+  },
+  {
+    "type": "section",
+    "block_id": "QWn",
+    "text": {
+      "type": "mrkdwn",
+      "text": "*My time offs*",
+      "verbatim": false
+    }
+  },
+  {
+    "type": "divider",
+    "block_id": "m+jj/"
+  },
+  {
+    "type": "section",
+    "block_id": "uetM",
+    "text": {
+      "type": "mrkdwn",
+      "text": "*:palm_tree: Vacation*\nSat, March 05 - Thu, March 17 (13 days)\nComment: _kkk_",
+      "verbatim": false
+    },
+    "accessory": {
+      "type": "overflow",
+      "action_id": "timeoff_actions",
+      "options": [
+        {
+          "text": {
+            "type": "plain_text",
+            "text": "Edit",
+            "emoji": true
+          },
+          "value": "edit,207568,"
+        },
+        {
+          "text": {
+            "type": "plain_text",
+            "text": "Delete",
+            "emoji": true
+          },
+          "value": "delete,207568,list"
+        }
+      ]
+    }
+  },
+  {
+    "type": "context",
+    "block_id": "u1e",
+    "elements": [
+      {
+        "type": "mrkdwn",
+        "text": ":warning:  Pending",
+        "verbatim": false
+      }
+    ]
+  },
+  {
+    "type": "section",
+    "block_id": "XvW",
+    "text": {
+      "type": "mrkdwn",
+      "text": "*:palm_tree: Vacation*\nThu, May 19 - Fri, July 22 (65 days)\nComment: _ss_",
+      "verbatim": false
+    },
+    "accessory": {
+      "type": "overflow",
+      "action_id": "timeoff_actions",
+      "options": [
+        {
+          "text": {
+            "type": "plain_text",
+            "text": "Edit",
+            "emoji": true
+          },
+          "value": "edit,205265,"
+        },
+        {
+          "text": {
+            "type": "plain_text",
+            "text": "Delete",
+            "emoji": true
+          },
+          "value": "delete,205265,list"
+        }
+      ]
+    }
+  },
+  {
+    "type": "context",
+    "block_id": "u5T",
+    "elements": [
+      {
+        "type": "mrkdwn",
+        "text": ":warning:  Pending",
+        "verbatim": false
+      }
+    ]
+  },
+  {
+    "type": "section",
+    "block_id": "Vzg",
+    "text": {
+      "type": "plain_text",
+      "text": " ",
+      "emoji": true
+    }
+  },
+  {
+    "type": "section",
+    "block_id": "FXE",
+    "text": {
+      "type": "plain_text",
+      "text": " ",
+      "emoji": true
+    }
+  },
+  {
+    "type": "section",
+    "block_id": "InHD9",
+    "text": {
+      "type": "mrkdwn",
+      "text": "*Upcoming holidays*",
+      "verbatim": false
+    }
+  },
+  {
+    "type": "divider",
+    "block_id": "7WAK"
+  },
+  {
+    "type": "section",
+    "block_id": "ehB4",
+    "text": {
+      "type": "mrkdwn",
+      "text": "_There are no events yet._",
+      "verbatim": false
+    }
+  },
+  {
+    "type": "section",
+    "block_id": "r6r",
+    "text": {
+      "type": "plain_text",
+      "text": " ",
+      "emoji": true
+    }
+  },
+  {
+    "type": "section",
+    "block_id": "=OkA",
+    "text": {
+      "type": "plain_text",
+      "text": " ",
+      "emoji": true
+    }
+  },
+  {
+    "type": "section",
+    "block_id": "4SsnK",
+    "text": {
+      "type": "mrkdwn",
+      "text": "*Helpful links*",
+      "verbatim": false
+    }
+  },
+  {
+    "type": "divider",
+    "block_id": "Gz2"
+  },
+  {
+    "type": "actions",
+    "block_id": "NIul7",
+    "elements": [
+      {
+        "type": "button",
+        "action_id": "open_settings",
+        "text": {
+          "type": "plain_text",
+          "text": ":gear: Settings",
+          "emoji": true
+        },
+        "url": "slack://app?id=A4KAKTZPZ&team=TF1SH8PRU&tab=messages"
+      },
+      {
+        "type": "button",
+        "action_id": "Zz0fu",
+        "text": {
+          "type": "plain_text",
+          "text": ":link: View Website",
+          "emoji": true
+        },
+        "url": "https://time.bot/"
+      },
+      {
+        "type": "button",
+        "action_id": "xG5Ej",
+        "text": {
+          "type": "plain_text",
+          "text": ":book: Help Center",
+          "emoji": true
+        },
+        "url": "https://timebot.zendesk.com/hc/en-us"
+      },
+      {
+        "type": "button",
+        "action_id": "share_feedback",
+        "text": {
+          "type": "plain_text",
+          "text": ":email: Contact Us",
+          "emoji": true
+        }
+      }
+    ]
+  },
+  {
+    "type": "section",
+    "block_id": "qBq",
+    "text": {
+      "type": "mrkdwn",
+      "text": "Your workspace is on a Free plan, with limited time off requests.\n<https://time.bot/upgrade/|*Upgrade TimeBot*> :zap: and get access to advanced features, scheduled messages, unlimited time off requests, calendar synchronization and more.",
+      "verbatim": false
+    }
+  },
+  {
+    "type": "section",
+    "block_id": "YRdV",
+    "text": {
+      "type": "plain_text",
+      "text": " ",
+      "emoji": true
+    }
+  },
+  {
+    "type": "section",
+    "block_id": "ZrrAZ",
+    "text": {
+      "type": "plain_text",
+      "text": " ",
+      "emoji": true
+    }
+  }
+]

@@ -9,6 +9,7 @@ from slack_sdk import WebClient
 from application.handlers.bot.home_tab import HomeTab
 from application.handlers.bot.leave_lookup import LeaveLookup
 from application.handlers.bot.leave_register import LeaveRegister
+from application.handlers.bot.team_management import TeamManagement
 from application.handlers.database.google_sheet import GoogleSheetDB
 from application.utils.constant import Constant
 
@@ -31,8 +32,11 @@ leave_register = LeaveRegister(
     approval_channel=os.getenv('MANAGER_LEAVE_APPROVAL_CHANNEL'),
 )
 leave_lookup = LeaveLookup(bolt_app, client, google_sheet_db, os.getenv('LEAVE_REGISTER_SHEET'))
-
-HomeTab(bolt_app, client, leave_lookup, leave_register)
+team_management = TeamManagement(
+    bolt_app, client, google_sheet_db, os.getenv('TEAM_SHEET'),
+    os.getenv('TEAM_MEMBER_SHEET'),
+)
+HomeTab(bolt_app, client, leave_lookup, leave_register, team_management)
 
 
 def handler(event, context):

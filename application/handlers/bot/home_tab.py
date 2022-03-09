@@ -9,20 +9,25 @@ from slack_sdk import WebClient
 from application.handlers.bot.block_template_handler import BlockTemplateHandler
 from application.handlers.bot.leave_lookup import LeaveLookup
 from application.handlers.bot.leave_register import LeaveRegister
+from application.handlers.bot.team_management import TeamManagement
 
 
 class HomeTab:
-    def __init__(self, app: App, client: WebClient, leave_lookup: LeaveLookup, leave_register: LeaveRegister):
+    def __init__(
+        self, app: App, client: WebClient, leave_lookup: LeaveLookup, leave_register: LeaveRegister,
+        team_management: TeamManagement,
+    ):
         self.app = app
         self.client = client
         app.event('app_home_opened')(ack=self.respond_to_slack_within_3_seconds, lazy=[self.open_app_home_lazy])
         app.block_action({'block_id': 'home_tab', 'action_id': 'book_vacation'})(
             ack=self.respond_to_slack_within_3_seconds, lazy=[leave_register.trigger_request_leave_command],
         )
-        app.block_action({'block_id': 'home_tab', 'action_id': 'check_ooo_today'})(
-            ack=self.respond_to_slack_within_3_seconds, lazy=[leave_lookup.trigger_today_ooo_command],
-        )
         self.block_kit = BlockTemplateHandler('./application/handlers/bot/block_templates').get_object_templates()
+
+        app.block_action({'block_id': 'home_tab', 'action_id': 'become_manager'})(
+            ack=self.respond_to_slack_within_3_seconds, lazy=[team_management.create_team_lazy],
+        )
 
     @staticmethod
     def respond_to_slack_within_3_seconds(ack):

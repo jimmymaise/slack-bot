@@ -7,6 +7,7 @@ from slack_bolt import App
 from slack_sdk import WebClient
 
 from application.handlers.bot.block_template_handler import BlockTemplateHandler
+from application.handlers.bot.bot_utils import BotUtils
 from application.handlers.database.google_sheet import GoogleSheetDB
 from application.handlers.database.leave_registry_db_handler import LeaveRegistryDBHandler
 from application.utils.cache import LambdaCache
@@ -15,8 +16,8 @@ from application.utils.constant import Constant
 
 class LeaveRegister:
     def __init__(
-        self, app: App, client: WebClient, google_sheet_db: GoogleSheetDB,
-        leave_register_sheet, approval_channel: str,
+            self, app: App, client: WebClient, google_sheet_db: GoogleSheetDB,
+            leave_register_sheet, approval_channel: str,
     ):
         self.app = app
         self.client = client
@@ -54,17 +55,6 @@ class LeaveRegister:
             view=json.loads(self.block_kit.leave_input_view(callback_id='leave_input_view')),
         )
 
-    def _get_username_by_user_id(self, user_id):
-
-        user_name = LambdaCache.get_cache(f'slack_cache_{user_id}_user_name', False)
-        if user_name:
-            return user_name
-
-        user_info = self.client.users_info(user=user_id)
-        user_name = user_info.get('user').get('real_name')
-        LambdaCache.set_cache(f'slack_cache_{user_id}_user_name', user_name)
-        return user_name
-
     def get_leave_confirmation_view(self, body, ack):
         errors = {}
         values = body.get('view').get('state').get('values')
@@ -94,7 +84,7 @@ class LeaveRegister:
         })
         user = body.get('user')
         user_id = user.get('id')
-        user_name = self._get_username_by_user_id(user_id)
+        user_name = BotUtils.get_username_by_user_id(self.client, user_id)
         user_overlap_leave_key = f'db_cache_{user_name}_{start_date_str}{end_date_str}_overlap_leave_key'
         overlap_leaves = []
         is_query_db = False
@@ -140,7 +130,7 @@ class LeaveRegister:
         workspace_domain = f"https://{self.client.team_info().get('team').get('domain')}.slack.com/team/"
         user = body.get('user')
         user_id = user.get('id')
-        user_name = self._get_username_by_user_id(user_id)
+        user_name = BotUtils.get_username_by_user_id(self.client, user_id)
         user_profile_url = workspace_domain + user_id
 
         private_metadata = json.loads(body['view']['private_metadata'])

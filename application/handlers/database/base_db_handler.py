@@ -23,7 +23,7 @@ class BaseDBHandler:
             MetaData(bind=self.google_sheet_db.engine), *self.table_schema,
         )
 
-    def execute(self, query, **kwargs):
+    def execute(self, query, **data):
         is_select_query = True
         str_query = str(query)
         executed_list = self.get_query_list_from_sql_command(str_query)
@@ -33,7 +33,8 @@ class BaseDBHandler:
                 break
         if not is_select_query:
             LambdaCache.reset_all_db_cache()
-        return self.google_sheet_db.cursor.execute(query, kwargs)
+        print(str_query)
+        return self.google_sheet_db.cursor.execute(query, data)
 
     def update_item_with_retry(self, _id, update_data: dict, wait_fixed=10, stop_after_attempt=2):
         retry = tenacity.Retrying(
@@ -77,6 +78,14 @@ class BaseDBHandler:
     def add_item(self, data: dict):
         result = self.execute(self.table.insert(), **data)
         return getattr(result.inserted_primary_key, '_data')[0]
+
+    def add_many_items(self, item_list: list):
+        # `executemany`` is not supported, use ``execute`` instead
+        for item in item_list:
+            self.execute(self.table.insert(), **item)
+
+    def remove_item_by_id(self, _id):
+        return self.execute(self.table.delete().where(self.table.c.id == _id))
 
     def find_item_by_id(self, _id):
 

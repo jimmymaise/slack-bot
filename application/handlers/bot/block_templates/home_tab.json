@@ -21,10 +21,10 @@
       },
       {
         "type": "button",
-        "action_id": "check_ooo_today",
+        "action_id": "become_manager",
         "text": {
           "type": "plain_text",
-          "text": "Check Who is OOO today",
+          "text": "Become manager",
           "emoji": true
         }
       }
