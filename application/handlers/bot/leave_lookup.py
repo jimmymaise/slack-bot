@@ -17,7 +17,7 @@ class LeaveLookup:
             leave_register_sheet,
     ):
         self.app = app
-        self.client = client
+        self.client: WebClient = client
         self.block_kit = BlockTemplateHandler('./application/handlers/bot/block_templates').get_object_templates()
         self.google_sheet_db = google_sheet_db
         self.leave_register_sheet = leave_register_sheet
@@ -32,18 +32,26 @@ class LeaveLookup:
     def respond_to_slack_within_3_seconds(ack):
         ack()
 
-    def trigger_today_ooo_command(self, client, body, ack, respond):
+    def trigger_today_ooo_command(self, body, respond):
         statuses = [
             Constant.LEAVE_REQUEST_STATUS_APPROVED,
             Constant.LEAVE_REQUEST_STATUS_WAIT,
         ]
         attachments = self.build_response_today_ooo(statuses)
+
         if attachments:
             text = 'As your request, Here is the list of users OOO today'
         else:
             text = 'Sorry but nobody is OOO today'
-        respond(
-            response_type='ephemeral',
+        if body.get('response_url'):
+            return respond(
+                response_type='ephemeral',
+                text=text,
+                attachments=attachments,
+            )
+        user_id = body['user']['id']
+        return self.client.chat_postMessage(
+            channel=user_id,
             text=text,
             attachments=attachments,
         )
@@ -60,7 +68,7 @@ class LeaveLookup:
         else:
             text = 'Huray!, Nobody is OOO today'
         self.client.chat_postMessage(
-            channel='in_channel',
+            channel=channel,
             text=text,
             attachments=attachments,
         )
