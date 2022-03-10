@@ -21,6 +21,15 @@
       },
       {
         "type": "button",
+        "action_id": "check_ooo_today",
+        "text": {
+          "type": "plain_text",
+          "text": "Check Who is OOO today",
+          "emoji": true
+        }
+      },
+      {
+        "type": "button",
         "action_id": "become_manager",
         "text": {
           "type": "plain_text",

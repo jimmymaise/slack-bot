@@ -35,14 +35,14 @@ class TeamManagement:
         )
         app.view('create_team_view')(
             ack=lambda ack: ack(response_action='clear'),
-            lazy=[self.create_team],
+            lazy=[self.create_team_lazy],
         )
 
     @staticmethod
     def respond_to_slack_within_3_seconds(ack):
         ack()
 
-    def create_team_lazy(self, event, context: BoltContext, client: WebClient, body):
+    def get_create_team_view_lazy(self, event, context: BoltContext, client: WebClient, body):
         user_name = BotUtils.get_username_by_user_id(client, context.user_id)
         client.views_open(
             trigger_id=body.get('trigger_id'),
@@ -55,7 +55,7 @@ class TeamManagement:
             ),
         )
 
-    def create_team(self, client, body, ack):
+    def create_team_lazy(self, client, body, ack):
         state = body['view']['state']
         team_name = BotUtils.get_value_from_state(state, 'name', 'value')
         managers = BotUtils.get_value_from_state(state, 'managers', 'selected_users')
@@ -76,11 +76,12 @@ class TeamManagement:
             normal_members
         ]
 
-        # self.team_member_db_handler.add_many_items(
-        #     all_team_members
-        # )
+        self.team_member_db_handler.add_many_items(
+            all_team_members,
+        )
 
-        announcement_channel_id = body['view']['state']['values']['channel']['channel_value']['selected_conversation']
-        announcement_channel_id = body['view']['state']['values']['channel']['channel_value']['selected_conversation']
+    def get_managers_from_team(self, team_id):
+        return self.team_member_db_handler.get_team_manager_id_by_team_id(team_id)
 
-        pass
+    def get_team_id_by_user_id(self, user_id):
+        return self.team_member_db_handler.get_team_id_by_user_id(user_id)

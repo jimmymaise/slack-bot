@@ -26,7 +26,7 @@ class HomeTab:
         self.block_kit = BlockTemplateHandler('./application/handlers/bot/block_templates').get_object_templates()
 
         app.block_action({'block_id': 'home_tab', 'action_id': 'become_manager'})(
-            ack=self.respond_to_slack_within_3_seconds, lazy=[team_management.create_team_lazy],
+            ack=self.respond_to_slack_within_3_seconds, lazy=[team_management.get_create_team_view_lazy],
         )
 
     @staticmethod

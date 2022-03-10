@@ -12,8 +12,6 @@ from slack_bolt.oauth import OAuthFlow
 
 from lambda_handler import bolt_app
 
-from flask_ngrok import run_with_ngrok
-
 
 def run(app: App):
     @app.use
@@ -45,7 +43,6 @@ def run(app: App):
             return make_response('Not Found', 404)
 
     flask_app = Flask(__name__)
-    run_with_ngrok(flask_app)
     handler = LocalFlaskAppHandler(app)
 
     # Run server locally: http://localhost:5000
