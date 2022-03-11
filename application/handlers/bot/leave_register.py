@@ -8,7 +8,6 @@ from slack_sdk import WebClient
 
 from application.handlers.bot.block_template_handler import BlockTemplateHandler
 from application.handlers.bot.bot_utils import BotUtils
-from application.handlers.database.google_sheet import GoogleSheetDB
 from application.handlers.database.leave_registry_db_handler import LeaveRegistryDBHandler
 from application.utils.cache import LambdaCache
 from application.utils.constant import Constant
@@ -16,13 +15,10 @@ from application.utils.constant import Constant
 
 class LeaveRegister:
     def __init__(
-            self, app: App, client: WebClient, google_sheet_db: GoogleSheetDB,
-            leave_register_sheet, approval_channel: str,
+            self, app: App, client: WebClient, approval_channel: str,
     ):
         self.app = app
         self.client = client
-        self.google_sheet_db = google_sheet_db
-        self.leave_register_sheet = leave_register_sheet
         self.approval_channel = approval_channel
         app.command('/vacation')(ack=self.respond_to_slack_within_3_seconds, lazy=[self.trigger_request_leave_command])
         app.view('leave_input_view')(self.get_leave_confirmation_view)
@@ -41,8 +37,6 @@ class LeaveRegister:
         self.block_kit = BlockTemplateHandler('./application/handlers/bot/block_templates').get_object_templates()
 
         self.leave_register_db_handler = LeaveRegistryDBHandler(
-            google_sheet_db=google_sheet_db,
-            leave_register_sheet=leave_register_sheet,
         )
 
     @staticmethod
@@ -82,10 +76,8 @@ class LeaveRegister:
             'end_date_str': end_date_str,
 
         })
-        user = body.get('user')
-        user_id = user.get('id')
-        user_name = BotUtils.get_username_by_user_id(self.client, user_id)
-        user_overlap_leave_key = f'db_cache_{user_name}_{start_date_str}{end_date_str}_overlap_leave_key'
+        user_id = body['user']['id']
+        user_overlap_leave_key = f'db_cache_{user_id}_{start_date_str}{end_date_str}_overlap_leave_key'
         overlap_leaves = []
         is_query_db = False
 
@@ -96,7 +88,7 @@ class LeaveRegister:
                 print('Getting overlap leave from cache')
         else:
             overlap_leaves = self.leave_register_db_handler.get_overlap_leaves_by_date_ranges(
-                user_name, start_date_str,
+                user_id, start_date_str,
                 end_date_str,
             )
             is_query_db = True
@@ -143,7 +135,7 @@ class LeaveRegister:
         end_date = datetime.datetime.strptime(end_date_str, '%Y-%m-%d')
 
         leave_id = self.leave_register_db_handler.add_a_leave(
-            leave_type, reason_of_leave, user_name, start_date_str,
+            leave_type, reason_of_leave, user_name, user_id, start_date_str,
             end_date_str,
         )
         channel_message_block = self.block_kit.new_vacation_request_channel_message_blocks(

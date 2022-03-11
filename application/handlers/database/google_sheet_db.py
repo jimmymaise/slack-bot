@@ -14,4 +14,4 @@ class GoogleSheetDB:
         with open(file_path, 'w') as f:
             f.write(service_account_file_content)
         self.engine = create_engine('gsheets://', service_account_file=file_path)
-        self.cursor = self.connection = self.engine.connect()
+        self.connection = self.engine.connect()

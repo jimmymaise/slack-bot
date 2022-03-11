@@ -10,12 +10,12 @@ from application.handlers.bot.home_tab import HomeTab
 from application.handlers.bot.leave_lookup import LeaveLookup
 from application.handlers.bot.leave_register import LeaveRegister
 from application.handlers.bot.team_management import TeamManagement
-from application.handlers.database.google_sheet import GoogleSheetDB
+from application.handlers.database.google_sheet_db import GoogleSheetDB
 from application.utils.constant import Constant
 
 client = WebClient(token=os.environ.get('SLACK_BOT_TOKEN'))
 bolt_app = App(
-    token=os.environ.get('SLACK_BOT_TOKEN'),
+    token=os.environ.get('SLACK_BxOT_TOKEN'),
     signing_secret=os.environ.get('SLACK_SIGNING_SECRET'),
     url_verification_enabled=True,
     request_verification_enabled=False,
@@ -27,14 +27,13 @@ google_sheet_db = GoogleSheetDB(
 )
 
 leave_register = LeaveRegister(
-    bolt_app, client, google_sheet_db,
-    leave_register_sheet=os.getenv('LEAVE_REGISTER_SHEET'),
+    bolt_app, client,
     approval_channel=os.getenv('MANAGER_LEAVE_APPROVAL_CHANNEL'),
 )
-leave_lookup = LeaveLookup(bolt_app, client, google_sheet_db, os.getenv('LEAVE_REGISTER_SHEET'))
+leave_lookup = LeaveLookup(bolt_app, client)
 team_management = TeamManagement(
-    bolt_app, client, google_sheet_db, os.getenv('TEAM_SHEET'),
-    os.getenv('TEAM_MEMBER_SHEET'),
+    bolt_app, client,
+    leave_lookup=leave_lookup,
 )
 HomeTab(bolt_app, client, leave_lookup, leave_register, team_management)
 

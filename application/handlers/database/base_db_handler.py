@@ -5,22 +5,23 @@ import re
 import tenacity
 from sqlalchemy import Table
 
+from application.handlers.database.db_connection import DBConnection
 from application.utils.cache import LambdaCache
 from application.utils.constant import Constant
 
 
 class BaseDBHandler:
-    def __init__(self, google_sheet_db, google_sheet, table_schema):
-        self.google_sheet_db = google_sheet_db
+    def __init__(self, table_name, table_schema):
+        self.db = DBConnection.get_db()
         self.table_schema = table_schema
-        self.google_sheet = google_sheet
-        self.table: Table = self.create_table_from_google_sheet()
+        self.table_name = table_name
+        self.table: Table = self.create_table()
 
-    def create_table_from_google_sheet(self) -> Table:
+    def create_table(self) -> Table:
         from sqlalchemy import MetaData
         return Table(
-            self.google_sheet,
-            MetaData(bind=self.google_sheet_db.engine), *self.table_schema,
+            self.table_name,
+            MetaData(bind=self.db.engine), *self.table_schema,
         )
 
     def execute(self, query, **data):
@@ -34,7 +35,7 @@ class BaseDBHandler:
         if not is_select_query:
             LambdaCache.reset_all_db_cache()
         print(str_query)
-        return self.google_sheet_db.cursor.execute(query, data)
+        return self.db.connection.execute(query, data)
 
     def update_item_with_retry(self, _id, update_data: dict, wait_fixed=10, stop_after_attempt=2):
         retry = tenacity.Retrying(
@@ -63,6 +64,7 @@ class BaseDBHandler:
         return leave_id
 
     def _verify_operation_success_by_lookup_with_retry(self, data, wait_fixed=30, stop_after_attempt=4):
+        LambdaCache.reset_all_db_cache()
         retry = tenacity.Retrying(
             wait=tenacity.wait_fixed(wait_fixed),
             stop=tenacity.stop_after_attempt(stop_after_attempt),

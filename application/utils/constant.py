@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import os
+
 
 class Constant:
     SCHEDULER_OOO_TODAY = 'SCHEDULER_OOO_TODAY'
@@ -25,3 +27,8 @@ class Constant:
         LEAVE_REQUEST_ACTION_APPROVE: LEAVE_REQUEST_STATUS_APPROVED,
     }
     RE_SQL_SPLIT_STMTS = ''';(?=(?:[^"'`]*["'`][^"'`]*["'`])*[^"'`]*$)'''
+
+    LEAVE_REGISTER_SHEET = os.environ['LEAVE_REGISTER_SHEET']
+    TEAM_SHEET = os.environ['TEAM_SHEET']
+    TEAM_MEMBER_SHEET = os.environ['TEAM_MEMBER_SHEET']
+    GOOGLE_SERVICE_BASE64_FILE_CONTENT = os.environ['GOOGLE_SERVICE_BASE64_FILE_CONTENT']

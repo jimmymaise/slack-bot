@@ -27,7 +27,8 @@
           "text": "Check Who is OOO today",
           "emoji": true
         }
-      },
+      }
+      {% if is_able_to_create_team == true %},
       {
         "type": "button",
         "action_id": "become_manager",
@@ -37,6 +38,7 @@
           "emoji": true
         }
       }
+      {% endif %}
     ]
   }
 ]

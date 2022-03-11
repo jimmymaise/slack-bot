@@ -1,0 +1,27 @@
+{
+  "callback_id": "leave_validate_failed_view",
+  "type": "modal",
+  "blocks": [
+    {
+      "type": "section",
+      "block_id": "B/i",
+      "text": {
+        "type": "mrkdwn",
+        "text": "Sorry, your leave is not valid",
+        "verbatim": false
+      }
+    }
+  ],
+  "title": {
+    "type": "plain_text",
+    "text": "Leave validate failed!",
+    "emoji": true
+  },
+  "clear_on_close": false,
+  "notify_on_close": false,
+  "close": {
+    "type": "plain_text",
+    "text": "Back",
+    "emoji": true
+  }
+}

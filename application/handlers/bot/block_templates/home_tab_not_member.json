@@ -1,0 +1,9 @@
+[
+  {
+    "type": "section",
+    "text": {
+      "type": "mrkdwn",
+      "text": "Sorry, you don't belong to any teams. Contact your admin for more detail"
+    }
+  }
+]

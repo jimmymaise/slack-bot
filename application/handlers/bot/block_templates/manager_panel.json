@@ -1,0 +1,355 @@
+[
+  {
+    "type": "section",
+    "block_id": "dLa",
+    "text": {
+      "type": "mrkdwn",
+      "text": "*Manager panel*",
+      "verbatim": false
+    },
+    "accessory": {
+      "type": "button",
+      "action_id": "switch_personal",
+      "text": {
+        "type": "plain_text",
+        "text": ":arrows_counterclockwise: Switch to Personal",
+        "emoji": true
+      }
+    }
+  },
+  {
+    "type": "divider",
+    "block_id": "/wXP"
+  },
+  {
+    "type": "section",
+    "block_id": "p8=A",
+    "text": {
+      "type": "mrkdwn",
+      "text": "{{team_name}} in {{ channel_id }}",
+      "verbatim": false
+    }
+  },
+  {
+    "type": "context",
+    "block_id": "zv2q",
+    "elements": [
+      {
+        "type": "image",
+        "image_url": "https://secure.gravatar.com/avatar/46415e2f2544f59faeda532680c1f0e8.jpg?s=192&d=https%3A%2F%2Fa.slack-edge.com%2Fdf10d%2Fimg%2Favatars%2Fava_0015-192.png",
+        "alt_text": "user image"
+      },
+      {
+        "type": "mrkdwn",
+        "text": "{{ member_num }} member and {{ manager_num }} managers",
+        "verbatim": false
+      }
+    ]
+  },
+  {
+    "type": "actions",
+    "block_id": "team_action",
+    "elements": [
+      {
+        "type": "button",
+        "action_id": "team_timeoffs",
+        "text": {
+          "type": "plain_text",
+          "text": "All Time Offs",
+          "emoji": true
+        }
+      },
+      {
+        "type": "button",
+        "action_id": "absence_add",
+        "text": {
+          "type": "plain_text",
+          "text": "Add Time Off",
+          "emoji": true
+        }
+      },
+      {
+        "type": "button",
+        "action_id": "team_settings_home",
+        "text": {
+          "type": "plain_text",
+          "text": "Team Settings",
+          "emoji": true
+        }
+      },
+      {
+        "type": "overflow",
+        "action_id": "team_actions",
+        "options": [
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "Delete team",
+              "emoji": true
+            },
+            "value": "destroy,{{team_id}}"
+          }
+        ],
+        "confirm": {
+          "title": {
+            "type": "plain_text",
+            "text": "Please confirm",
+            "emoji": true
+          },
+          "text": {
+            "type": "mrkdwn",
+            "text": "Are you sure you want to perform this action?",
+            "verbatim": false
+          },
+          "confirm": {
+            "type": "plain_text",
+            "text": "Yes",
+            "emoji": true
+          },
+          "deny": {
+            "type": "plain_text",
+            "text": "No",
+            "emoji": true
+          }
+        }
+      }
+    ]
+  },
+  {
+    "type": "section",
+    "block_id": "9jIs1",
+    "text": {
+      "type": "plain_text",
+      "text": " ",
+      "emoji": true
+    }
+  },
+  {
+    "type": "section",
+    "block_id": "IjqXU",
+    "text": {
+      "type": "plain_text",
+      "text": " ",
+      "emoji": true
+    }
+  },
+  {
+    "type": "section",
+    "block_id": "FW4s",
+    "text": {
+      "type": "mrkdwn",
+      "text": "*Waiting for your approval*",
+      "verbatim": false
+    },
+    "accessory": {
+      "type": "overflow",
+      "action_id": "pending_timeoffs_actions",
+      "options": [
+        {
+          "text": {
+            "type": "plain_text",
+            "text": "Manage auto approve",
+            "emoji": true
+          },
+          "value": "manage_auto_approve"
+        }
+      ]
+    }
+  },
+  {
+    "type": "divider",
+    "block_id": "Qx5"
+  },
+  {
+    "type": "section",
+    "block_id": "iLpW",
+    "text": {
+      "type": "mrkdwn",
+      "text": "_No pending time off requests. You’re all caught up._ :tada:",
+      "verbatim": false
+    }
+  },
+  {
+    "type": "section",
+    "block_id": "kkr",
+    "text": {
+      "type": "plain_text",
+      "text": " ",
+      "emoji": true
+    }
+  },
+  {
+    "type": "section",
+    "block_id": "VFWeu",
+    "text": {
+      "type": "plain_text",
+      "text": " ",
+      "emoji": true
+    }
+  },
+  {
+    "type": "section",
+    "block_id": "WHuz",
+    "text": {
+      "type": "mrkdwn",
+      "text": "*Current time offs*",
+      "verbatim": false
+    }
+  },
+  {
+    "type": "divider",
+    "block_id": "I/aC"
+  },
+  {
+    "type": "section",
+    "block_id": "Dp/",
+    "text": {
+      "type": "mrkdwn",
+      "text": "_There are no time offs yet._",
+      "verbatim": false
+    }
+  },
+  {
+    "type": "section",
+    "block_id": "DtB",
+    "text": {
+      "type": "plain_text",
+      "text": " ",
+      "emoji": true
+    }
+  },
+  {
+    "type": "section",
+    "block_id": "Xrf96",
+    "text": {
+      "type": "plain_text",
+      "text": " ",
+      "emoji": true
+    }
+  },
+  {
+    "type": "section",
+    "block_id": "LXFRK",
+    "text": {
+      "type": "mrkdwn",
+      "text": "*Upcoming time offs*",
+      "verbatim": false
+    }
+  },
+  {
+    "type": "divider",
+    "block_id": "Vn3h+"
+  },
+  {
+    "type": "section",
+    "block_id": "Npxx",
+    "text": {
+      "type": "mrkdwn",
+      "text": "_There are no time offs yet._",
+      "verbatim": false
+    }
+  },
+  {
+    "type": "section",
+    "block_id": "OV3o7",
+    "text": {
+      "type": "plain_text",
+      "text": " ",
+      "emoji": true
+    }
+  },
+  {
+    "type": "section",
+    "block_id": "zAKhu",
+    "text": {
+      "type": "plain_text",
+      "text": " ",
+      "emoji": true
+    }
+  },
+  {
+    "type": "section",
+    "block_id": "ZNQeX",
+    "text": {
+      "type": "mrkdwn",
+      "text": "*Helpful links*",
+      "verbatim": false
+    }
+  },
+  {
+    "type": "divider",
+    "block_id": "0xr"
+  },
+  {
+    "type": "actions",
+    "block_id": "ar5K",
+    "elements": [
+      {
+        "type": "button",
+        "action_id": "open_settings",
+        "text": {
+          "type": "plain_text",
+          "text": ":gear: Settings",
+          "emoji": true
+        },
+        "url": "slack://app?id=A4KAKTZPZ&team=TF1SH8PRU&tab=messages"
+      },
+      {
+        "type": "button",
+        "action_id": "H4Ta",
+        "text": {
+          "type": "plain_text",
+          "text": ":link: View Website",
+          "emoji": true
+        },
+        "url": "https://time.bot/"
+      },
+      {
+        "type": "button",
+        "action_id": "iXQ79",
+        "text": {
+          "type": "plain_text",
+          "text": ":book: Help Center",
+          "emoji": true
+        },
+        "url": "https://timebot.zendesk.com/hc/en-us"
+      },
+      {
+        "type": "button",
+        "action_id": "share_feedback",
+        "text": {
+          "type": "plain_text",
+          "text": ":email: Contact Us",
+          "emoji": true
+        }
+      }
+    ]
+  },
+  {
+    "type": "section",
+    "block_id": "w1906",
+    "text": {
+      "type": "mrkdwn",
+      "text": "Your workspace is on a Free plan, with limited time off requests.\n<https://time.bot/upgrade/|*Upgrade TimeBot*> :zap: and get access to advanced features, scheduled messages, unlimited time off requests, calendar synchronization and more.",
+      "verbatim": false
+    }
+  },
+  {
+    "type": "section",
+    "block_id": "paZDy",
+    "text": {
+      "type": "plain_text",
+      "text": " ",
+      "emoji": true
+    }
+  },
+  {
+    "type": "section",
+    "block_id": "YHC=",
+    "text": {
+      "type": "plain_text",
+      "text": " ",
+      "emoji": true
+    }
+  }
+]

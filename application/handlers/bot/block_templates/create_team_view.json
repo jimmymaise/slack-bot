@@ -1,0 +1,136 @@
+{
+  "callback_id": "create_team_view",
+  "type": "modal",
+  "blocks": [
+    {
+      "type": "input",
+      "block_id": "name",
+      "label": {
+        "type": "plain_text",
+        "text": "Team name",
+        "emoji": true
+      },
+      "optional": false,
+      "dispatch_action": false,
+      "element": {
+        "type": "plain_text_input",
+        "action_id": "name_value",
+        "placeholder": {
+          "type": "plain_text",
+          "text": "Pick a name for your team",
+          "emoji": true
+        },
+        "initial_value": "{{user_name}}'s team",
+        "max_length": 250,
+        "dispatch_action_config": {
+          "trigger_actions_on": [
+            "on_enter_pressed"
+          ]
+        }
+      }
+    },
+    {
+      "type": "input",
+      "block_id": "members",
+      "label": {
+        "type": "plain_text",
+        "text": "Members",
+        "emoji": true
+      },
+      "hint": {
+        "type": "plain_text",
+        "text": "Select team members whose time off requests need to be managed",
+        "emoji": true
+      },
+      "optional": false,
+      "dispatch_action": false,
+      "element": {
+        "type": "multi_users_select",
+        "action_id": "members_value",
+        "initial_users": [],
+        "placeholder": {
+          "type": "plain_text",
+          "text": "Select members",
+          "emoji": true
+        }
+      }
+    },
+    {
+      "type": "input",
+      "block_id": "channel",
+      "label": {
+        "type": "plain_text",
+        "text": "Channel for announcements",
+        "emoji": true
+      },
+      "hint": {
+        "type": "plain_text",
+        "text": "If selected, QPTO will announce upcoming holidays and time off in this channel",
+        "emoji": true
+      },
+      "optional": true,
+      "dispatch_action": false,
+      "element": {
+        "type": "conversations_select",
+        "action_id": "channel_value",
+        "placeholder": {
+          "type": "plain_text",
+          "text": "Select a channel",
+          "emoji": true
+        },
+        "filter": {
+          "include": [
+            "public",
+            "private"
+          ],
+          "exclude_bot_users": true
+        }
+      }
+    },
+    {
+      "type": "input",
+      "block_id": "managers",
+      "label": {
+        "type": "plain_text",
+        "text": "Managers",
+        "emoji": true
+      },
+      "hint": {
+        "type": "plain_text",
+        "text": "Managers receive pending time off requests and can approve them",
+        "emoji": true
+      },
+      "optional": false,
+      "dispatch_action": false,
+      "element": {
+        "type": "multi_users_select",
+        "action_id": "managers_value",
+        "initial_users": [
+          "{{user_id}}"
+        ],
+        "placeholder": {
+          "type": "plain_text",
+          "text": "Select managers",
+          "emoji": true
+        }
+      }
+    }
+  ],
+  "private_metadata": "",
+  "title": {
+    "type": "plain_text",
+    "text": "Create a team",
+    "emoji": true
+  },
+  "clear_on_close": false,
+  "notify_on_close": false,
+  "close": {
+    "type": "plain_text",
+    "text": "Close"
+  },
+  "submit": {
+    "type": "plain_text",
+    "text": "Create",
+    "emoji": true
+  }
+}

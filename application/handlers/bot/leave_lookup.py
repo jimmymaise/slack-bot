@@ -6,27 +6,20 @@ from slack_bolt import App
 from slack_sdk import WebClient
 
 from application.handlers.bot.block_template_handler import BlockTemplateHandler
-from application.handlers.database.google_sheet import GoogleSheetDB
 from application.handlers.database.leave_registry_db_handler import LeaveRegistryDBHandler
 from application.utils.constant import Constant
 
 
 class LeaveLookup:
     def __init__(
-            self, app: App, client: WebClient, google_sheet_db: GoogleSheetDB,
-            leave_register_sheet,
+            self, app: App, client: WebClient,
     ):
         self.app = app
         self.client: WebClient = client
         self.block_kit = BlockTemplateHandler('./application/handlers/bot/block_templates').get_object_templates()
-        self.google_sheet_db = google_sheet_db
-        self.leave_register_sheet = leave_register_sheet
         app.command('/ooo-today')(ack=self.respond_to_slack_within_3_seconds, lazy=[self.trigger_today_ooo_command])
 
-        self.leave_register_db_handler = LeaveRegistryDBHandler(
-            google_sheet_db=google_sheet_db,
-            leave_register_sheet=leave_register_sheet,
-        )
+        self.leave_register_db_handler = LeaveRegistryDBHandler()
 
     @staticmethod
     def respond_to_slack_within_3_seconds(ack):

@@ -1,0 +1,301 @@
+[
+  {
+    "type": "section",
+    "block_id": "TUU+",
+    "text": {
+      "type": "mrkdwn",
+      "text": "*Personal panel*",
+      "verbatim": false
+    }
+    {% if is_able_to_create_team == true %},
+    "accessory": {
+      "type": "button",
+      "action_id": "become_manager",
+      "text": {
+        "type": "plain_text",
+        "text": "Become Manager",
+        "emoji": true
+      }
+    }
+    {% elif is_already_manager == true %},
+    "accessory": {
+      "type": "button",
+      "action_id": "switch_manager",
+      "text": {
+        "type": "plain_text",
+        "text": ":arrows_counterclockwise:  Switch to Manager",
+        "emoji": true
+      }
+    }
+    {% else %}
+    {% endif %}
+  },
+  {
+    "type": "divider",
+    "block_id": "+U8"
+  },
+  {
+    "type": "context",
+    "block_id": "r/2Cw",
+    "elements": [
+      {
+        "type": "plain_text",
+        "text": "You've used 0 total time offs including 0 vacation days (out of 24 days) in 2022.",
+        "emoji": true
+      }
+    ]
+  },
+  {
+    "type": "actions",
+    "block_id": "JeHya",
+    "elements": [
+      {
+        "type": "button",
+        "action_id": "absence_new",
+        "text": {
+          "type": "plain_text",
+          "text": "Add Time Off",
+          "emoji": true
+        },
+        "style": "primary"
+      },
+      {
+        "type": "button",
+        "action_id": "absence_list",
+        "text": {
+          "type": "plain_text",
+          "text": "All Time Offs",
+          "emoji": true
+        }
+      },
+      {
+        "type": "button",
+        "action_id": "holiday_list",
+        "text": {
+          "type": "plain_text",
+          "text": "All Holidays",
+          "emoji": true
+        }
+      }
+    ]
+  },
+  {
+    "type": "section",
+    "block_id": "2N9",
+    "text": {
+      "type": "plain_text",
+      "text": " ",
+      "emoji": true
+    }
+  },
+  {
+    "type": "section",
+    "block_id": "6=D",
+    "text": {
+      "type": "plain_text",
+      "text": " ",
+      "emoji": true
+    }
+  },
+  {
+    "type": "section",
+    "block_id": "Zl0k",
+    "text": {
+      "type": "mrkdwn",
+      "text": "*My time offs*",
+      "verbatim": false
+    }
+  },
+  {
+    "type": "divider",
+    "block_id": "/sjj"
+  },
+  {% for leave in user_leaves %}
+  {
+    "type": "section",
+    "block_id": "1sJlJ",
+    "text": {
+      "type": "mrkdwn",
+      "text": "*:{{leave.type_icon}}: {{ leave.type }}}*\n{{ leave.duration }}\nComment: {{ leave.reason }}",
+      "verbatim": false
+    },
+    "accessory": {
+      "type": "overflow",
+      "action_id": "timeoff_actions",
+      "options": [
+        {
+          "text": {
+            "type": "plain_text",
+            "text": "Edit",
+            "emoji": true
+          },
+          "value": "edit,{{leave.id}},"
+        },
+        {
+          "text": {
+            "type": "plain_text",
+            "text": "Delete",
+            "emoji": true
+          },
+          "value": "delete,{{leave.id}},list"
+        }
+      ]
+    }
+  },
+  {
+    "type": "context",
+    "block_id": "yx3B",
+    "elements": [
+      {
+        "type": "mrkdwn",
+        "text": "{{ leave.status_icon }}:  {{leave.status}}",
+        "verbatim": false
+      }
+    ]
+  }
+  ,
+  {% endfor %}
+  {
+    "type": "section",
+    "block_id": "6y4=",
+    "text": {
+      "type": "plain_text",
+      "text": " ",
+      "emoji": true
+    }
+  },
+  {
+    "type": "section",
+    "block_id": "ycC4m",
+    "text": {
+      "type": "plain_text",
+      "text": " ",
+      "emoji": true
+    }
+  },
+  {
+    "type": "section",
+    "block_id": "YAjy",
+    "text": {
+      "type": "mrkdwn",
+      "text": "*Upcoming holidays*",
+      "verbatim": false
+    }
+  },
+  {
+    "type": "divider",
+    "block_id": "hnv"
+  },
+  {
+    "type": "section",
+    "block_id": "yDBp",
+    "text": {
+      "type": "mrkdwn",
+      "text": "_There are no events yet._",
+      "verbatim": false
+    }
+  },
+  {
+    "type": "section",
+    "block_id": "TjZc",
+    "text": {
+      "type": "plain_text",
+      "text": " ",
+      "emoji": true
+    }
+  },
+  {
+    "type": "section",
+    "block_id": "lra8W",
+    "text": {
+      "type": "plain_text",
+      "text": " ",
+      "emoji": true
+    }
+  },
+  {
+    "type": "section",
+    "block_id": "Iqo8e",
+    "text": {
+      "type": "mrkdwn",
+      "text": "*Helpful links*",
+      "verbatim": false
+    }
+  },
+  {
+    "type": "divider",
+    "block_id": "ZyA"
+  },
+  {
+    "type": "actions",
+    "block_id": "LzAz3",
+    "elements": [
+      {
+        "type": "button",
+        "action_id": "open_settings",
+        "text": {
+          "type": "plain_text",
+          "text": ":gear: Settings",
+          "emoji": true
+        },
+        "url": "slack://app?id=A4KAKTZPZ&team=TF1SH8PRU&tab=messages"
+      },
+      {
+        "type": "button",
+        "action_id": "WaBVL",
+        "text": {
+          "type": "plain_text",
+          "text": ":link: View Website",
+          "emoji": true
+        },
+        "url": "https://time.bot/"
+      },
+      {
+        "type": "button",
+        "action_id": "h1tf",
+        "text": {
+          "type": "plain_text",
+          "text": ":book: Help Center",
+          "emoji": true
+        },
+        "url": "https://timebot.zendesk.com/hc/en-us"
+      },
+      {
+        "type": "button",
+        "action_id": "share_feedback",
+        "text": {
+          "type": "plain_text",
+          "text": ":email: Contact Us",
+          "emoji": true
+        }
+      }
+    ]
+  },
+  {
+    "type": "section",
+    "block_id": "IX77",
+    "text": {
+      "type": "mrkdwn",
+      "text": "Your workspace is on a Free plan, with limited time off requests.\n<https://time.bot/upgrade/|*Upgrade TimeBot*> :zap: and get access to advanced features, scheduled messages, unlimited time off requests, calendar synchronization and more.",
+      "verbatim": false
+    }
+  },
+  {
+    "type": "section",
+    "block_id": "fgt3q",
+    "text": {
+      "type": "plain_text",
+      "text": " ",
+      "emoji": true
+    }
+  },
+  {
+    "type": "section",
+    "block_id": "LIy",
+    "text": {
+      "type": "plain_text",
+      "text": " ",
+      "emoji": true
+    }
+  }
+]
