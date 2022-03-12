@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import datetime
 import json
 
 from slack_bolt import App
@@ -32,6 +33,9 @@ class TeamManagement:
             lazy=[self.create_team_lazy],
         )
         app.action('switch_personal')(
+            ack=self.respond_to_slack_within_3_seconds, lazy=[self.get_personal_view_by_user_id],
+        )
+        app.action('back_to_home')(
             ack=self.respond_to_slack_within_3_seconds, lazy=[self.get_personal_view_by_user_id],
         )
         app.action('switch_manager')(
@@ -100,19 +104,27 @@ class TeamManagement:
         user = self.client.users_info(user=user_id).data['user']
         is_admin_or_owner = user['is_admin'] or user['is_owner']
         current_team = self.get_team_member_by_user_id(user_id)
+        team_name = self.get_team_by_team_id(team_id=current_team.team_id).name if current_team else None
         is_able_to_create_team = current_team is None and is_admin_or_owner
         is_already_manager = current_team and current_team.is_manager
+        is_not_have_team = not (current_team or is_admin_or_owner)
 
-        if current_team or is_admin_or_owner:
-            blocks = json.loads(
-                self.block_kit.personal_view(
-                    is_able_to_create_team=is_able_to_create_team,
-                    is_already_manager=is_already_manager,
-                    user_leaves=[],
-                ),
-            )
-        else:
-            blocks = json.loads(self.block_kit.home_tab_not_member())
+        user_leave_rows = self.leave_register_db_handler.get_leaves(
+            start_date=datetime.datetime.now().strftime('%Y-%m-%d'),
+            user_id=user_id,
+        )
+
+        user_leaves = BotUtils.build_leave_display_list(user_leave_rows)
+
+        blocks = json.loads(
+            self.block_kit.personal_view(
+                is_able_to_create_team=is_able_to_create_team,
+                is_already_manager=is_already_manager,
+                is_not_have_team=is_not_have_team,
+                user_leaves=user_leaves,
+                team_name=team_name,
+            ),
+        )
 
         self.client.views_publish(
             user_id=user_id, view={
@@ -131,3 +143,6 @@ class TeamManagement:
 
     def get_team_member_by_user_id(self, user_id):
         return self.team_member_db_handler.get_team_member_by_user_id(user_id)
+
+    def get_team_by_team_id(self, team_id):
+        return self.team_db_handler.get_team_by_id(team_id)

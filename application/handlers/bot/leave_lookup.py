@@ -6,6 +6,7 @@ from slack_bolt import App
 from slack_sdk import WebClient
 
 from application.handlers.bot.block_template_handler import BlockTemplateHandler
+from application.handlers.bot.bot_utils import BotUtils
 from application.handlers.database.leave_registry_db_handler import LeaveRegistryDBHandler
 from application.utils.constant import Constant
 
@@ -87,3 +88,18 @@ class LeaveLookup:
                 ),
             )
         return attachments
+
+    def get_my_time_off_filter_blocks(self, user_id, start_date, end_date, leave_type):
+        user_leave_rows = self.leave_register_db_handler.get_leaves(
+            start_date=start_date,
+            end_date=end_date,
+            user_id=user_id,
+            leave_type=leave_type,
+        )
+        user_leaves = BotUtils.build_leave_display_list(user_leave_rows)
+        blocks = json.loads(
+            self.block_kit.all_your_time_off_blocks(
+                user_leaves=user_leaves,
+            ),
+        )
+        return blocks

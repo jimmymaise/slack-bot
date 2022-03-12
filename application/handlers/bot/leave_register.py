@@ -11,6 +11,7 @@ from application.handlers.bot.bot_utils import BotUtils
 from application.handlers.database.leave_registry_db_handler import LeaveRegistryDBHandler
 from application.utils.cache import LambdaCache
 from application.utils.constant import Constant
+from application.utils.logger import Logger
 
 
 class LeaveRegister:
@@ -38,6 +39,7 @@ class LeaveRegister:
 
         self.leave_register_db_handler = LeaveRegistryDBHandler(
         )
+        self.logger = Logger.get_logger()
 
     @staticmethod
     def respond_to_slack_within_3_seconds(ack):
@@ -85,11 +87,11 @@ class LeaveRegister:
             leave_overlap_value = LambdaCache.get_cache(user_overlap_leave_key)
             if leave_overlap_value:
                 overlap_leaves.append(leave_overlap_value)
-                print('Getting overlap leave from cache')
+                self.logger.info('Getting overlap leave from cache')
         else:
-            overlap_leaves = self.leave_register_db_handler.get_overlap_leaves_by_date_ranges(
-                user_id, start_date_str,
-                end_date_str,
+            overlap_leaves = self.leave_register_db_handler.get_leaves(
+                user_id=user_id, start_date=start_date_str,
+                end_date=end_date_str,
             )
             is_query_db = True
         for overlap_leave in overlap_leaves:
@@ -120,8 +122,7 @@ class LeaveRegister:
     # Update the view on submission
     def handle_leave_request_submission(self, body, logger):
         workspace_domain = f"https://{self.client.team_info().get('team').get('domain')}.slack.com/team/"
-        user = body.get('user')
-        user_id = user.get('id')
+        user_id = body['user']['id']
         user_name = BotUtils.get_username_by_user_id(self.client, user_id)
         user_profile_url = workspace_domain + user_id
 

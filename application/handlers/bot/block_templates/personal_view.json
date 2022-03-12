@@ -1,7 +1,6 @@
 [
   {
     "type": "section",
-    "block_id": "TUU+",
     "text": {
       "type": "mrkdwn",
       "text": "*Personal panel*",
@@ -27,31 +26,34 @@
         "emoji": true
       }
     }
+    {% elif is_not_have_team == true %},
+    "text": {
+      "type": "mrkdwn",
+      "text": ":interrobang: Your account has not been configured to belong a team. Check with your manager for more detail",
+      "verbatim": false
+    }
     {% else %}
     {% endif %}
   },
   {
-    "type": "divider",
-    "block_id": "+U8"
+    "type": "divider"
   },
   {
     "type": "context",
-    "block_id": "r/2Cw",
     "elements": [
       {
         "type": "plain_text",
-        "text": "You've used 0 total time offs including 0 vacation days (out of 24 days) in 2022.",
+        "text": "Welcome to Bimodal Slack Bot.{% if team_name %} Your team is {{ team_name }}{% endif %}",
         "emoji": true
       }
     ]
   },
   {
     "type": "actions",
-    "block_id": "JeHya",
     "elements": [
       {
         "type": "button",
-        "action_id": "absence_new",
+        "action_id": "book_vacation",
         "text": {
           "type": "plain_text",
           "text": "Add Time Off",
@@ -61,7 +63,7 @@
       },
       {
         "type": "button",
-        "action_id": "absence_list",
+        "action_id": "my_all_time_offs",
         "text": {
           "type": "plain_text",
           "text": "All Time Offs",
@@ -70,18 +72,18 @@
       },
       {
         "type": "button",
-        "action_id": "holiday_list",
+        "action_id": "check_ooo_today",
         "text": {
           "type": "plain_text",
-          "text": "All Holidays",
+          "text": "Who's OOO",
           "emoji": true
-        }
+        },
+        "url": "slack://app?id=A031MPR62MB&tab=messages"
       }
     ]
   },
   {
     "type": "section",
-    "block_id": "2N9",
     "text": {
       "type": "plain_text",
       "text": " ",
@@ -90,7 +92,6 @@
   },
   {
     "type": "section",
-    "block_id": "6=D",
     "text": {
       "type": "plain_text",
       "text": " ",
@@ -99,7 +100,6 @@
   },
   {
     "type": "section",
-    "block_id": "Zl0k",
     "text": {
       "type": "mrkdwn",
       "text": "*My time offs*",
@@ -107,57 +107,30 @@
     }
   },
   {
-    "type": "divider",
-    "block_id": "/sjj"
+    "type": "divider"
   },
   {% for leave in user_leaves %}
   {
     "type": "section",
-    "block_id": "1sJlJ",
     "text": {
       "type": "mrkdwn",
-      "text": "*:{{leave.type_icon}}: {{ leave.type }}}*\n{{ leave.duration }}\nComment: {{ leave.reason }}",
+      "text": "{{leave.type_icon}} *{{ leave.type }}*\n{{ leave.duration }}\nComment: {{ leave.reason }}",
       "verbatim": false
-    },
-    "accessory": {
-      "type": "overflow",
-      "action_id": "timeoff_actions",
-      "options": [
-        {
-          "text": {
-            "type": "plain_text",
-            "text": "Edit",
-            "emoji": true
-          },
-          "value": "edit,{{leave.id}},"
-        },
-        {
-          "text": {
-            "type": "plain_text",
-            "text": "Delete",
-            "emoji": true
-          },
-          "value": "delete,{{leave.id}},list"
-        }
-      ]
     }
   },
   {
     "type": "context",
-    "block_id": "yx3B",
     "elements": [
       {
         "type": "mrkdwn",
-        "text": "{{ leave.status_icon }}:  {{leave.status}}",
+        "text": "{{ leave.status_icon }} {{leave.status}}",
         "verbatim": false
       }
     ]
-  }
-  ,
+  },
   {% endfor %}
   {
     "type": "section",
-    "block_id": "6y4=",
     "text": {
       "type": "plain_text",
       "text": " ",
@@ -166,7 +139,6 @@
   },
   {
     "type": "section",
-    "block_id": "ycC4m",
     "text": {
       "type": "plain_text",
       "text": " ",
@@ -175,7 +147,6 @@
   },
   {
     "type": "section",
-    "block_id": "YAjy",
     "text": {
       "type": "mrkdwn",
       "text": "*Upcoming holidays*",
@@ -183,12 +154,10 @@
     }
   },
   {
-    "type": "divider",
-    "block_id": "hnv"
+    "type": "divider"
   },
   {
     "type": "section",
-    "block_id": "yDBp",
     "text": {
       "type": "mrkdwn",
       "text": "_There are no events yet._",
@@ -197,7 +166,6 @@
   },
   {
     "type": "section",
-    "block_id": "TjZc",
     "text": {
       "type": "plain_text",
       "text": " ",
@@ -206,7 +174,6 @@
   },
   {
     "type": "section",
-    "block_id": "lra8W",
     "text": {
       "type": "plain_text",
       "text": " ",
@@ -215,7 +182,6 @@
   },
   {
     "type": "section",
-    "block_id": "Iqo8e",
     "text": {
       "type": "mrkdwn",
       "text": "*Helpful links*",
@@ -223,12 +189,10 @@
     }
   },
   {
-    "type": "divider",
-    "block_id": "ZyA"
+    "type": "divider"
   },
   {
     "type": "actions",
-    "block_id": "LzAz3",
     "elements": [
       {
         "type": "button",
@@ -238,7 +202,7 @@
           "text": ":gear: Settings",
           "emoji": true
         },
-        "url": "slack://app?id=A4KAKTZPZ&team=TF1SH8PRU&tab=messages"
+        "url": "slack://app?id=A031MPR62MB&tab=messages"
       },
       {
         "type": "button",
@@ -248,7 +212,7 @@
           "text": ":link: View Website",
           "emoji": true
         },
-        "url": "https://time.bot/"
+        "url": "https://bimodalconsulting.com/"
       },
       {
         "type": "button",
@@ -258,7 +222,7 @@
           "text": ":book: Help Center",
           "emoji": true
         },
-        "url": "https://timebot.zendesk.com/hc/en-us"
+        "url": "https://bimodalconsulting.com/"
       },
       {
         "type": "button",
@@ -267,22 +231,21 @@
           "type": "plain_text",
           "text": ":email: Contact Us",
           "emoji": true
-        }
+        },
+        "url": "https://bimodalconsulting.com/"
       }
     ]
   },
   {
     "type": "section",
-    "block_id": "IX77",
     "text": {
       "type": "mrkdwn",
-      "text": "Your workspace is on a Free plan, with limited time off requests.\n<https://time.bot/upgrade/|*Upgrade TimeBot*> :zap: and get access to advanced features, scheduled messages, unlimited time off requests, calendar synchronization and more.",
+      "text": "BIP Bot is a slack bot providing a better way to implement the Bimodal Internal Process:zap:. At the very first MVP, BIP Bot will help us to schedule the PTO time.Read the <https://docs.google.com/document/d/1ruRofzWX7pkLEdNZ9T7N71tEV6AL0zmx5DcLW2OSNb8/edit|*[BIP - leave management & attendance management]> for understanding requirements",
       "verbatim": false
     }
   },
   {
     "type": "section",
-    "block_id": "fgt3q",
     "text": {
       "type": "plain_text",
       "text": " ",
@@ -291,7 +254,6 @@
   },
   {
     "type": "section",
-    "block_id": "LIy",
     "text": {
       "type": "plain_text",
       "text": " ",

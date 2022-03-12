@@ -9,12 +9,8 @@ class Logger:
 
     @classmethod
     def get_logger(cls):
-        logging.basicConfig(level=logging.INFO)
-        is_running_lambda_logging = os.environ.get('AWS_EXECUTION_ENV') is not None
         logger = logging.getLogger()
-        if not is_running_lambda_logging:
-            cls._setup_logger_console(logger)
-        return logging.getLogger()
+        return logger
 
     @staticmethod
     def _setup_logger_console(logger):
@@ -25,6 +21,3 @@ class Logger:
 
         console.setLevel(logging.INFO)
         logger.addHandler(console)
-
-    # logger in a global context
-# requires importing logging

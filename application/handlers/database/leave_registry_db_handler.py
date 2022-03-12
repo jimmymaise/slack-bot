@@ -30,15 +30,25 @@ class LeaveRegistryDBHandler(BaseDBHandler):
 
     def get_today_ooo(self, statuses):
         today_date_str = datetime.now().strftime('%Y-%m-%d')
-        return self.get_leaves_by_date_range(
+        return self.get_leaves(
             start_date=today_date_str, end_date=today_date_str,
             statuses=statuses,
         )
 
-    def get_leaves_by_date_range(self, start_date: str, end_date: str, statuses: list = None, user_id: str = None):
-        select_query = self.table.select().filter(
-            self.table.c.start_date <= start_date,
-            self.table.c.end_date <= end_date,
+    def get_leaves(
+            self, *, start_date: str = None, end_date: str = None, statuses: list = None,
+            user_id: str = None, leave_type=None,
+    ):
+        select_query = self.table.select()
+        if not start_date:
+            start_date = '1900-01-01'
+        if not end_date:
+            end_date = '9999-01-01'
+        select_query = select_query.filter(
+            ((self.table.c.start_date <= start_date)
+             & (self.table.c.end_date >= start_date))
+            | ((self.table.c.start_date <= end_date) & (self.table.c.end_date >= end_date))
+            | ((self.table.c.start_date >= start_date) & (self.table.c.end_date <= end_date)),
         )
         if statuses:
             select_query = select_query.filter(
@@ -47,6 +57,10 @@ class LeaveRegistryDBHandler(BaseDBHandler):
         if user_id:
             select_query = select_query.filter(
                 self.table.c.user_id == user_id,
+            )
+        if leave_type:
+            select_query = select_query.filter(
+                self.table.c.leave_type == leave_type,
             )
         result = self.execute(select_query)
 
@@ -74,15 +88,3 @@ class LeaveRegistryDBHandler(BaseDBHandler):
             'created_time': datetime.now(),
         }
         return self.add_item_with_retry(data=leave_data)
-
-    def get_overlap_leaves_by_date_ranges(self, user_id, start_date, end_date):
-        select_query = self.table.select().filter(
-            ((self.table.c.start_date <= start_date)
-             & (self.table.c.end_date >= start_date))
-            | ((self.table.c.start_date <= end_date) & (self.table.c.end_date >= end_date))
-            | ((self.table.c.start_date >= start_date) & (self.table.c.end_date <= end_date)),
-            self.table.c.user_id == user_id,
-        )
-
-        result = self.execute(select_query)
-        return result.all() if result.rowcount else []

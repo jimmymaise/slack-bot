@@ -8,6 +8,7 @@ from sqlalchemy import Table
 from application.handlers.database.db_connection import DBConnection
 from application.utils.cache import LambdaCache
 from application.utils.constant import Constant
+from application.utils.logger import Logger
 
 
 class BaseDBHandler:
@@ -16,6 +17,7 @@ class BaseDBHandler:
         self.table_schema = table_schema
         self.table_name = table_name
         self.table: Table = self.create_table()
+        self.logger = Logger.get_logger()
 
     def create_table(self) -> Table:
         from sqlalchemy import MetaData
@@ -34,7 +36,7 @@ class BaseDBHandler:
                 break
         if not is_select_query:
             LambdaCache.reset_all_db_cache()
-        print(str_query)
+        self.logger.info(str_query)
         return self.db.connection.execute(query, data)
 
     def update_item_with_retry(self, _id, update_data: dict, wait_fixed=10, stop_after_attempt=2):
@@ -95,9 +97,10 @@ class BaseDBHandler:
             filter(self.table.c.id == _id)
         result = self.execute(q)
         if not result.rowcount:
-            print('Cannot find item')
+            self.logger.error('Cannot find item')
             raise Exception('Cannot find item')
-        print('find item successfully')
+        self.logger.info('find item successfully')
+        return result.first()
 
     def find_item_by_multi_keys(self, key_value_dict: dict):
         q = self.table.select().filter_by(
@@ -105,9 +108,9 @@ class BaseDBHandler:
         )
         result = self.execute(q)
         if not result.rowcount:
-            print('Cannot find item')
+            self.logger.error('Cannot find item')
             raise Exception('Cannot find item')
-        print('find item successfully')
+        self.logger.info('find item successfully')
         return result
 
     @staticmethod

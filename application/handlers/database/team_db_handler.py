@@ -24,3 +24,6 @@ class TeamDBHandler(BaseDBHandler):
 
     def create_new_team(self, team_data: dict):
         self.add_item(team_data)
+
+    def get_team_by_id(self, team_id: dict):
+        return self.find_item_by_id(team_id)
