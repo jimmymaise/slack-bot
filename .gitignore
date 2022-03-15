@@ -3,3 +3,6 @@ node_modules
 terraform/.terraform
 terraform/builds
 tf_ci_account/.terraform
+venv
+tmp
+__pycache__
