@@ -115,7 +115,7 @@ the bot to this channel. For example #my_testing_channel (Should have #)
 
 1. Run file local_run.py
 2. Using application like ngrok to map a localhost address to an internet address
-3. Using this internet address to bot configuration (http://xyz.com/slack-bot/events)
+3. Using this internet address to bot configuration (http://abc-..-..-xyz.ngrok.io)
 
 ## How to use the bot
 
