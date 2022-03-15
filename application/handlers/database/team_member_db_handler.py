@@ -57,7 +57,7 @@ class TeamMemberDBHandler(BaseDBHandler):
 
     def get_team_member_by_user_id(self, user_id):
         result = self.execute(
-            self.table.select(self.table.c.team_id)
+            self.table.select()
                 .filter(
                 self.table.c.user_id == user_id,
                 ),
