@@ -32,6 +32,10 @@ class TeamManagement:
             ack=lambda ack: ack(response_action='clear'),
             lazy=[self.create_team_lazy],
         )
+        app.view('update_team_view')(
+            ack=lambda ack: ack(response_action='clear'),
+            lazy=[self.create_team_lazy],
+        )
         app.action('switch_personal')(
             ack=self.respond_to_slack_within_3_seconds, lazy=[self.get_personal_view_by_user_id],
         )
@@ -51,10 +55,37 @@ class TeamManagement:
         client.views_open(
             trigger_id=body.get('trigger_id'),
             view=json.loads(
-                self.block_kit.create_team_view(
+                self.block_kit.create_update_team_view(
                     callback_id='create_team_view',
-                    user_name=user_name,
-                    user_id=context.user_id,
+                    initial_team_name=f"{user_name}'s team",
+                    initial_managers=[context.user_id],
+                    title='Create a team',
+                    submit_type='Create',
+                ),
+            ),
+        )
+
+    def get_update_team_view_lazy(self, event, context: BoltContext, client: WebClient, body):
+        team_id = self.get_team_id_by_user_id(context.user_id)
+        team_info = self.get_team_by_team_id(team_id)
+        all_team_members = self.team_member_db_handler.get_all_team_members_by_team_id(team_id=team_id)
+        client.views_open(
+            trigger_id=body.get('trigger_id'),
+            view=json.loads(
+                self.block_kit.create_update_team_view(
+                    callback_id='update_team_view',
+                    initial_team_name=team_info.name,
+                    initial_managers=[
+                        member.user_id for member in all_team_members if
+                        member.is_manager is True
+                    ],
+                    initial_normal_members=[
+                        member.user_id for member in all_team_members if
+                        member.is_manager is False
+                    ],
+                    initial_conversation=team_info.announcement_channel_id,
+                    title='Update team',
+                    submit_type='Update',
                 ),
             ),
         )
@@ -90,12 +121,31 @@ class TeamManagement:
         self.get_personal_view_by_user_id(body['user']['id'])
 
     def get_manager_view_by_user_id(self, user_id):
+        team_id = self.get_team_id_by_user_id(user_id)
+        team_info = self.get_team_by_team_id(team_id)
+        announcement_channel_name = \
+            self.client.conversations_info(channel=team_info.announcement_channel_id)['channel']['name']
+        all_team_members = self.team_member_db_handler.get_all_team_members_by_team_id(team_id=team_id)
+        num_of_all_team_member = len(all_team_members)
+        num_of_manager = sum(1 for team_member in all_team_members if team_member.is_manager)
+        num_of_normal_member = num_of_all_team_member - num_of_manager
+        slack_users = BotUtils.get_slack_users_by_user_ids(
+            self.client,
+            [team_member.user_id for team_member in all_team_members],
+        )
         self.client.views_publish(
             user_id=user_id,
             view={
+
                 'type': 'home',
                 'blocks': json.loads(
                     self.block_kit.manager_panel(
+                        team_info=team_info,
+                        announcement_channel_name=announcement_channel_name,
+                        num_of_normal_member=num_of_normal_member,
+                        num_of_manager=num_of_manager,
+                        all_team_members=all_team_members,
+                        slack_users=slack_users,
                     ),
                 ), },
         )
@@ -139,7 +189,7 @@ class TeamManagement:
 
     def get_team_id_by_user_id(self, user_id):
         team = self.team_member_db_handler.get_team_member_by_user_id(user_id)
-        return team.id if team else None
+        return team.team_id if team else None
 
     def get_team_member_by_user_id(self, user_id):
         return self.team_member_db_handler.get_team_member_by_user_id(user_id)

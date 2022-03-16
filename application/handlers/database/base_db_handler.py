@@ -3,28 +3,26 @@ from __future__ import annotations
 import re
 
 import tenacity
-from sqlalchemy import Table
+from sqlalchemy import insert
+from sqlalchemy import update
+from sqlalchemy.orm import declarative_base
+from sqlalchemy.orm import scoped_session
+from sqlalchemy.orm import sessionmaker
 
 from application.handlers.database.db_connection import DBConnection
 from application.utils.cache import LambdaCache
 from application.utils.constant import Constant
 from application.utils.logger import Logger
 
+Base = declarative_base()
+
 
 class BaseDBHandler:
-    def __init__(self, table_name, table_schema):
+    def __init__(self, table):
         self.db = DBConnection.get_db()
-        self.table_schema = table_schema
-        self.table_name = table_name
-        self.table: Table = self.create_table()
+        self.session = scoped_session(sessionmaker(bind=self.db.engine))
+        self.table = table
         self.logger = Logger.get_logger()
-
-    def create_table(self) -> Table:
-        from sqlalchemy import MetaData
-        return Table(
-            self.table_name,
-            MetaData(bind=self.db.engine), *self.table_schema,
-        )
 
     def execute(self, query, **data):
         is_select_query = True
@@ -37,9 +35,11 @@ class BaseDBHandler:
         if not is_select_query:
             LambdaCache.reset_all_db_cache()
         self.logger.info(str_query)
+        if getattr(query, 'statement', None) is not None:
+            query = query.statement
         return self.db.connection.execute(query, data)
 
-    def update_item_with_retry(self, _id, update_data: dict, wait_fixed=10, stop_after_attempt=2):
+    def update_item_with_retry(self, _id, update_data: dict, wait_fixed=Constant.WAIT_DEFAULT, stop_after_attempt=2):
         retry = tenacity.Retrying(
             wait=tenacity.wait_fixed(wait_fixed),
             stop=tenacity.stop_after_attempt(stop_after_attempt),
@@ -47,7 +47,7 @@ class BaseDBHandler:
         )
         retry(self.update_item_by_id_and_verify_success, _id, update_data)
 
-    def add_item_with_retry(self, data: dict, wait_fixed=10, stop_after_attempt=2):
+    def add_item_with_retry(self, data: dict, wait_fixed=Constant.WAIT_DEFAULT, stop_after_attempt=2):
         retry = tenacity.Retrying(
             wait=tenacity.wait_fixed(wait_fixed),
             stop=tenacity.stop_after_attempt(stop_after_attempt),
@@ -65,7 +65,10 @@ class BaseDBHandler:
         self._verify_operation_success_by_lookup_with_retry(data)
         return leave_id
 
-    def _verify_operation_success_by_lookup_with_retry(self, data, wait_fixed=30, stop_after_attempt=4):
+    def _verify_operation_success_by_lookup_with_retry(
+        self, data, wait_fixed=Constant.WAIT_DEFAULT,
+        stop_after_attempt=4,
+    ):
         LambdaCache.reset_all_db_cache()
         retry = tenacity.Retrying(
             wait=tenacity.wait_fixed(wait_fixed),
@@ -76,40 +79,40 @@ class BaseDBHandler:
 
     def update_item_by_id(self, _id, update_data: dict):
 
-        update_query = self.table.update().where(self.table.c.id == _id).values(**update_data)
+        update_query = update(self.table).where(self.table.id == _id).values(**update_data)
         self.execute(update_query)
 
     def add_item(self, data: dict):
-        result = self.execute(self.table.insert(), **data)
+        result = self.execute(insert(self.table).values(**data))
         return getattr(result.inserted_primary_key, '_data')[0]
 
     def add_many_items(self, item_list: list):
         # `executemany`` is not supported, use ``execute`` instead
         for item in item_list:
-            self.execute(self.table.insert(), **item)
+            self.add_item(item)
 
     def remove_item_by_id(self, _id):
-        return self.execute(self.table.delete().where(self.table.c.id == _id))
+        return self.execute(self.session.delete(self.table).where(self.table.c.id == _id))
 
     def find_item_by_id(self, _id):
 
-        q = self.table.select(). \
+        q = self.session.query(self.table). \
             filter(self.table.c.id == _id)
         result = self.execute(q)
         if not result.rowcount:
-            self.logger.error('Cannot find item')
-            raise Exception('Cannot find item')
+            self.logger.error(f'Cannot find item {_id}')
+            raise Exception(f'Cannot find item {_id}')
         self.logger.info('find item successfully')
         return result.first()
 
     def find_item_by_multi_keys(self, key_value_dict: dict):
-        q = self.table.select().filter_by(
+        q = self.session.query(self.table).filter_by(
             **key_value_dict,
         )
         result = self.execute(q)
         if not result.rowcount:
-            self.logger.error('Cannot find item')
-            raise Exception('Cannot find item')
+            self.logger.error(f'Cannot find item {key_value_dict}')
+            raise Exception(f'Cannot find item {key_value_dict}')
         self.logger.info('find item successfully')
         return result
 

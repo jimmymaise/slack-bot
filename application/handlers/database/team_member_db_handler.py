@@ -1,27 +1,13 @@
 from __future__ import annotations
 
-import uuid
-
-from sqlalchemy import Boolean
-from sqlalchemy import Column
-from sqlalchemy import String
-from sqlalchemy.dialects.postgresql import UUID
-
 from application.handlers.database.base_db_handler import BaseDBHandler
-from application.utils.constant import Constant
+from application.handlers.database.models import TeamMember
 from application.utils.logger import Logger
 
 
 class TeamMemberDBHandler(BaseDBHandler):
     def __init__(self):
-        sheet = Constant.TEAM_MEMBER_SHEET
-        schema = (
-            Column('id', UUID(as_uuid=True), primary_key=True, default=uuid.uuid4),
-            Column('user_id', String(), primary_key=True),
-            Column('team_id', String()),
-            Column('is_manager', Boolean()),
-        )
-        super().__init__(sheet, schema)
+        super().__init__(TeamMember)
         self.logger = Logger.get_logger()
 
     def add_user_to_team(self, user_id, team_id, is_manager):
@@ -49,8 +35,17 @@ class TeamMemberDBHandler(BaseDBHandler):
         result = self.execute(
             self.table.select()
                 .filter(
-                self.table.c.team_id == team_id,
-                self.table.c.is_manager == 1,
+                self.table.team_id == team_id,
+                self.table.is_manager == 1,
+                ),
+        )
+        return result.all() if result.rowcount else []
+
+    def get_all_team_members_by_team_id(self, team_id):
+        result = self.execute(
+            self.table.select()
+                .filter(
+                self.table.team_id == team_id,
                 ),
         )
         return result.all() if result.rowcount else []
@@ -59,7 +54,7 @@ class TeamMemberDBHandler(BaseDBHandler):
         result = self.execute(
             self.table.select()
                 .filter(
-                self.table.c.user_id == user_id,
+                self.table.user_id == user_id,
                 ),
         )
         return result.first() if result.rowcount else None

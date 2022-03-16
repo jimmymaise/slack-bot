@@ -35,6 +35,9 @@ class HomeTab:
         app.action('become_manager')(
             ack=self.respond_to_slack_within_3_seconds, lazy=[team_management.get_create_team_view_lazy],
         )
+        app.action('team_settings_home')(
+            ack=self.respond_to_slack_within_3_seconds, lazy=[team_management.get_update_team_view_lazy],
+        )
         app.action('my_all_time_offs')(
             ack=self.respond_to_slack_within_3_seconds, lazy=[self.get_my_time_off_lazy],
         )

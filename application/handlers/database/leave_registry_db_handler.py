@@ -1,32 +1,18 @@
 from __future__ import annotations
 
-import uuid
 from datetime import datetime
 
-from sqlalchemy import Column
-from sqlalchemy import String
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import select
 
 from application.handlers.database.base_db_handler import BaseDBHandler
+from application.handlers.database.models import LeaveRegistry
 from application.utils.constant import Constant
 
 
 class LeaveRegistryDBHandler(BaseDBHandler):
     def __init__(self):
-        table_name = Constant.LEAVE_REGISTER_SHEET
-        schema = (
-            Column('id', UUID(as_uuid=True), primary_key=True, default=uuid.uuid4),
-            Column('username', String()),
-            Column('user_id', String()),
-            Column('start_date', String()),
-            Column('end_date', String()),
-            Column('leave_type', String()),
-            Column('reason', String()),
-            Column('created_time', String()),
-            Column('status', String()),
-            Column('approver', String()),
-        )
-        super().__init__(table_name, schema)
+
+        super().__init__(LeaveRegistry)
 
     def get_today_ooo(self, statuses):
         today_date_str = datetime.now().strftime('%Y-%m-%d')
@@ -39,28 +25,28 @@ class LeaveRegistryDBHandler(BaseDBHandler):
             self, *, start_date: str = None, end_date: str = None, statuses: list = None,
             user_id: str = None, leave_type=None,
     ):
-        select_query = self.table.select()
+        select_query = select(self.table)
         if not start_date:
             start_date = '1900-01-01'
         if not end_date:
             end_date = '9999-01-01'
         select_query = select_query.filter(
-            ((self.table.c.start_date <= start_date)
-             & (self.table.c.end_date >= start_date))
-            | ((self.table.c.start_date <= end_date) & (self.table.c.end_date >= end_date))
-            | ((self.table.c.start_date >= start_date) & (self.table.c.end_date <= end_date)),
+            ((self.table.start_date <= start_date)
+             & (self.table.end_date >= start_date))
+            | ((self.table.start_date <= end_date) & (self.table.end_date >= end_date))
+            | ((self.table.start_date >= start_date) & (self.table.end_date <= end_date)),
         )
         if statuses:
             select_query = select_query.filter(
-                self.table.c.status.in_(statuses),
+                self.table.status.in_(statuses),
             )
         if user_id:
             select_query = select_query.filter(
-                self.table.c.user_id == user_id,
+                self.table.user_id == user_id,
             )
         if leave_type:
             select_query = select_query.filter(
-                self.table.c.leave_type == leave_type,
+                self.table.leave_type == leave_type,
             )
         result = self.execute(select_query)
 
