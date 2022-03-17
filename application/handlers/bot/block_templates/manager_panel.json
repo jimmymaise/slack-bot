@@ -26,7 +26,7 @@
     "block_id": "p8=A",
     "text": {
       "type": "mrkdwn",
-      "text": "{{team_name}} in {{ channel_id }}",
+      "text": "{{team_info.name}} in {{ announcement_channel_name }}",
       "verbatim": false
     }
   },
@@ -34,14 +34,16 @@
     "type": "context",
     "block_id": "zv2q",
     "elements": [
+      {% for user in slack_users  %}
       {
         "type": "image",
-        "image_url": "https://secure.gravatar.com/avatar/46415e2f2544f59faeda532680c1f0e8.jpg?s=192&d=https%3A%2F%2Fa.slack-edge.com%2Fdf10d%2Fimg%2Favatars%2Fava_0015-192.png",
+        "image_url": "{{ user.profile.image_192 }}",
         "alt_text": "user image"
       },
+      {% endfor %}
       {
         "type": "mrkdwn",
-        "text": "{{ member_num }} member and {{ manager_num }} managers",
+        "text": "{{ num_of_normal_member }} member and {{ num_of_manager }} manager",
         "verbatim": false
       }
     ]
@@ -87,7 +89,7 @@
               "text": "Delete team",
               "emoji": true
             },
-            "value": "destroy,{{team_id}}"
+            "value": "destroy,{{team_info.id}}"
           }
         ],
         "confirm": {

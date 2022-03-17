@@ -1,27 +1,16 @@
 from __future__ import annotations
 
-import uuid
-
-from sqlalchemy import Boolean
-from sqlalchemy import Column
-from sqlalchemy import String
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import delete
+from sqlalchemy import select
 
 from application.handlers.database.base_db_handler import BaseDBHandler
-from application.utils.constant import Constant
+from application.handlers.database.models import TeamMember
 from application.utils.logger import Logger
 
 
 class TeamMemberDBHandler(BaseDBHandler):
     def __init__(self):
-        sheet = Constant.TEAM_MEMBER_SHEET
-        schema = (
-            Column('id', UUID(as_uuid=True), primary_key=True, default=uuid.uuid4),
-            Column('user_id', String(), primary_key=True),
-            Column('team_id', String()),
-            Column('is_manager', Boolean()),
-        )
-        super().__init__(sheet, schema)
+        super().__init__(TeamMember)
         self.logger = Logger.get_logger()
 
     def add_user_to_team(self, user_id, team_id, is_manager):
@@ -38,28 +27,49 @@ class TeamMemberDBHandler(BaseDBHandler):
             'is_manager': is_manager,
         })
 
+    def replace_members_from_team(self, team_id, member_list):
+        self.remove_all_users_from_team(team_id)
+        self.add_many_items(member_list)
+
+    def remove_all_users_from_team(self, team_id):
+        self.execute(
+            delete(self.table).where(self.table.team_id == team_id),
+        )
+
     def remove_user_to_team(self, user_id, team_id):
         self.execute(
-            self.table.delete()
-                .where(self.table.c.user_id == user_id)
-                .where(self.table.c.role_id == team_id),
+            delete(self.table).where(self.table.user_id == user_id).where(self.table.team_id == team_id),
         )
 
     def get_team_managers_by_team_id(self, team_id):
         result = self.execute(
-            self.table.select()
-                .filter(
-                self.table.c.team_id == team_id,
-                self.table.c.is_manager == 1,
-                ),
+            select(self.table).filter(
+                self.table.team_id == team_id,
+                self.table.is_manager == 1,
+            ),
+        )
+        return result.all() if result.rowcount else []
+
+    def get_all_team_members_by_team_id(self, team_id):
+        result = self.execute(
+            select(self.table)
+            .filter(
+                self.table.team_id == team_id,
+            ),
         )
         return result.all() if result.rowcount else []
 
     def get_team_member_by_user_id(self, user_id):
         result = self.execute(
-            self.table.select()
-                .filter(
-                self.table.c.user_id == user_id,
-                ),
+            select(self.table).filter(
+                self.table.user_id == user_id,
+            ),
         )
         return result.first() if result.rowcount else None
+
+    def delete_team_members_by_team_id(self, team_id):
+        return self.execute(
+            delete(self.table).where(
+                self.table.team_id == team_id,
+            ),
+        )

@@ -1,5 +1,5 @@
 {
-  "callback_id": "create_team_view",
+  "callback_id": "{{ callback_id }}",
   "type": "modal",
   "blocks": [
     {
@@ -20,7 +20,7 @@
           "text": "Pick a name for your team",
           "emoji": true
         },
-        "initial_value": "{{user_name}}'s team",
+        "initial_value": "{{ initial_team_name }}",
         "max_length": 250,
         "dispatch_action_config": {
           "trigger_actions_on": [
@@ -47,7 +47,9 @@
       "element": {
         "type": "multi_users_select",
         "action_id": "members_value",
-        "initial_users": [],
+        "initial_users": [
+          {{ initial_normal_members|map("to_json")|join(", ") }}
+        ],
         "placeholder": {
           "type": "plain_text",
           "text": "Select members",
@@ -73,6 +75,9 @@
       "element": {
         "type": "conversations_select",
         "action_id": "channel_value",
+        {% if initial_conversation %}
+        "initial_conversation": "{{ initial_conversation }}",
+        {% endif %}
         "placeholder": {
           "type": "plain_text",
           "text": "Select a channel",
@@ -106,7 +111,7 @@
         "type": "multi_users_select",
         "action_id": "managers_value",
         "initial_users": [
-          "{{user_id}}"
+          {{ initial_managers|map("to_json")|join(", ") }}
         ],
         "placeholder": {
           "type": "plain_text",
@@ -119,7 +124,7 @@
   "private_metadata": "",
   "title": {
     "type": "plain_text",
-    "text": "Create a team",
+    "text": "{{ title }}",
     "emoji": true
   },
   "clear_on_close": false,
@@ -130,7 +135,7 @@
   },
   "submit": {
     "type": "plain_text",
-    "text": "Create",
+    "text": "{{ submit_type }}",
     "emoji": true
   }
 }

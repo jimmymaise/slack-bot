@@ -17,6 +17,13 @@ class BotUtils:
         return user_name
 
     @staticmethod
+    def get_slack_users_by_user_ids(client, user_ids):
+        return [
+            client.users_info(user=user_id).data['user'] for user_id in
+            user_ids
+        ]
+
+    @staticmethod
     def get_value_from_state(state, name, extra_field=None, block_id=None):
         if not state:
             return None
