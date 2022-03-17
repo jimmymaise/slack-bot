@@ -1,6 +1,9 @@
 from __future__ import annotations
 
 from dotenv import load_dotenv
+
+load_dotenv()
+
 from flask import Flask
 from flask import request
 from slack_bolt import BoltRequest
@@ -8,8 +11,6 @@ from slack_bolt.app import App
 from slack_bolt.oauth import OAuthFlow
 
 from lambda_handler import bolt_app
-
-load_dotenv()
 
 
 def run(app: App):
@@ -45,7 +46,7 @@ def run(app: App):
     handler = LocalFlaskAppHandler(app)
 
     # Run server locally: http://localhost:5000
-    @flask_app.route('/slack-bot/events', methods=['GET', 'POST'])
+    @flask_app.route('/', methods=['GET', 'POST'])
     def slack_events():
         return handler.handle(request)
 
