@@ -34,7 +34,7 @@ class TeamManagement:
         )
         app.view('update_team_view')(
             ack=lambda ack: ack(response_action='clear'),
-            lazy=[self.create_team_lazy],
+            lazy=[self.update_team_lazy],
         )
         app.action('switch_personal')(
             ack=self.respond_to_slack_within_3_seconds, lazy=[self.get_personal_view_by_user_id],
@@ -44,6 +44,9 @@ class TeamManagement:
         )
         app.action('switch_manager')(
             ack=self.respond_to_slack_within_3_seconds, lazy=[self.get_manager_view_by_user_id],
+        )
+        app.action('team_actions')(
+            ack=self.respond_to_slack_within_3_seconds, lazy=[self.process_team_actions_lazy],
         )
 
     @staticmethod
@@ -58,6 +61,9 @@ class TeamManagement:
                 self.block_kit.create_update_team_view(
                     callback_id='create_team_view',
                     initial_team_name=f"{user_name}'s team",
+
+                    initial_normal_members=[
+                    ],
                     initial_managers=[context.user_id],
                     title='Create a team',
                     submit_type='Create',
@@ -69,52 +75,70 @@ class TeamManagement:
         team_id = self.get_team_id_by_user_id(context.user_id)
         team_info = self.get_team_by_team_id(team_id)
         all_team_members = self.team_member_db_handler.get_all_team_members_by_team_id(team_id=team_id)
+        update_team_view = json.loads(
+            self.block_kit.create_update_team_view(
+                callback_id='update_team_view',
+                initial_team_name=team_info.name,
+                initial_managers=[
+                    member.user_id for member in all_team_members if
+                    member.is_manager
+                ],
+                initial_normal_members=[
+                    member.user_id for member in all_team_members if
+                    not member.is_manager
+                ],
+                initial_conversation=team_info.announcement_channel_id,
+                title='Update team',
+                submit_type='Update',
+            ),
+        )
+        update_team_view['private_metadata'] = json.dumps({'team_id': team_id})
         client.views_open(
             trigger_id=body.get('trigger_id'),
-            view=json.loads(
-                self.block_kit.create_update_team_view(
-                    callback_id='update_team_view',
-                    initial_team_name=team_info.name,
-                    initial_managers=[
-                        member.user_id for member in all_team_members if
-                        member.is_manager is True
-                    ],
-                    initial_normal_members=[
-                        member.user_id for member in all_team_members if
-                        member.is_manager is False
-                    ],
-                    initial_conversation=team_info.announcement_channel_id,
-                    title='Update team',
-                    submit_type='Update',
-                ),
-            ),
+            view=update_team_view,
         )
 
     def create_team_lazy(self, client, body, ack):
         user_id = body['user']['id']
-        state = body['view']['state']
-        team_name = BotUtils.get_value_from_state(state, 'name', 'value')
-        managers = BotUtils.get_value_from_state(state, 'managers', 'selected_users')
-        normal_members = BotUtils.get_value_from_state(state, 'members', 'selected_users')
-        announcement_channel_id = BotUtils.get_value_from_state(state, 'channel', 'selected_conversation')
+        data = self._parse_data_from_create_update_team_view(body)
         team_id = self.team_db_handler.add_item(
             data={
-                'announcement_channel_id': announcement_channel_id,
-                'name': team_name,
+                'announcement_channel_id': data['announcement_channel_id'],
+                'name': data['team_name'],
                 'holiday_country': 'US',
 
             },
         )
 
-        all_team_members = [{'user_id': manager, 'is_manager': True, 'team_id': team_id} for manager in managers]
-        all_team_members += [
-            {'user_id': normal_member, 'is_manager': False, 'team_id': team_id} for normal_member in
-            normal_members
-        ]
+        all_team_members = [{'user_id': member['user_id'], 'is_manager': member['is_manager'], 'team_id': team_id} for
+                            member in
+                            data['all_team_members']]
 
         self.team_member_db_handler.add_many_items(
             all_team_members,
         )
+        self.get_manager_view_by_user_id(user_id)
+
+    def update_team_lazy(self, client, body, ack):
+        private_metadata = json.loads(body['view']['private_metadata'])
+        team_id = private_metadata['team_id']
+        user_id = body['user']['id']
+
+        data = self._parse_data_from_create_update_team_view(body)
+
+        all_team_members = [{'user_id': member['user_id'], 'is_manager': member['is_manager'], 'team_id': team_id} for
+                            member in
+                            data['all_team_members']]
+
+        self.team_db_handler.update_item_by_id(
+            update_data={
+                'announcement_channel_id': data['announcement_channel_id'],
+                'name': data['team_name'],
+                'holiday_country': 'US',
+            },
+            _id=team_id,
+        )
+        self.team_member_db_handler.replace_members_from_team(team_id, all_team_members)
         self.get_manager_view_by_user_id(user_id)
 
     def get_personal_view_lazy(self, body):
@@ -122,6 +146,8 @@ class TeamManagement:
 
     def get_manager_view_by_user_id(self, user_id):
         team_id = self.get_team_id_by_user_id(user_id)
+        if not team_id:
+            return self.get_personal_view_by_user_id(user_id)
         team_info = self.get_team_by_team_id(team_id)
         announcement_channel_name = \
             self.client.conversations_info(channel=team_info.announcement_channel_id)['channel']['name']
@@ -183,6 +209,13 @@ class TeamManagement:
             },
         )
 
+    def process_team_actions_lazy(self, event, context: BoltContext, client: WebClient, body):
+        action_data = body['actions'][0]['selected_option']['value'].split(',')
+        if action_data[0] == 'destroy':
+            self.team_db_handler.delete_team_by_id(action_data[1])
+            self.team_member_db_handler.delete_team_members_by_team_id(team_id=action_data[1])
+        return self.get_manager_view_by_user_id(user_id=body['user']['id'])
+
     def get_manager_ids_from_team(self, team_id):
         managers = self.team_member_db_handler.get_team_managers_by_team_id(team_id)
         return [manager.id for manager in managers]
@@ -196,3 +229,33 @@ class TeamManagement:
 
     def get_team_by_team_id(self, team_id):
         return self.team_db_handler.get_team_by_id(team_id)
+
+    def _parse_data_from_create_update_team_view(self, body):
+        return_data = {}
+        user_id = body['user']['id']
+        state = body['view']['state']
+
+        team_name = BotUtils.get_value_from_state(state, 'name', 'value')
+        announcement_channel_id = BotUtils.get_value_from_state(state, 'channel', 'selected_conversation')
+
+        managers = BotUtils.get_value_from_state(state, 'managers', 'selected_users')
+        if user_id not in managers:
+            managers.append(user_id)
+        normal_members = BotUtils.get_value_from_state(state, 'members', 'selected_users')
+        slack_users = BotUtils.get_slack_users_by_user_ids(self.client, list(set(managers + normal_members)))
+        slack_bots = [user['id'] for user in slack_users if user['is_bot']]
+        managers = list(set(managers) - set(slack_bots))
+        normal_members = list(set(normal_members) - set(managers) - set(slack_bots))
+
+        all_team_members = [{'user_id': manager, 'is_manager': True} for manager in managers]
+        all_team_members += [
+            {'user_id': normal_member, 'is_manager': False} for normal_member in
+            normal_members
+        ]
+        return_data.update({
+            'team_name': team_name,
+            'announcement_channel_id': announcement_channel_id,
+            'name': team_name,
+            'all_team_members': all_team_members,
+        })
+        return return_data

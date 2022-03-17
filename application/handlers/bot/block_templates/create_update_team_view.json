@@ -1,5 +1,5 @@
 {
-  "callback_id": "{{ call_back_id }}",
+  "callback_id": "{{ callback_id }}",
   "type": "modal",
   "blocks": [
     {
@@ -47,7 +47,9 @@
       "element": {
         "type": "multi_users_select",
         "action_id": "members_value",
-        "initial_users": [{{ initial_normal_members|map("to_json")|join(", ") }}],
+        "initial_users": [
+          {{ initial_normal_members|map("to_json")|join(", ") }}
+        ],
         "placeholder": {
           "type": "plain_text",
           "text": "Select members",
@@ -73,7 +75,9 @@
       "element": {
         "type": "conversations_select",
         "action_id": "channel_value",
-          "initial_conversation": "{{ initial_conversation }}",
+        {% if initial_conversation %}
+        "initial_conversation": "{{ initial_conversation }}",
+        {% endif %}
         "placeholder": {
           "type": "plain_text",
           "text": "Select a channel",
@@ -106,7 +110,9 @@
       "element": {
         "type": "multi_users_select",
         "action_id": "managers_value",
-        "initial_users": [{{ initial_managers|map("to_json")|join(", ") }}],
+        "initial_users": [
+          {{ initial_managers|map("to_json")|join(", ") }}
+        ],
         "placeholder": {
           "type": "plain_text",
           "text": "Select managers",

@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+from sqlalchemy import delete
+from sqlalchemy import select
+
 from application.handlers.database.base_db_handler import BaseDBHandler
 from application.handlers.database.models import TeamMember
 from application.utils.logger import Logger
@@ -24,37 +27,49 @@ class TeamMemberDBHandler(BaseDBHandler):
             'is_manager': is_manager,
         })
 
+    def replace_members_from_team(self, team_id, member_list):
+        self.remove_all_users_from_team(team_id)
+        self.add_many_items(member_list)
+
+    def remove_all_users_from_team(self, team_id):
+        self.execute(
+            delete(self.table).where(self.table.team_id == team_id),
+        )
+
     def remove_user_to_team(self, user_id, team_id):
         self.execute(
-            self.table.delete()
-                .where(self.table.c.user_id == user_id)
-                .where(self.table.c.role_id == team_id),
+            delete(self.table).where(self.table.user_id == user_id).where(self.table.team_id == team_id),
         )
 
     def get_team_managers_by_team_id(self, team_id):
         result = self.execute(
-            self.table.select()
-                .filter(
+            select(self.table).filter(
                 self.table.team_id == team_id,
                 self.table.is_manager == 1,
-                ),
+            ),
         )
         return result.all() if result.rowcount else []
 
     def get_all_team_members_by_team_id(self, team_id):
         result = self.execute(
-            self.table.select()
-                .filter(
+            select(self.table)
+            .filter(
                 self.table.team_id == team_id,
-                ),
+            ),
         )
         return result.all() if result.rowcount else []
 
     def get_team_member_by_user_id(self, user_id):
         result = self.execute(
-            self.table.select()
-                .filter(
+            select(self.table).filter(
                 self.table.user_id == user_id,
-                ),
+            ),
         )
         return result.first() if result.rowcount else None
+
+    def delete_team_members_by_team_id(self, team_id):
+        return self.execute(
+            delete(self.table).where(
+                self.table.team_id == team_id,
+            ),
+        )

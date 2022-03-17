@@ -3,6 +3,7 @@ from __future__ import annotations
 import re
 
 import tenacity
+from sqlalchemy import delete
 from sqlalchemy import insert
 from sqlalchemy import update
 from sqlalchemy.orm import declarative_base
@@ -27,6 +28,7 @@ class BaseDBHandler:
     def execute(self, query, **data):
         is_select_query = True
         str_query = str(query)
+        print(str_query)
         executed_list = self.get_query_list_from_sql_command(str_query)
         for command in executed_list:
             if not command.strip().lower().startswith('select'):
@@ -66,8 +68,8 @@ class BaseDBHandler:
         return leave_id
 
     def _verify_operation_success_by_lookup_with_retry(
-        self, data, wait_fixed=Constant.WAIT_DEFAULT,
-        stop_after_attempt=4,
+            self, data, wait_fixed=Constant.WAIT_DEFAULT,
+            stop_after_attempt=4,
     ):
         LambdaCache.reset_all_db_cache()
         retry = tenacity.Retrying(
@@ -86,18 +88,25 @@ class BaseDBHandler:
         result = self.execute(insert(self.table).values(**data))
         return getattr(result.inserted_primary_key, '_data')[0]
 
+    def delete_item_by_id(self, _id: str):
+        # user = self.session.query(self.table).filter(self.table.id == _id).one()
+        # self.session.delete(user)
+        self.session.remove()
+        result = self.execute(delete(self.table).where(self.table.id == _id))
+        return result
+
     def add_many_items(self, item_list: list):
         # `executemany`` is not supported, use ``execute`` instead
         for item in item_list:
             self.add_item(item)
 
     def remove_item_by_id(self, _id):
-        return self.execute(self.session.delete(self.table).where(self.table.c.id == _id))
+        return self.execute(self.session.delete(self.table).where(self.table.id == _id))
 
     def find_item_by_id(self, _id):
 
         q = self.session.query(self.table). \
-            filter(self.table.c.id == _id)
+            filter(self.table.id == _id)
         result = self.execute(q)
         if not result.rowcount:
             self.logger.error(f'Cannot find item {_id}')

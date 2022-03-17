@@ -13,3 +13,6 @@ class TeamDBHandler(BaseDBHandler):
 
     def get_team_by_id(self, team_id: dict):
         return self.find_item_by_id(team_id)
+
+    def delete_team_by_id(self, team_id: str):
+        return self.delete_item_by_id(team_id)

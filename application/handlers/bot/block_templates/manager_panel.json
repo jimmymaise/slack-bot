@@ -89,7 +89,7 @@
               "text": "Delete team",
               "emoji": true
             },
-            "value": "destroy,{{team_id}}"
+            "value": "destroy,{{team_info.id}}"
           }
         ],
         "confirm": {
