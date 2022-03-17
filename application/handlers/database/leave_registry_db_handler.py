@@ -35,8 +35,10 @@ class LeaveRegistryDBHandler(BaseDBHandler):
 
     def get_leaves_by_date_range(self, start_date: str, end_date: str, statuses: list):
         select_query = self.table.select().filter(
-            self.table.c.start_date <= start_date,
-            self.table.c.end_date <= end_date,
+            ((self.table.c.start_date <= start_date)
+             & (self.table.c.end_date >= start_date))
+            | ((self.table.c.start_date <= end_date) & (self.table.c.end_date >= end_date))
+            | ((self.table.c.start_date >= start_date) & (self.table.c.end_date <= end_date)),
         )
         if statuses:
             select_query = select_query.filter(
