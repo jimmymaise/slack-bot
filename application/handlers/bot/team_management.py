@@ -7,27 +7,13 @@ from slack_bolt import App
 from slack_bolt import BoltContext
 from slack_sdk import WebClient
 
-from application.handlers.bot.block_template_handler import BlockTemplateHandler
-from application.handlers.bot.bot_utils import BotUtils
-from application.handlers.bot.leave_lookup import LeaveLookup
-from application.handlers.database.leave_registry_db_handler import LeaveRegistryDBHandler
-from application.handlers.database.team_db_handler import TeamDBHandler
-from application.handlers.database.team_member_db_handler import TeamMemberDBHandler
+from application.handlers.bot.base_management import BaseManagement
 
 
-class TeamManagement:
-    def __init__(
-            self, app: App, client: WebClient, leave_lookup: LeaveLookup,
-    ):
-        self.app = app
-        self.client = client
-        self.block_kit = BlockTemplateHandler('./application/handlers/bot/block_templates').get_object_templates()
-        self.leave_lookup = leave_lookup
+class TeamManagement(BaseManagement):
+    def __init__(self, app: App, client: WebClient):
+        super().__init__(app, client)
 
-        self.team_member_db_handler = TeamMemberDBHandler(
-        )
-        self.leave_register_db_handler = LeaveRegistryDBHandler()
-        self.team_db_handler = TeamDBHandler()
         app.view('create_team_view')(
             ack=lambda ack: ack(response_action='clear'),
             lazy=[self.create_team_lazy],
@@ -54,7 +40,7 @@ class TeamManagement:
         ack()
 
     def get_create_team_view_lazy(self, event, context: BoltContext, client: WebClient, body):
-        user_name = BotUtils.get_username_by_user_id(client, context.user_id)
+        user_name = self.get_username_by_user_id(context.user_id)
         client.views_open(
             trigger_id=body.get('trigger_id'),
             view=json.loads(
@@ -155,10 +141,29 @@ class TeamManagement:
         num_of_all_team_member = len(all_team_members)
         num_of_manager = sum(1 for team_member in all_team_members if team_member.is_manager)
         num_of_normal_member = num_of_all_team_member - num_of_manager
-        slack_users = BotUtils.get_slack_users_by_user_ids(
-            self.client,
+        slack_users = self.get_slack_users_by_user_ids(
             [team_member.user_id for team_member in all_team_members],
         )
+        wait_for_approval_leaves_rows = self.leave_register_db_handler.get_leaves(
+            team_id=team_id,
+            statuses=[self.constant.LEAVE_REQUEST_STATUS_WAIT],
+        )
+        wait_for_approval_leaves = self.build_leave_display_list(wait_for_approval_leaves_rows, True)
+
+        current_leaves_rows = self.leave_register_db_handler.get_leaves(
+            start_date=datetime.datetime.now().strftime('%Y-%m-%d'),
+            end_date=datetime.datetime.now().strftime('%Y-%m-%d'),
+            team_id=team_id,
+            statuses=[self.constant.LEAVE_REQUEST_STATUS_WAIT, self.constant.LEAVE_REQUEST_STATUS_APPROVED],
+        )
+        current_leaves = self.build_leave_display_list(current_leaves_rows, True)
+        up_coming_leaves_rows = self.leave_register_db_handler.get_leaves(
+            start_date=datetime.datetime.now().strftime('%Y-%m-%d'),
+            team_id=team_id,
+            statuses=[self.constant.LEAVE_REQUEST_STATUS_WAIT, self.constant.LEAVE_REQUEST_STATUS_APPROVED],
+            is_exclude_request_time_off_before_start_date=True,
+        )
+        up_coming_leaves = self.build_leave_display_list(up_coming_leaves_rows, True)
         self.client.views_publish(
             user_id=user_id,
             view={
@@ -172,6 +177,10 @@ class TeamManagement:
                         num_of_manager=num_of_manager,
                         all_team_members=all_team_members,
                         slack_users=slack_users,
+                        up_coming_leaves=up_coming_leaves,
+                        wait_for_approval_leaves=wait_for_approval_leaves,
+                        current_leaves=current_leaves,
+
                     ),
                 ), },
         )
@@ -190,7 +199,7 @@ class TeamManagement:
             user_id=user_id,
         )
 
-        user_leaves = BotUtils.build_leave_display_list(user_leave_rows)
+        user_leaves = self.build_leave_display_list(user_leave_rows)
 
         blocks = json.loads(
             self.block_kit.personal_view(
@@ -216,33 +225,19 @@ class TeamManagement:
             self.team_member_db_handler.delete_team_members_by_team_id(team_id=action_data[1])
         return self.get_manager_view_by_user_id(user_id=body['user']['id'])
 
-    def get_manager_ids_from_team(self, team_id):
-        managers = self.team_member_db_handler.get_team_managers_by_team_id(team_id)
-        return [manager.id for manager in managers]
-
-    def get_team_id_by_user_id(self, user_id):
-        team = self.team_member_db_handler.get_team_member_by_user_id(user_id)
-        return team.team_id if team else None
-
-    def get_team_member_by_user_id(self, user_id):
-        return self.team_member_db_handler.get_team_member_by_user_id(user_id)
-
-    def get_team_by_team_id(self, team_id):
-        return self.team_db_handler.get_team_by_id(team_id)
-
     def _parse_data_from_create_update_team_view(self, body):
         return_data = {}
         user_id = body['user']['id']
         state = body['view']['state']
 
-        team_name = BotUtils.get_value_from_state(state, 'name', 'value')
-        announcement_channel_id = BotUtils.get_value_from_state(state, 'channel', 'selected_conversation')
+        team_name = self.get_value_from_state(state, 'name', 'value')
+        announcement_channel_id = self.get_value_from_state(state, 'channel', 'selected_conversation')
 
-        managers = BotUtils.get_value_from_state(state, 'managers', 'selected_users')
+        managers = self.get_value_from_state(state, 'managers', 'selected_users')
         if user_id not in managers:
             managers.append(user_id)
-        normal_members = BotUtils.get_value_from_state(state, 'members', 'selected_users')
-        slack_users = BotUtils.get_slack_users_by_user_ids(self.client, list(set(managers + normal_members)))
+        normal_members = self.get_value_from_state(state, 'members', 'selected_users')
+        slack_users = self.get_slack_users_by_user_ids(list(set(managers + normal_members)))
         slack_bots = [user['id'] for user in slack_users if user['is_bot']]
         managers = list(set(managers) - set(slack_bots))
         normal_members = list(set(normal_members) - set(managers) - set(slack_bots))

@@ -6,20 +6,15 @@ import json
 from slack_bolt import App
 from slack_sdk import WebClient
 
-from application.handlers.bot.block_template_handler import BlockTemplateHandler
-from application.handlers.bot.bot_utils import BotUtils
-from application.handlers.database.leave_registry_db_handler import LeaveRegistryDBHandler
+from application.handlers.bot.base_management import BaseManagement
 from application.utils.cache import LambdaCache
-from application.utils.constant import Constant
-from application.utils.logger import Logger
 
 
-class LeaveRegister:
+class LeaveRegister(BaseManagement):
     def __init__(
-            self, app: App, client: WebClient, approval_channel: str,
+            self, app: App, client: WebClient, approval_channel,
     ):
-        self.app = app
-        self.client = client
+        super().__init__(app, client)
         self.approval_channel = approval_channel
         app.command('/vacation')(ack=self.respond_to_slack_within_3_seconds, lazy=[self.trigger_request_leave_command])
         app.view('leave_input_view')(self.get_leave_confirmation_view)
@@ -29,17 +24,12 @@ class LeaveRegister:
         )
 
         app.block_action({'block_id': 'approve_reject_vacation', 'action_id': 'approve'})(
-            ack=self.respond_to_slack_within_3_seconds, lazy=[self.approve_pto],
+            ack=self.respond_to_slack_within_3_seconds, lazy=[self.process_leave_actions],
         )
         app.block_action({'block_id': 'approve_reject_vacation', 'action_id': 'reject'})(
             ack=self.respond_to_slack_within_3_seconds,
-            lazy=[self.reject_pto],
+            lazy=[self.process_leave_actions],
         )
-        self.block_kit = BlockTemplateHandler('./application/handlers/bot/block_templates').get_object_templates()
-
-        self.leave_register_db_handler = LeaveRegistryDBHandler(
-        )
-        self.logger = Logger.get_logger()
 
     @staticmethod
     def respond_to_slack_within_3_seconds(ack):
@@ -123,7 +113,7 @@ class LeaveRegister:
     def handle_leave_request_submission(self, body, logger):
         workspace_domain = f"https://{self.client.team_info().get('team').get('domain')}.slack.com/team/"
         user_id = body['user']['id']
-        user_name = BotUtils.get_username_by_user_id(self.client, user_id)
+        user_name = self.get_username_by_user_id(user_id)
         user_profile_url = workspace_domain + user_id
 
         private_metadata = json.loads(body['view']['private_metadata'])
@@ -148,8 +138,9 @@ class LeaveRegister:
             start_date=start_date,
             end_date=end_date,
         )
-        self.client.chat_postMessage(
-            channel=self.approval_channel,
+
+        message_ts = self.send_message_to_managers_by_user_id(
+            user_id=user_id,
             text=f'You have a new request:\n*<{user_profile_url}|{user_name} - New vacation request>*',
             blocks=channel_message_block,
         )
@@ -164,6 +155,10 @@ class LeaveRegister:
                 reason_of_leave=reason_of_leave,
             ),
         )
+        self.leave_register_db_handler.update_item_with_retry(
+            _id=leave_id,
+            update_data={'message_ts': f'ts_{message_ts}'},
+        )
         self.client.chat_postMessage(
             channel=user_id,
             text='You have sent a new vacation request. '
@@ -171,29 +166,23 @@ class LeaveRegister:
             blocks=confirm_requester_message_block,
         )
 
-    def approve_pto(self, ack, body, logger):
-        self._process_leave_actions(body, ack)
-
-    def reject_pto(self, ack, body, logger):
-        self._process_leave_actions(body, ack)
-
-    def _process_leave_actions(self, body, ack):
-        container = body.get('container')
-        message_ts = container.get('message_ts')
-        channel_id = container.get('channel_id')
+    def process_leave_actions(self, body, ack):
         decision = body.get('actions')[0].get('text').get('text')
-        status = Constant.LEAVE_DECISION_TO_STATUS[decision]
-        leave_id = body['message']['blocks'][2]['fields'][1]['text'].split(':*\n')[1].strip()
-        start_date = body['message']['blocks'][3]['fields'][0]['text'].split(':*')[1].strip()
-        end_date = body['message']['blocks'][3]['fields'][1]['text'].split(':*\n')[1].strip()
+        leave_id = body.get('actions')[0].get('value')
+        status = self.constant.LEAVE_DECISION_TO_STATUS[decision]
+        leave = self.leave_register_db_handler.find_item_by_id(_id=leave_id)
+        message_ts = float(leave.message_ts.split('ts_')[1]) if leave.message_ts else body.get('container').get(
+            'message_ts',
+        )
+        start_date = leave.start_date
+        end_date = leave.end_date
         # Manager info
         manager_id = body.get('user').get('id')
         manager_info = self.client.users_info(user=manager_id)
 
         manager_name = manager_info.get('user').get('real_name')
         # User info
-        temp = body.get('message').get('blocks')[0].get('text').get('text')
-        user_id = temp[temp.index('/U') + 1: temp.index('|')]
+        user_id = leave.user_id
         user_info = self.client.users_info(user=user_id)
         user_name = user_info.get('user').get('real_name')
 
@@ -204,13 +193,22 @@ class LeaveRegister:
         )
 
         # Delete responded message
-        self.client.chat_delete(channel=channel_id, ts=message_ts)
-        if decision == Constant.LEAVE_REQUEST_ACTION_APPROVE:
+        managers = self.team_member_db_handler.get_managers_by_user_id(user_id=user_id)
+        for manager in managers:
+            self.client.chat_delete(channel=manager.user_id, ts=message_ts)
+        if decision == self.constant.LEAVE_REQUEST_ACTION_APPROVE:
 
             self.client.chat_postMessage(
                 channel=self.approval_channel,
                 text=f':tada:Leave Request for {user_name} (From {start_date} To {end_date}) '
                      f'has been approved by {manager_name}. Leave Id: {leave_id}',
+            )
+
+            self.send_message_to_managers_by_user_id(
+                user_id=user_id,
+                text=f':tada:Leave Request for {user_name} (From {start_date} To {end_date}) '
+                     f'has been approved by {manager_name}. Leave Id: {leave_id}',
+                manager_ids=[manager.user_id for manager in managers],
             )
             self.client.chat_postMessage(
                 channel=user_id,
@@ -218,6 +216,12 @@ class LeaveRegister:
                      f'has been approved by {manager_name}:smiley: . Leave Id: {leave_id}',
             )
         else:
+
+            self.send_message_to_managers_by_user_id(
+                user_id=user_id,
+                text=f':tada:Leave Request for {user_name} (From {start_date} To {end_date}) '
+                     f'has been approved by {manager_name}. Leave Id: {leave_id}',
+            )
             self.client.chat_postMessage(
                 channel=self.approval_channel,
                 text=f':x:Leave Request for {user_name} (From {start_date} To {end_date}) '

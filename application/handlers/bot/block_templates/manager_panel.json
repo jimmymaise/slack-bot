@@ -1,7 +1,6 @@
 [
   {
     "type": "section",
-    "block_id": "dLa",
     "text": {
       "type": "mrkdwn",
       "text": "*Manager panel*",
@@ -18,12 +17,10 @@
     }
   },
   {
-    "type": "divider",
-    "block_id": "/wXP"
+    "type": "divider"
   },
   {
     "type": "section",
-    "block_id": "p8=A",
     "text": {
       "type": "mrkdwn",
       "text": "{{team_info.name}} in {{ announcement_channel_name }}",
@@ -32,7 +29,6 @@
   },
   {
     "type": "context",
-    "block_id": "zv2q",
     "elements": [
       {% for user in slack_users  %}
       {
@@ -50,7 +46,6 @@
   },
   {
     "type": "actions",
-    "block_id": "team_action",
     "elements": [
       {
         "type": "button",
@@ -119,7 +114,6 @@
   },
   {
     "type": "section",
-    "block_id": "9jIs1",
     "text": {
       "type": "plain_text",
       "text": " ",
@@ -128,7 +122,6 @@
   },
   {
     "type": "section",
-    "block_id": "IjqXU",
     "text": {
       "type": "plain_text",
       "text": " ",
@@ -137,7 +130,6 @@
   },
   {
     "type": "section",
-    "block_id": "FW4s",
     "text": {
       "type": "mrkdwn",
       "text": "*Waiting for your approval*",
@@ -159,21 +151,100 @@
     }
   },
   {
-    "type": "divider",
-    "block_id": "Qx5"
-  },
+    "type": "divider"
+  }
+  {% for leave in wait_for_approval_leaves %},
   {
     "type": "section",
-    "block_id": "iLpW",
     "text": {
       "type": "mrkdwn",
-      "text": "_No pending time off requests. You’re all caught up._ :tada:",
+      "text": "{{leave.type_icon}} *{{ leave.type }}*\n{{ leave.duration }}\nComment: {{ leave.reason }}",
       "verbatim": false
+    },
+    "accessory": {
+      "type": "overflow",
+      "action_id": "timeoff_actions",
+      "options": [
+        {
+          "text": {
+            "type": "plain_text",
+            "text": "Show user profile",
+            "emoji": true
+          },
+          "value": "user_profile,{{ leave.user_id }},"
+        },
+        {
+          "text": {
+            "type": "plain_text",
+            "text": "Delete",
+            "emoji": true
+          },
+          "value": "delete,{{ leave.id }},list"
+        }
+      ]
     }
   },
   {
+    "type": "context",
+    "elements": [
+      {
+        "type": "mrkdwn",
+        "text": "Requested by",
+        "verbatim": false
+      },
+      {
+        "type": "image",
+        "image_url": "{{ leave.user.profile.image_192 }}",
+        "alt_text": "user image"
+      },
+      {
+        "type": "mrkdwn",
+        "text": "*<@{{ leave.user_id }}>*",
+        "verbatim": false
+      }
+    ]
+  },
+  {
+    "type": "actions",
+    "elements": [
+      {
+        "type": "button",
+        "action_id": "accept_request_home",
+        "text": {
+          "type": "plain_text",
+          "text": "Approve",
+          "emoji": true
+        },
+        "style": "primary",
+        "value": "{{leave.id}}"
+      },
+      {
+        "type": "button",
+        "action_id": "reject_request_home",
+        "text": {
+          "type": "plain_text",
+          "text": "Reject",
+          "emoji": true
+        },
+        "style": "danger",
+        "value": "{{leave.id}}"
+      },
+      {
+        "type": "button",
+        "action_id": "direct_discuss",
+        "text": {
+          "type": "plain_text",
+          "text": ":speech_balloon: Discuss",
+          "emoji": true
+        },
+        "value": "210432",
+        "url": "slack://user?team=TF1SH8PRU&id={{leave.user_id}}"
+      }
+    ]
+  }
+  {% endfor %},
+  {
     "type": "section",
-    "block_id": "kkr",
     "text": {
       "type": "plain_text",
       "text": " ",
@@ -182,7 +253,6 @@
   },
   {
     "type": "section",
-    "block_id": "VFWeu",
     "text": {
       "type": "plain_text",
       "text": " ",
@@ -191,7 +261,6 @@
   },
   {
     "type": "section",
-    "block_id": "WHuz",
     "text": {
       "type": "mrkdwn",
       "text": "*Current time offs*",
@@ -199,21 +268,63 @@
     }
   },
   {
-    "type": "divider",
-    "block_id": "I/aC"
-  },
+    "type": "divider"
+  }
+  {% for leave in current_leaves %},
+
   {
     "type": "section",
-    "block_id": "Dp/",
     "text": {
       "type": "mrkdwn",
-      "text": "_There are no time offs yet._",
+      "text": "{{leave.type_icon}} *{{ leave.type }}*\n{{ leave.duration }}\nComment: {{ leave.reason }}",
       "verbatim": false
+    },
+    "accessory": {
+      "type": "overflow",
+      "action_id": "timeoff_actions",
+      "options": [
+        {
+          "text": {
+            "type": "plain_text",
+            "text": "Show user profile",
+            "emoji": true
+          },
+          "value": "user_profile,{{ user_id }},"
+        },
+        {
+          "text": {
+            "type": "plain_text",
+            "text": "Delete",
+            "emoji": true
+          },
+          "value": "delete,{{ leave.id }},list"
+        }
+      ]
     }
   },
   {
+    "type": "context",
+    "elements": [
+      {
+        "type": "mrkdwn",
+        "text": "Requested by",
+        "verbatim": false
+      },
+      {
+        "type": "image",
+        "image_url": "{{ leave.user.profile.image_192 }}",
+        "alt_text": "user image"
+      },
+      {
+        "type": "mrkdwn",
+        "text": "*<@{{ leave.user_id }}>*",
+        "verbatim": false
+      }
+    ]
+  }
+  {% endfor %},
+  {
     "type": "section",
-    "block_id": "DtB",
     "text": {
       "type": "plain_text",
       "text": " ",
@@ -222,7 +333,6 @@
   },
   {
     "type": "section",
-    "block_id": "Xrf96",
     "text": {
       "type": "plain_text",
       "text": " ",
@@ -231,7 +341,6 @@
   },
   {
     "type": "section",
-    "block_id": "LXFRK",
     "text": {
       "type": "mrkdwn",
       "text": "*Upcoming time offs*",
@@ -239,21 +348,63 @@
     }
   },
   {
-    "type": "divider",
-    "block_id": "Vn3h+"
-  },
+    "type": "divider"
+  }
+  {% for leave in up_coming_leaves %},
+
   {
     "type": "section",
-    "block_id": "Npxx",
     "text": {
       "type": "mrkdwn",
-      "text": "_There are no time offs yet._",
+      "text": "{{leave.type_icon}} *{{ leave.type }}*\n{{ leave.duration }}\nComment: {{ leave.reason }}",
       "verbatim": false
+    },
+    "accessory": {
+      "type": "overflow",
+      "action_id": "timeoff_actions",
+      "options": [
+        {
+          "text": {
+            "type": "plain_text",
+            "text": "Show user profile",
+            "emoji": true
+          },
+          "value": "user_profile,{{ leave.user_id }},"
+        },
+        {
+          "text": {
+            "type": "plain_text",
+            "text": "Delete",
+            "emoji": true
+          },
+          "value": "delete,{{ leave.id }},list"
+        }
+      ]
     }
   },
   {
+    "type": "context",
+    "elements": [
+      {
+        "type": "mrkdwn",
+        "text": "Requested by",
+        "verbatim": false
+      },
+      {
+        "type": "image",
+        "image_url": "{{ leave.user.profile.image_192 }}",
+        "alt_text": "user image"
+      },
+      {
+        "type": "mrkdwn",
+        "text": "*<@{{ leave.user_id }}>*",
+        "verbatim": false
+      }
+    ]
+  }
+  {% endfor %},
+  {
     "type": "section",
-    "block_id": "OV3o7",
     "text": {
       "type": "plain_text",
       "text": " ",
@@ -262,7 +413,6 @@
   },
   {
     "type": "section",
-    "block_id": "zAKhu",
     "text": {
       "type": "plain_text",
       "text": " ",
@@ -271,7 +421,6 @@
   },
   {
     "type": "section",
-    "block_id": "ZNQeX",
     "text": {
       "type": "mrkdwn",
       "text": "*Helpful links*",
@@ -279,12 +428,10 @@
     }
   },
   {
-    "type": "divider",
-    "block_id": "0xr"
+    "type": "divider"
   },
   {
     "type": "actions",
-    "block_id": "ar5K",
     "elements": [
       {
         "type": "button",
@@ -294,27 +441,27 @@
           "text": ":gear: Settings",
           "emoji": true
         },
-        "url": "slack://app?id=A4KAKTZPZ&team=TF1SH8PRU&tab=messages"
+        "url": "slack://app?id=A031MPR62MB&tab=messages"
       },
       {
         "type": "button",
-        "action_id": "H4Ta",
+        "action_id": "WaBVL",
         "text": {
           "type": "plain_text",
           "text": ":link: View Website",
           "emoji": true
         },
-        "url": "https://time.bot/"
+        "url": "https://bimodalconsulting.com/"
       },
       {
         "type": "button",
-        "action_id": "iXQ79",
+        "action_id": "h1tf",
         "text": {
           "type": "plain_text",
           "text": ":book: Help Center",
           "emoji": true
         },
-        "url": "https://timebot.zendesk.com/hc/en-us"
+        "url": "https://bimodalconsulting.com/"
       },
       {
         "type": "button",
@@ -323,22 +470,21 @@
           "type": "plain_text",
           "text": ":email: Contact Us",
           "emoji": true
-        }
+        },
+        "url": "https://bimodalconsulting.com/"
       }
     ]
   },
   {
     "type": "section",
-    "block_id": "w1906",
     "text": {
       "type": "mrkdwn",
-      "text": "Your workspace is on a Free plan, with limited time off requests.\n<https://time.bot/upgrade/|*Upgrade TimeBot*> :zap: and get access to advanced features, scheduled messages, unlimited time off requests, calendar synchronization and more.",
+      "text": "BIP Bot is a slack bot providing a better way to implement the Bimodal Internal Process:zap:. At the very first MVP, BIP Bot will help us to schedule the PTO time.Read the <https://docs.google.com/document/d/1ruRofzWX7pkLEdNZ9T7N71tEV6AL0zmx5DcLW2OSNb8/edit|*[BIP - leave management & attendance management]> for understanding requirements",
       "verbatim": false
     }
   },
   {
     "type": "section",
-    "block_id": "paZDy",
     "text": {
       "type": "plain_text",
       "text": " ",
@@ -347,7 +493,6 @@
   },
   {
     "type": "section",
-    "block_id": "YHC=",
     "text": {
       "type": "plain_text",
       "text": " ",

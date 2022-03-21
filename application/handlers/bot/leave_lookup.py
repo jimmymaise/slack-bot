@@ -5,22 +5,16 @@ import json
 from slack_bolt import App
 from slack_sdk import WebClient
 
-from application.handlers.bot.block_template_handler import BlockTemplateHandler
-from application.handlers.bot.bot_utils import BotUtils
-from application.handlers.database.leave_registry_db_handler import LeaveRegistryDBHandler
+from application.handlers.bot.base_management import BaseManagement
 from application.utils.constant import Constant
 
 
-class LeaveLookup:
+class LeaveLookup(BaseManagement):
     def __init__(
             self, app: App, client: WebClient,
     ):
-        self.app = app
-        self.client: WebClient = client
-        self.block_kit = BlockTemplateHandler('./application/handlers/bot/block_templates').get_object_templates()
+        super().__init__(app, client)
         app.command('/ooo-today')(ack=self.respond_to_slack_within_3_seconds, lazy=[self.trigger_today_ooo_command])
-
-        self.leave_register_db_handler = LeaveRegistryDBHandler()
 
     @staticmethod
     def respond_to_slack_within_3_seconds(ack):
@@ -96,7 +90,7 @@ class LeaveLookup:
             user_id=user_id,
             leave_type=leave_type,
         )
-        user_leaves = BotUtils.build_leave_display_list(user_leave_rows)
+        user_leaves = self.build_leave_display_list(user_leave_rows)
         blocks = json.loads(
             self.block_kit.all_your_time_off_blocks(
                 user_leaves=user_leaves,

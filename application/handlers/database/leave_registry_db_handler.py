@@ -6,6 +6,7 @@ from sqlalchemy import select
 
 from application.handlers.database.base_db_handler import BaseDBHandler
 from application.handlers.database.models import LeaveRegistry
+from application.handlers.database.team_member_db_handler import TeamMember
 from application.utils.constant import Constant
 
 
@@ -23,7 +24,7 @@ class LeaveRegistryDBHandler(BaseDBHandler):
 
     def get_leaves(
             self, *, start_date: str = None, end_date: str = None, statuses: list = None,
-            user_id: str = None, leave_type=None,
+            user_id: str = None, leave_type=None, team_id=None, is_exclude_request_time_off_before_start_date=False,
     ):
         select_query = select(self.table)
         if not start_date:
@@ -31,10 +32,9 @@ class LeaveRegistryDBHandler(BaseDBHandler):
         if not end_date:
             end_date = '9999-01-01'
         select_query = select_query.filter(
-            ((self.table.start_date <= start_date)
-             & (self.table.end_date >= start_date))
-            | ((self.table.start_date <= end_date) & (self.table.end_date >= end_date))
-            | ((self.table.start_date >= start_date) & (self.table.end_date <= end_date)),
+            ((start_date >= self.table.start_date) & (start_date <= self.table.end_date))
+            | ((end_date >= self.table.start_date) & (end_date <= self.table.end_date))
+            | ((start_date <= self.table.start_date) & (end_date >= self.table.end_date)),
         )
         if statuses:
             select_query = select_query.filter(
@@ -48,6 +48,14 @@ class LeaveRegistryDBHandler(BaseDBHandler):
             select_query = select_query.filter(
                 self.table.leave_type == leave_type,
             )
+        if team_id:
+            select_query = select_query. \
+                join(TeamMember, self.table.user_id == TeamMember.user_id). \
+                where(TeamMember.team_id == team_id)
+
+        if is_exclude_request_time_off_before_start_date:
+            select_query = select_query.where(self.table.start_date >= start_date)
+
         result = self.execute(select_query)
 
         return result.all() if result.rowcount else []

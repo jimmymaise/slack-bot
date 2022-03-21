@@ -48,11 +48,11 @@
         "text": {
           "type": "plain_text",
           "emoji": true,
-          "text": "Approve"
+          "text": "Approve",
         },
         "action_id": "approve",
         "style": "primary",
-        "value": "approve_vacation_request"
+        "value": "{{ leave_id }}"
       },
       {
         "type": "button",
@@ -63,7 +63,7 @@
         },
         "action_id": "reject",
         "style": "danger",
-        "value": "reject_vacation_request"
+        "value": "{{ leave_id }}"
       }
     ]
   }

@@ -25,6 +25,7 @@ class LeaveRegistry(Base):
     created_time = Column(Date)
     status = Column(String)
     approver = Column(String)
+    message_ts = Column(String)
 
     def __repr__(self):
         return f'LeaveRegistry(id={self.id!r}, username={self.username!r}, user_id={self.user_id!r})'
