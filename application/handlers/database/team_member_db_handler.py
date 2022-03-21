@@ -73,3 +73,8 @@ class TeamMemberDBHandler(BaseDBHandler):
                 self.table.team_id == team_id,
             ),
         )
+
+    def get_managers_by_user_id(self, user_id):
+        team_member = self.get_team_member_by_user_id(user_id)
+        team_managers = self.get_team_managers_by_team_id(team_member.team_id)
+        return team_managers

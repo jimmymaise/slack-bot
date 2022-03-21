@@ -27,6 +27,7 @@ class BlockTemplateHandler:
         for file_path in file_paths:
             with open(file_path) as file:
                 file_name_without_ext = file_path.with_suffix('').name
+                print(file_name_without_ext)
                 template_dict[file_name_without_ext] = Template(file.read()).render
 
         return Dict2Obj(template_dict)

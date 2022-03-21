@@ -7,7 +7,6 @@ from slack_bolt import BoltContext
 from slack_sdk import WebClient
 
 from application.handlers.bot.block_template_handler import BlockTemplateHandler
-from application.handlers.bot.bot_utils import BotUtils
 from application.handlers.bot.leave_lookup import LeaveLookup
 from application.handlers.bot.leave_register import LeaveRegister
 from application.handlers.bot.team_management import TeamManagement
@@ -22,6 +21,7 @@ class HomeTab:
         self.app = app
         self.client = client
         self.leave_lookup = leave_lookup
+        self.leave_register = leave_register
         self.team_management = team_management
         app.event('app_home_opened')(ack=self.respond_to_slack_within_3_seconds, lazy=[self.open_app_home_lazy])
         app.action('book_vacation')(
@@ -50,28 +50,44 @@ class HomeTab:
         app.action('timeoff_end_filter')(
             ack=self.respond_to_slack_within_3_seconds, lazy=[self.get_my_time_off_lazy],
         )
+        app.action('timeoff_end_filter')(
+            ack=self.respond_to_slack_within_3_seconds, lazy=[self.get_my_time_off_lazy],
+        )
+        app.action('accept_request_home')(
+            ack=self.respond_to_slack_within_3_seconds, lazy=[self.process_leave_actions_from_home],
+        )
+        app.action('reject_request_home')(
+            ack=self.respond_to_slack_within_3_seconds, lazy=[self.process_leave_actions_from_home],
+        )
         self.leave_register_db_handler = LeaveRegistryDBHandler()
 
     @staticmethod
     def respond_to_slack_within_3_seconds(ack):
         ack()
 
+    def process_leave_actions_from_home(self, body, ack):
+        self.leave_register.process_leave_actions(body, ack)
+        self.team_management.get_manager_view_by_user_id(body['user']['id'])
+
     def open_app_home_lazy(self, event, context: BoltContext, client: WebClient, body):
         if event['tab'] == 'home':
-            self.team_management.get_personal_view_by_user_id(context.user_id)
+            if event['view']['blocks'][0]['text']['text'] == '*Manager panel*':
+                self.team_management.get_manager_view_by_user_id(context.user_id)
+            else:
+                self.team_management.get_personal_view_by_user_id(context.user_id)
 
     def get_my_time_off_lazy(self, body):
         user_id = body['user']['id']
         state = body['view']['state']
-        leave_type = BotUtils.get_value_from_state(
+        leave_type = self.leave_lookup.get_value_from_state(
             state, 'timeoff_type_filter', extra_field='selected_option.value',
             block_id='timeoff_filter',
         )
-        start_date = BotUtils.get_value_from_state(
+        start_date = self.leave_lookup.get_value_from_state(
             state, 'timeoff_start_filter', extra_field='selected_date',
             block_id='timeoff_filter',
         )
-        end_date = BotUtils.get_value_from_state(
+        end_date = self.leave_lookup.get_value_from_state(
             state, 'timeoff_end_filter', extra_field='selected_date',
             block_id='timeoff_filter',
         )
@@ -93,7 +109,7 @@ class HomeTab:
             end_date=end_date,
             user_id=user_id,
         )
-        user_leaves = BotUtils.build_leave_display_list(user_leave_rows)
+        user_leaves = self.leave_lookup.build_leave_display_list(user_leave_rows)
         blocks = json.loads(
             self.block_kit.all_your_time_off_blocks(
                 user_leaves=user_leaves,
