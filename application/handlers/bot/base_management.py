@@ -102,5 +102,5 @@ class BaseManagement:
             if is_get_slack_user_info:
                 user_leave['user'] = self.get_slack_user_by_user_id(user_id=leave_row.user_id)
 
-                user_leaves.append(user_leave)
+            user_leaves.append(user_leave)
         return user_leaves
