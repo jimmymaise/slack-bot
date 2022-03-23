@@ -63,9 +63,9 @@ class BaseDBHandler:
         return self._verify_operation_success_by_lookup_with_retry(update_data)
 
     def add_item_and_verify_success(self, data: dict):
-        leave_id = self.add_item(data)
-        self._verify_operation_success_by_lookup_with_retry(data)
-        return leave_id
+        _id = self.add_item(data)
+        self._verify_operation_success_by_lookup_with_retry({'id': _id})
+        return _id
 
     def _verify_operation_success_by_lookup_with_retry(
             self, data, wait_fixed=Constant.WAIT_DEFAULT,

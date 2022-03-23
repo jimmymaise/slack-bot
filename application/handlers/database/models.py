@@ -51,7 +51,8 @@ class Team(Base):
 
 class TeamMember(Base):
     __tablename__ = Constant.TEAM_MEMBER_SHEET
-    user_id = Column(String, primary_key=True)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id = Column(String)
     team_id = Column(
         String, ForeignKey(f'{Team.__tablename__}.id', ondelete='cascade'), nullable=False,
         primary_key=True,
