@@ -3,14 +3,8 @@
     "type": "section",
     "text": {
       "type": "mrkdwn",
-      "text": "You have a new request:\n*<{{user_profile_url}}|{{user_name}} - New vacation request>*"
-    }
-  },
-  {
-    "type": "section",
-    "text": {
-      "type": "mrkdwn",
-      "text": "*Reason:*\n{{reason_of_leave}}"
+      "text": "New time off request has just arrived. Please approve or decline:",
+      "verbatim": false
     }
   },
   {
@@ -18,11 +12,13 @@
     "fields": [
       {
         "type": "mrkdwn",
-        "text": "*Leave Type:*\n{{leave_type}}"
+        "text": "*Who?*\n{{ user_name }} <@{{ user_id }}>",
+        "verbatim": false
       },
       {
         "type": "mrkdwn",
-        "text": "*Leave Id:*\n{{leave_id}}"
+        "text": "*What?*\n{{ leave_type }}",
+        "verbatim": false
       }
     ]
   },
@@ -31,11 +27,28 @@
     "fields": [
       {
         "type": "mrkdwn",
-        "text": "*Start Date:*\n{{start_date.strftime('%A, %B, %d, %Y')}}"
+        "text": "*Start Date:*\n{{start_date.strftime('%A, %B, %d, %Y')}}",
+        "verbatim": false
       },
       {
         "type": "mrkdwn",
-        "text": "*End Date:*\n{{end_date.strftime('%A, %B, %d, %Y')}}"
+        "text": "*End Date:*\n{{end_date.strftime('%A, %B, %d, %Y')}}",
+        "verbatim": false
+      }
+    ]
+  },
+  {
+    "type": "section",
+    "fields": [
+      {
+        "type": "mrkdwn",
+        "text": "*Comment*\n:speech_balloon: {{ reason_of_leave }}",
+        "verbatim": false
+      },
+      {
+        "type": "mrkdwn",
+        "text": "*Leave id*\n{{ leave_id }}",
+        "verbatim": false
       }
     ]
   },
@@ -45,25 +58,35 @@
     "elements": [
       {
         "type": "button",
+        "action_id": "approve",
         "text": {
           "type": "plain_text",
-          "emoji": true,
           "text": "Approve",
+          "emoji": true
         },
-        "action_id": "approve",
         "style": "primary",
         "value": "{{ leave_id }}"
       },
       {
         "type": "button",
+        "action_id": "reject",
         "text": {
           "type": "plain_text",
-          "emoji": true,
-          "text": "Reject"
+          "text": "Reject",
+          "emoji": true
         },
-        "action_id": "reject",
         "style": "danger",
         "value": "{{ leave_id }}"
+      },
+      {
+        "type": "button",
+        "action_id": "direct_discuss",
+        "text": {
+          "type": "plain_text",
+          "text": ":speech_balloon: Discuss",
+          "emoji": true
+        },
+        "url": "slack://user?team=TF1SH8PRU&id={{user_id}}"
       }
     ]
   }

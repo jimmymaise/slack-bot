@@ -130,10 +130,10 @@ class LeaveRegister(BaseManagement):
             end_date_str,
         )
         channel_message_block = self.block_kit.new_vacation_request_channel_message_blocks(
-            user_profile_url=user_profile_url,
+            user_id=user_id,
             user_name=user_name,
             reason_of_leave=reason_of_leave,
-            leave_type=leave_type,
+            leave_type=f"{self.constant.EMOJI_MAPPING[leave_type]} {leave_type}",
             leave_id=leave_id,
             start_date=start_date,
             end_date=end_date,
@@ -148,7 +148,7 @@ class LeaveRegister(BaseManagement):
         logger.info(body)
         confirm_requester_message_block = json.loads(
             self.block_kit.vacation_request_confirm_requester_message_blocks(
-                leave_type=leave_type,
+                leave_type=f"{self.constant.EMOJI_MAPPING[leave_type]} {leave_type}",
                 leave_id=leave_id,
                 start_date=start_date,
                 end_date=end_date,
