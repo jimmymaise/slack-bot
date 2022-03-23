@@ -89,7 +89,7 @@ class TeamManagement(BaseManagement):
         data = self._parse_data_from_create_update_team_view(body)
         team_id = self.team_db_handler.add_item(
             data={
-                'announcement_channel_id': data['announcement_channel_id'],
+                'announcement_channel_id': data.get('announcement_channel_id'),
                 'name': data['team_name'],
                 'holiday_country': 'US',
 
@@ -135,8 +135,10 @@ class TeamManagement(BaseManagement):
         if not team_id:
             return self.get_personal_view_by_user_id(user_id)
         team_info = self.get_team_by_team_id(team_id)
-        announcement_channel_name = \
-            self.client.conversations_info(channel=team_info.announcement_channel_id)['channel']['name']
+        announcement_channel_name = ''
+        if team_info.announcement_channel_id:
+            announcement_channel_name = \
+                self.client.conversations_info(channel=team_info.announcement_channel_id)['channel']['name']
         all_team_members = self.team_member_db_handler.get_all_team_members_by_team_id(team_id=team_id)
         num_of_all_team_member = len(all_team_members)
         num_of_manager = sum(1 for team_member in all_team_members if team_member.is_manager)

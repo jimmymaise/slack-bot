@@ -23,7 +23,12 @@
     "type": "section",
     "text": {
       "type": "mrkdwn",
-      "text": "{{team_info.name}} in {{ announcement_channel_name }}",
+      {% if announcement_channel_name %}
+      "text": "{{team_info.name}} (announcement channel: {{ announcement_channel_name }})",
+      {% else %}
+      "text": "{{team_info.name}}",
+      {% endif %}
+
       "verbatim": false
     }
   },
@@ -271,7 +276,6 @@
     "type": "divider"
   }
   {% for leave in current_leaves %},
-
   {
     "type": "section",
     "text": {
@@ -351,7 +355,6 @@
     "type": "divider"
   }
   {% for leave in up_coming_leaves %},
-
   {
     "type": "section",
     "text": {
