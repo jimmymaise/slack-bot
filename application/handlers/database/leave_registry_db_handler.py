@@ -15,11 +15,12 @@ class LeaveRegistryDBHandler(BaseDBHandler):
 
         super().__init__(LeaveRegistry)
 
-    def get_today_ooo(self, statuses):
+    def get_today_ooo(self, statuses, team_id=None):
         today_date_str = datetime.now().strftime('%Y-%m-%d')
         return self.get_leaves(
             start_date=today_date_str, end_date=today_date_str,
             statuses=statuses,
+            team_id=team_id,
         )
 
     def get_leaves(

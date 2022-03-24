@@ -89,10 +89,10 @@ class BaseManagement:
                 'user_id': leave_row.user_id,
                 'start_date': leave_row.start_date,
                 'end_date': leave_row.end_date,
-                'type_icon': Constant.EMOJI_MAPPING[leave_row.leave_type],
+                'type_icon': self.constant.EMOJI_MAPPING[leave_row.leave_type],
                 'duration': f"{leave_row.start_date.strftime('%A, %B, %d, %Y')} "
                             f"to {leave_row.end_date.strftime('%A, %B, %d, %Y')}",
-                'status_icon': Constant.EMOJI_MAPPING[leave_row.status],
+                'status_icon': self.constant.EMOJI_MAPPING[leave_row.status],
                 'reason': leave_row.reason,
                 'type': leave_row.leave_type,
                 'status': leave_row.status,
