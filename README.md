@@ -23,13 +23,14 @@ for understanding requirements
     2. channels:manage
     3. channels:read
     4. chat:write
-    5. commands
-    6. groups:history
-    7. groups:read
-    8. im:read
-    9. mpim:read
-    10. team:read
-    11. users:read
+    5. chat:write.public
+    6. commands
+    7. groups:history
+    8. groups:read
+    9. im:read
+    10. mpim:read
+    11. team:read
+    12. users:read
 
 6. In the same section, we will find a 'Bot User OAuth Access Token'. Copy and use it as `SLACK_BOT_TOKEN` for
    environment variable

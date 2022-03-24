@@ -6,7 +6,6 @@ from slack_bolt import App
 from slack_sdk import WebClient
 
 from application.handlers.bot.base_management import BaseManagement
-from application.utils.constant import Constant
 
 
 class LeaveLookup(BaseManagement):
@@ -21,48 +20,50 @@ class LeaveLookup(BaseManagement):
         ack()
 
     def trigger_today_ooo_command(self, body, respond):
+        user_id = body.get('user_id') or body['user']['id']
+        team_id = self.get_team_id_by_user_id(user_id)
         statuses = [
-            Constant.LEAVE_REQUEST_STATUS_APPROVED,
-            Constant.LEAVE_REQUEST_STATUS_WAIT,
+            self.constant.LEAVE_REQUEST_STATUS_APPROVED,
+            self.constant.LEAVE_REQUEST_STATUS_WAIT,
         ]
-        attachments = self.build_response_today_ooo(statuses)
+        attachments = self.build_response_today_ooo(statuses, team_id)
 
         if attachments:
-            text = 'As your request, Here is the list of users OOO today'
+            text = 'As your request, Here is the list of users in your team OOO today'
         else:
-            text = 'Sorry but nobody is OOO today'
+            text = 'Sorry but nobody in your team is OOO today'
         if body.get('response_url'):
             return respond(
                 response_type='ephemeral',
                 text=text,
                 attachments=attachments,
             )
-        user_id = body['user']['id']
         return self.client.chat_postMessage(
             channel=user_id,
             text=text,
             attachments=attachments,
         )
 
-    def today_ooo_schedule(self, channel):
+    def today_ooo_schedule(self):
         statuses = [
-            Constant.LEAVE_REQUEST_STATUS_APPROVED,
-            Constant.LEAVE_REQUEST_STATUS_WAIT,
+            self.constant.LEAVE_REQUEST_STATUS_APPROVED,
+            self.constant.LEAVE_REQUEST_STATUS_WAIT,
         ]
+        teams = self.team_db_handler.get_all_teams()
+        for team in teams:
+            attachments = self.build_response_today_ooo(statuses, team_id=team.id)
+            if attachments:
+                text = f'Hey, the following users (team {team.name}) are OOO today'
+            else:
+                text = f'Huray!, Nobody (team {team.name}) is OOO today'
+            self.client.chat_postMessage(
+                channel=team.announcement_channel_id,
+                text=text,
+                attachments=attachments,
+            )
 
-        attachments = self.build_response_today_ooo(statuses)
-        if attachments:
-            text = 'Hey, the following users are OOO today'
-        else:
-            text = 'Huray!, Nobody is OOO today'
-        self.client.chat_postMessage(
-            channel=channel,
-            text=text,
-            attachments=attachments,
-        )
-
-    def build_response_today_ooo(self, statuses):
-        today_ooo_items = self.leave_register_db_handler.get_today_ooo(statuses)
+    def build_response_today_ooo(self, statuses, team_id=None):
+        today_ooo_items = self.leave_register_db_handler.get_today_ooo(statuses, team_id)
         attachments = []
         if not today_ooo_items:
             return attachments
@@ -74,8 +75,8 @@ class LeaveLookup(BaseManagement):
                 json.loads(
                     self.block_kit.ooo_attachment(
                         username=item_dict['username'],
-                        leave_type=f"{Constant.EMOJI_MAPPING[item_dict['leave_type']]} {item_dict['leave_type']}",
-                        status=f"{Constant.EMOJI_MAPPING[item_dict['status']]} {item_dict['status']}",
+                        leave_type=f"{self.constant.EMOJI_MAPPING[item_dict['leave_type']]} {item_dict['leave_type']}",
+                        status=f"{self.constant.EMOJI_MAPPING[item_dict['status']]} {item_dict['status']}",
                         start_date=item_dict['start_date'],
                         end_date=item_dict['end_date'],
                     ),

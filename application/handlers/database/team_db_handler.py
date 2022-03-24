@@ -16,3 +16,6 @@ class TeamDBHandler(BaseDBHandler):
 
     def delete_team_by_id(self, team_id: str):
         return self.delete_item_by_id(team_id)
+
+    def get_all_teams(self):
+        return self.get_all_items()

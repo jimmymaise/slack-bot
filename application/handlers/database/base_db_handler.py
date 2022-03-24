@@ -134,3 +134,8 @@ class BaseDBHandler:
         if executed_list:
             executed_list[-1] = f'{executed_list[-1]};'
         return executed_list
+
+    def get_all_items(self):
+        q = self.session.query(self.table)
+        result = self.execute(q)
+        return result if result.rowcount else []
