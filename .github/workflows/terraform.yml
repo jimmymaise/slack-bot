@@ -16,6 +16,13 @@ jobs:
       run:
         working-directory: ./terraform
     steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.8'
+
       - name: Configuration for main branch
         if: ${{ github.ref == 'refs/heads/main' }}
         # Side note, I can run any Linux command here, not just 'echo'
@@ -43,13 +50,6 @@ jobs:
           echo "TF_VAR_OOO_CHANNEL=${{ secrets.TF_VAR_OOO_CHANNEL }}" >> $GITHUB_ENV
           echo "TF_VAR_S3_BACKEND_BUCKET=${{ secrets.TF_VAR_S3_BACKEND_BUCKET }}" >> $GITHUB_ENV
           echo "TF_VAR_BUILD_IN_DOCKER=${{ secrets.TF_VAR_BUILD_IN_DOCKER }}" >> $GITHUB_ENV
-
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.8'
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
