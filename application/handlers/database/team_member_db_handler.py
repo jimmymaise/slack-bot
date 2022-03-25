@@ -14,18 +14,20 @@ class TeamMemberDBHandler(BaseDBHandler):
         self.logger = Logger.get_logger()
 
     def add_user_to_team(self, user_id, team_id, is_manager):
-        current_user_team_id = self.get_team_member_by_user_id(user_id).id
-        is_added_in_this_team = current_user_team_id and current_user_team_id == team_id
-        is_added_in_other_team = current_user_team_id and current_user_team_id != team_id
-        if is_added_in_other_team:
-            self.logger.error(f'Exist in other team {team_id}')
-        if is_added_in_this_team:
-            self.logger.info('Added in this team')
+        current_user_team = self.get_team_member_by_user_id(user_id)
+        if current_user_team:
+            if current_user_team.team_id == team_id:
+                reason = 'Added in this team'
+            else:
+                reason = f'Exist in other team {team_id}'
+            self.logger.info(reason)
+            return {'is_success': False, 'reason': reason}
         self.add_item({
             'user_id': user_id,
             'team_id': team_id,
             'is_manager': is_manager,
         })
+        return {'is_success': True, 'reason': None}
 
     def replace_members_from_team(self, team_id, member_list):
         self.remove_all_users_from_team(team_id)
@@ -40,6 +42,22 @@ class TeamMemberDBHandler(BaseDBHandler):
         self.execute(
             delete(self.table).where(self.table.user_id == user_id).where(self.table.team_id == team_id),
         )
+
+    def get_team_managers_from_all_teams(self):
+        result = self.execute(
+            select(self.table).filter(
+                self.table.is_manager == 1,
+            ),
+        )
+        return result.all() if result.rowcount else []
+
+    def count_number_of_team_members(self, team_id):
+        result = self.execute(
+            select(self.table).filter(
+                self.table.team_id == team_id,
+            ),
+        )
+        return result.rowcount if result.rowcount else 0
 
     def get_team_managers_by_team_id(self, team_id):
         result = self.execute(

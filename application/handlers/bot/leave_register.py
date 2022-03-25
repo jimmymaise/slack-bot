@@ -133,14 +133,17 @@ class LeaveRegister(BaseManagement):
             user_id=user_id,
             user_name=user_name,
             reason_of_leave=reason_of_leave,
-            leave_type=f"{self.constant.EMOJI_MAPPING[leave_type]} {leave_type}",
+            leave_type=f'{self.constant.EMOJI_MAPPING[leave_type]} {leave_type}',
             leave_id=leave_id,
             start_date=start_date,
             end_date=end_date,
         )
-
-        message_ts = self.send_message_to_managers_by_user_id(
-            user_id=user_id,
+        manager_ids = [
+            manager.user_id for manager in
+            self.team_member_db_handler.get_managers_by_user_id()
+        ]
+        message_ts = self.send_direct_message_to_multiple_slack_users(
+            user_ids=manager_ids,
             text=f'You have a new request:\n*<{user_profile_url}|{user_name} - New vacation request>*',
             blocks=channel_message_block,
         )
@@ -148,7 +151,7 @@ class LeaveRegister(BaseManagement):
         logger.info(body)
         confirm_requester_message_block = json.loads(
             self.block_kit.vacation_request_confirm_requester_message_blocks(
-                leave_type=f"{self.constant.EMOJI_MAPPING[leave_type]} {leave_type}",
+                leave_type=f'{self.constant.EMOJI_MAPPING[leave_type]} {leave_type}',
                 leave_id=leave_id,
                 start_date=start_date,
                 end_date=end_date,
@@ -194,6 +197,7 @@ class LeaveRegister(BaseManagement):
 
         # Delete responded message
         managers = self.team_member_db_handler.get_managers_by_user_id(user_id=user_id)
+        manager_ids = [manager.user_id for manager in managers],
         for manager in managers:
             self.client.chat_delete(channel=manager.user_id, ts=message_ts)
         if decision == self.constant.LEAVE_REQUEST_ACTION_APPROVE:
@@ -204,11 +208,10 @@ class LeaveRegister(BaseManagement):
                      f'has been approved by {manager_name}. Leave Id: {leave_id}',
             )
 
-            self.send_message_to_managers_by_user_id(
-                user_id=user_id,
+            self.send_direct_message_to_multiple_slack_users(
+                user_ids=manager_ids,
                 text=f':tada:Leave Request for {user_name} (From {start_date} To {end_date}) '
                      f'has been approved by {manager_name}. Leave Id: {leave_id}',
-                manager_ids=[manager.user_id for manager in managers],
             )
             self.client.chat_postMessage(
                 channel=user_id,
@@ -217,8 +220,8 @@ class LeaveRegister(BaseManagement):
             )
         else:
 
-            self.send_message_to_managers_by_user_id(
-                user_id=user_id,
+            self.send_direct_message_to_multiple_slack_users(
+                user_ids=manager_ids,
                 text=f':tada:Leave Request for {user_name} (From {start_date} To {end_date}) '
                      f'has been approved by {manager_name}. Leave Id: {leave_id}',
             )

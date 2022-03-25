@@ -28,7 +28,7 @@ class BaseDBHandler:
     def execute(self, query, **data):
         is_select_query = True
         str_query = str(query)
-        print(str_query)
+        self.logger.debug(str_query)
         executed_list = self.get_query_list_from_sql_command(str_query)
         for command in executed_list:
             if not command.strip().lower().startswith('select'):

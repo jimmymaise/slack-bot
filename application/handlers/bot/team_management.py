@@ -34,10 +34,71 @@ class TeamManagement(BaseManagement):
         app.action('team_actions')(
             ack=self.respond_to_slack_within_3_seconds, lazy=[self.process_team_actions_lazy],
         )
+        app.event('team_join')(
+            ack=self.respond_to_slack_within_3_seconds, lazy=[self.process_new_user_join_work_space],
+        )
+        app.action('new_crew_member_approve')(
+            ack=self.respond_to_slack_within_3_seconds, lazy=[self.add_or_decline_new_member_to_the_team_lazy],
+        )
 
-    @staticmethod
-    def respond_to_slack_within_3_seconds(ack):
-        ack()
+        app.action('new_crew_member_decline')(
+            ack=self.respond_to_slack_within_3_seconds, lazy=[self.add_or_decline_new_member_to_the_team_lazy],
+        )
+
+    def process_new_user_join_work_space(self, body, event, context):
+        workspace_name = self.client.team_info()['team']['name']
+
+        team_managers = self.team_member_db_handler.get_team_managers_from_all_teams()
+
+        for team_manager in team_managers:
+            number_of_members = self.team_member_db_handler.count_number_of_team_members(team_manager.team_id)
+            team_name = self.team_db_handler.get_team_by_id(team_manager.team_id).name
+            self.client.chat_postMessage(
+                channel=team_manager.user_id,
+                blocks=json.loads(
+                    self.block_kit.new_member_to_add_message(
+                        workspace_name=workspace_name,
+                        user_id=context.user_id,
+                        number_of_members=number_of_members,
+                        team_name=team_name,
+                        team_id=team_manager.team_id,
+
+                    ),
+                ),
+            )
+
+    def add_or_decline_new_member_to_the_team_lazy(self, event, context: BoltContext, client: WebClient, body):
+
+        data = body.get('actions')[0].get('value')
+        member_user_id, team_id = data.split(':')
+
+        message_ts = body['message']['ts']
+        team_managers = self.team_member_db_handler.get_team_managers_by_team_id(team_id=team_id)
+
+        action_id = body.get('actions')[0].get('action_id')
+        if action_id == 'new_crew_member_approve':
+            self.team_member_db_handler.add_user_to_team(
+                user_id=member_user_id,
+                team_id=team_id, is_manager=False,
+            )
+            message = '<@{member_user_id}> has been successfully added to {team_name} by <@{manager_user_id}>!'
+        else:
+            message = '<@{member_user_id}> has been rejected to be added to {team_name} by <@{manager_user_id}>!'
+
+        for team_manager in team_managers:
+            channel = client.conversations_open(users=[team_manager.user_id])['channel']['id']
+            team_name = self.team_db_handler.get_team_by_id(team_manager.team_id).name
+            client.chat_update(
+                channel=channel,
+                ts=message_ts,
+                blocks=[],
+                text=message.format(
+                    team_name=team_name,
+                    member_user_id=member_user_id,
+                    manager_user_id=team_manager.user_id,
+
+                ),
+            )
 
     def get_create_team_view_lazy(self, event, context: BoltContext, client: WebClient, body):
         user_name = self.get_username_by_user_id(context.user_id)
