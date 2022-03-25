@@ -69,9 +69,16 @@ class HomeTab:
         self.leave_register.process_leave_actions(body, ack)
         self.team_management.get_manager_view_by_user_id(body['user']['id'])
 
+    @staticmethod
+    def get_panel(event):
+        try:
+            return event['view']['blocks'][0]['text']['text']
+        except KeyError:
+            return None
+
     def open_app_home_lazy(self, event, context: BoltContext, client: WebClient, body):
         if event['tab'] == 'home':
-            if event['view']['blocks'][0]['text']['text'] == '*Manager panel*':
+            if self.get_panel(event) == '*Manager panel*':
                 self.team_management.get_manager_view_by_user_id(context.user_id)
             else:
                 self.team_management.get_personal_view_by_user_id(context.user_id)
