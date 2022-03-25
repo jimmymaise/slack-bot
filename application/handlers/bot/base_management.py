@@ -21,14 +21,15 @@ class BaseManagement:
         self.team_db_handler = TeamDBHandler()
         self.constant = Constant
 
-    def send_message_to_managers_by_user_id(self, user_id, text, blocks=None, manager_ids=None):
-        if not manager_ids:
-            team_managers = self.team_member_db_handler.get_managers_by_user_id(user_id)
-            manager_ids = [team_manager.user_id for team_manager in team_managers]
+    @staticmethod
+    def respond_to_slack_within_3_seconds(ack):
+        ack()
+
+    def send_direct_message_to_multiple_slack_users(self, user_ids, text, blocks=None):
         ts = None
-        for team_manager_id in manager_ids:
+        for user_id in user_ids:
             res = self.client.chat_postMessage(
-                channel=team_manager_id,
+                channel=user_id,
                 text=text,
                 blocks=blocks,
             )
