@@ -140,7 +140,7 @@ class LeaveRegister(BaseManagement):
         )
         manager_ids = [
             manager.user_id for manager in
-            self.team_member_db_handler.get_managers_by_user_id()
+            self.team_member_db_handler.get_managers_by_user_id(user_id)
         ]
         message_ts = self.send_direct_message_to_multiple_slack_users(
             user_ids=manager_ids,
@@ -174,7 +174,7 @@ class LeaveRegister(BaseManagement):
         leave_id = body.get('actions')[0].get('value')
         status = self.constant.LEAVE_DECISION_TO_STATUS[decision]
         leave = self.leave_register_db_handler.find_item_by_id(_id=leave_id)
-        message_ts = float(leave.message_ts.split('ts_')[1]) if leave.message_ts else body.get('container').get(
+        message_ts = leave.message_ts.split('ts_')[1] if leave.message_ts else body.get('container').get(
             'message_ts',
         )
         start_date = leave.start_date
@@ -197,43 +197,44 @@ class LeaveRegister(BaseManagement):
 
         # Delete responded message
         managers = self.team_member_db_handler.get_managers_by_user_id(user_id=user_id)
-        manager_ids = [manager.user_id for manager in managers],
-        for manager in managers:
-            self.client.chat_delete(channel=manager.user_id, ts=message_ts)
+        manager_ids = [manager.user_id for manager in managers]
+        if message_ts:
+            for manager in managers:
+                self.client.chat_delete(channel=manager.user_id, ts=message_ts)
         if decision == self.constant.LEAVE_REQUEST_ACTION_APPROVE:
 
             self.client.chat_postMessage(
                 channel=self.approval_channel,
-                text=f':tada:Leave Request for {user_name} (From {start_date} To {end_date}) '
-                     f'has been approved by {manager_name}. Leave Id: {leave_id}',
+                text=f':tada:Leave Request for {user_name}<@{user_id}>  (From {start_date} To {end_date}) '
+                     f'has been approved by {manager_name} <@{manager_id}> . Leave Id: {leave_id}',
             )
 
             self.send_direct_message_to_multiple_slack_users(
                 user_ids=manager_ids,
-                text=f':tada:Leave Request for {user_name} (From {start_date} To {end_date}) '
-                     f'has been approved by {manager_name}. Leave Id: {leave_id}',
+                text=f':tada:Leave Request for {user_name}<@{user_id}>  (From {start_date} To {end_date}) '
+                     f'has been approved by {manager_name} <@{manager_id}> .. Leave Id: {leave_id}',
             )
             self.client.chat_postMessage(
                 channel=user_id,
                 text=f':tada:Your leave request (From {start_date} to {end_date}) '
-                     f'has been approved by {manager_name}:smiley: . Leave Id: {leave_id}',
+                     f'has been approved by {manager_name} <@{manager_id}> :smiley: . Leave Id: {leave_id}',
             )
         else:
 
             self.send_direct_message_to_multiple_slack_users(
                 user_ids=manager_ids,
-                text=f':tada:Leave Request for {user_name} (From {start_date} To {end_date}) '
-                     f'has been approved by {manager_name}. Leave Id: {leave_id}',
+                text=f':tada:Leave Request for {user_name}<@{user_id}>  (From {start_date} To {end_date}) '
+                     f'has been approved by {manager_name} <@{manager_id}> . Leave Id: {leave_id}',
             )
             self.client.chat_postMessage(
                 channel=self.approval_channel,
-                text=f':x:Leave Request for {user_name} (From {start_date} To {end_date}) '
-                     f'has been rejected by {manager_name} . Leave Id: {leave_id}',
+                text=f':x:Leave Request for  {user_name}<@{user_id}>  (From {start_date} To {end_date}) '
+                     f'has been rejected by {manager_name} <@{manager_id}>  . Leave Id: {leave_id}',
             )
             self.client.chat_postMessage(
                 channel=user_id,
-                text=f':x:Your leave request (From {start_date} To {end_date}) has been rejected by {manager_name}'
-                     f' :cry: . Leave Id: {leave_id}',
+                text=f':x:Your leave request (From {start_date} To {end_date}) '
+                     f'has been rejected by {manager_name} <@{manager_id}> :cry: . Leave Id: {leave_id}',
             )
 
         ack()
