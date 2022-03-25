@@ -101,11 +101,10 @@ the bot to this channel. For example #my_testing_channel (Should have #)
 3. Setup backend bucket
 
     1. Add below environment variable to the deployment machine. Replace us-west-2 and leave-management-bimodal depend
-       on environment you are working for.
+       on environment you are working for (using us-west-1 and dev-leave-management-bimodal for dev env)
         1. export REGION="us-west-2"
         2. export S3_BACKEND_BUCKET="leave-management-bimodal"
-    2. aws s3api create-bucket --bucket "${S3_BACKEND_BUCKET}" --region "${REGION}" --create-bucket-configuration
-       LocationConstraint="${REGION}"
+    2. aws s3api create-bucket --bucket "${S3_BACKEND_BUCKET}" --region "${REGION}" --create-bucket-configuration LocationConstraint="${REGION}"
     3. terraform init -backend-config="bucket="${S3_BACKEND_BUCKET}"" -backend-config="region="${REGION}""
 
 4. terraform apply --var-file=secret.tfvars
