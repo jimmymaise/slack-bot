@@ -145,6 +145,10 @@ TF_VAR_SLACK_BOT_TOKEN
 
 TF_VAR_SLACK_SIGNING_SECRET
 
+TF_VAR_TEAM_SHEET
+TF_VAR_TEAM_MEMBER_SHEET
+
+
 ## How to create CI user
 
 1. Cd to folder tf_ci_account
