@@ -98,3 +98,20 @@ class LeaveLookup(BaseManagement):
             ),
         )
         return blocks
+
+    def get_my_team_off_filter_blocks(self, team_id, user_id=None, start_date=None, end_date=None, leave_type=None):
+        user_leave_rows = self.leave_register_db_handler.get_leaves(
+            team_id=team_id,
+            start_date=start_date,
+            end_date=end_date,
+            user_id=user_id,
+            leave_type=leave_type,
+
+        )
+        user_leaves = self.build_leave_display_list(user_leave_rows, is_get_slack_user_info=True)
+        blocks = json.loads(
+            self.block_kit.all_your_team_time_off_blocks(
+                user_leaves=user_leaves,
+            ),
+        )
+        return blocks

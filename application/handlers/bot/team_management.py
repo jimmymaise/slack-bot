@@ -25,9 +25,13 @@ class TeamManagement(BaseManagement):
         app.action('switch_personal')(
             ack=self.respond_to_slack_within_3_seconds, lazy=[self.get_personal_view_by_user_id],
         )
-        app.action('back_to_home')(
+        app.action('back_to_personal_home')(
             ack=self.respond_to_slack_within_3_seconds, lazy=[self.get_personal_view_by_user_id],
         )
+        app.action('back_to_manager_home')(
+            ack=self.respond_to_slack_within_3_seconds, lazy=[self.get_manager_view_by_user_id],
+        )
+
         app.action('switch_manager')(
             ack=self.respond_to_slack_within_3_seconds, lazy=[self.get_manager_view_by_user_id],
         )
