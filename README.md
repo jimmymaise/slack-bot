@@ -28,9 +28,10 @@ for understanding requirements
     7. groups:history
     8. groups:read
     9. im:read
-    10. mpim:read
-    11. team:read
-    12. users:read
+    10. im:write
+    11. mpim:read
+    12. team:read
+    13. users:read
 
 6. In the same section, we will find a 'Bot User OAuth Access Token'. Copy and use it as `SLACK_BOT_TOKEN` for
    environment variable
@@ -50,6 +51,7 @@ the `permanent address`: https://xyz123.execute-api.us-west-1.amazonaws.com/slac
     1. message.channels
     2. message.groups
     3. app_home_opened
+    4. team_join
 
 11. Go to 'Interactivity & Shortcuts' under 'Features'. In the 'Request URL' field type the above address
 
@@ -101,7 +103,7 @@ the bot to this channel. For example #my_testing_channel (Should have #)
 3. Setup backend bucket
 
     1. Add below environment variable to the deployment machine. Replace us-west-2 and leave-management-bimodal depend
-       on environment you are working for.
+       on environment you are working for (using us-west-1 and dev-leave-management-bimodal for dev env)
         1. export REGION="us-west-2"
         2. export S3_BACKEND_BUCKET="leave-management-bimodal"
     2. aws s3api create-bucket --bucket "${S3_BACKEND_BUCKET}" --region "${REGION}" --create-bucket-configuration
@@ -145,6 +147,8 @@ TF_VAR_S3_BACKEND_BUCKET
 TF_VAR_SLACK_BOT_TOKEN
 
 TF_VAR_SLACK_SIGNING_SECRET
+
+TF_VAR_TEAM_SHEET TF_VAR_TEAM_MEMBER_SHEET
 
 ## How to create CI user
 

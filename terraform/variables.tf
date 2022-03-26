@@ -7,6 +7,12 @@ variable "SLACK_BOT_TOKEN" {
 variable "GOOGLE_SERVICE_BASE64_FILE_CONTENT" {
   type = string
 }
+variable "TEAM_SHEET" {
+  type    = string
+}
+variable "TEAM_MEMBER_SHEET" {
+  type    = string
+}
 variable "LEAVE_REGISTER_SHEET" {
   default = "https://docs.google.com/spreadsheets/d/1QUU0J_LaggqQQHmCFnQfzFXngl9ECqfE96qwwqT2ADM/edit#gid=1723079437"
   type    = string

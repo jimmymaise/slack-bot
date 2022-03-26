@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import json
+import re
 
 from slack_bolt import App
 from slack_bolt import BoltContext
@@ -41,17 +41,14 @@ class HomeTab:
         app.action('my_all_time_offs')(
             ack=self.respond_to_slack_within_3_seconds, lazy=[self.get_my_time_off_lazy],
         )
-        app.action('timeoff_type_filter')(
-            ack=self.respond_to_slack_within_3_seconds, lazy=[self.get_my_time_off_lazy],
+        app.action('team_timeoffs')(
+            ack=self.respond_to_slack_within_3_seconds, lazy=[self.get_my_team_time_off_lazy],
         )
-        app.action('timeoff_start_filter')(
-            ack=self.respond_to_slack_within_3_seconds, lazy=[self.get_my_time_off_lazy],
+        app.action(re.compile('your_timeoff_.*'))(
+            ack=self.respond_to_slack_within_3_seconds, lazy=[self.get_my_team_time_off_lazy],
         )
-        app.action('timeoff_end_filter')(
-            ack=self.respond_to_slack_within_3_seconds, lazy=[self.get_my_time_off_lazy],
-        )
-        app.action('timeoff_end_filter')(
-            ack=self.respond_to_slack_within_3_seconds, lazy=[self.get_my_time_off_lazy],
+        app.action(re.compile('team_timeoff_.*'))(
+            ack=self.respond_to_slack_within_3_seconds, lazy=[self.get_my_team_time_off_lazy],
         )
         app.action('accept_request_home')(
             ack=self.respond_to_slack_within_3_seconds, lazy=[self.process_leave_actions_from_home],
@@ -69,9 +66,16 @@ class HomeTab:
         self.leave_register.process_leave_actions(body, ack)
         self.team_management.get_manager_view_by_user_id(body['user']['id'])
 
+    @staticmethod
+    def get_panel(event):
+        try:
+            return event['view']['blocks'][0]['text']['text']
+        except KeyError:
+            return None
+
     def open_app_home_lazy(self, event, context: BoltContext, client: WebClient, body):
         if event['tab'] == 'home':
-            if event['view']['blocks'][0]['text']['text'] == '*Manager panel*':
+            if self.get_panel(event) == '*Manager panel*':
                 self.team_management.get_manager_view_by_user_id(context.user_id)
             else:
                 self.team_management.get_personal_view_by_user_id(context.user_id)
@@ -80,15 +84,15 @@ class HomeTab:
         user_id = body['user']['id']
         state = body['view']['state']
         leave_type = self.leave_lookup.get_value_from_state(
-            state, 'timeoff_type_filter', extra_field='selected_option.value',
+            state, 'your_timeoff_type_filter', extra_field='selected_option.value',
             block_id='timeoff_filter',
         )
         start_date = self.leave_lookup.get_value_from_state(
-            state, 'timeoff_start_filter', extra_field='selected_date',
+            state, 'your_timeoff_start_filter', extra_field='selected_date',
             block_id='timeoff_filter',
         )
         end_date = self.leave_lookup.get_value_from_state(
-            state, 'timeoff_end_filter', extra_field='selected_date',
+            state, 'your_timeoff_end_filter', extra_field='selected_date',
             block_id='timeoff_filter',
         )
         blocks = self.leave_lookup.get_my_time_off_filter_blocks(
@@ -103,16 +107,35 @@ class HomeTab:
             },
         )
 
-    def get_my_time_off_filter_blocks(self, user_id, start_date, end_date):
-        user_leave_rows = self.leave_register_db_handler.get_leaves(
-            start_date=start_date,
-            end_date=end_date,
-            user_id=user_id,
+    def get_my_team_time_off_lazy(self, body):
+        state = body['view']['state']
+        user_id = body['user']['id']
+        team_id = self.team_management.get_team_id_by_user_id(user_id)
+        member_filter_user_id = self.leave_lookup.get_value_from_state(
+            state, 'team_timeoff_user_filter', extra_field='selected_user',
+            block_id='team_timeoff_filter',
         )
-        user_leaves = self.leave_lookup.build_leave_display_list(user_leave_rows)
-        blocks = json.loads(
-            self.block_kit.all_your_time_off_blocks(
-                user_leaves=user_leaves,
-            ),
+        leave_type = self.leave_lookup.get_value_from_state(
+            state, 'team_timeoff_type_filter', extra_field='selected_option.value',
+            block_id='team_timeoff_filter',
         )
-        return blocks
+        start_date = self.leave_lookup.get_value_from_state(
+            state, 'team_timeoff_start_filter', extra_field='selected_date',
+            block_id='team_timeoff_filter',
+        )
+        end_date = self.leave_lookup.get_value_from_state(
+            state, 'team_timeoff_end_filter', extra_field='selected_date',
+            block_id='team_timeoff_filter',
+        )
+        blocks = self.leave_lookup.get_my_team_off_filter_blocks(
+            team_id=team_id,
+            user_id=member_filter_user_id, start_date=start_date, end_date=end_date,
+            leave_type=leave_type,
+        )
+
+        self.client.views_publish(
+            user_id=user_id, view={
+                'type': 'home',
+                'blocks': blocks,
+            },
+        )

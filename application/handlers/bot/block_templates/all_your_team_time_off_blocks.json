@@ -3,12 +3,12 @@
     "type": "section",
     "text": {
       "type": "mrkdwn",
-      "text": "*Your time offs*",
+      "text": "*Team time offs*",
       "verbatim": false
     },
     "accessory": {
       "type": "button",
-      "action_id": "back_to_personal_home",
+      "action_id": "back_to_manager_home",
       "text": {
         "type": "plain_text",
         "text": "Back",
@@ -18,11 +18,11 @@
   },
   {
     "type": "actions",
-    "block_id": "timeoff_filter",
+    "block_id": "team_timeoff_filter",
     "elements": [
       {
         "type": "static_select",
-        "action_id": "your_timeoff_type_filter",
+        "action_id": "team_timeoff_type_filter",
         "placeholder": {
           "type": "plain_text",
           "text": "Select type",
@@ -64,8 +64,17 @@
         ]
       },
       {
+        "type": "users_select",
+        "action_id": "team_timeoff_user_filter",
+        "placeholder": {
+          "type": "plain_text",
+          "text": "Start typing a name",
+          "emoji": true
+        }
+      },
+      {
         "type": "datepicker",
-        "action_id": "your_timeoff_start_filter",
+        "action_id": "team_timeoff_start_filter",
         "placeholder": {
           "type": "plain_text",
           "text": "From date",
@@ -74,7 +83,7 @@
       },
       {
         "type": "datepicker",
-        "action_id": "your_timeoff_end_filter",
+        "action_id": "team_timeoff_end_filter",
         "placeholder": {
           "type": "plain_text",
           "text": "To date",
@@ -85,14 +94,36 @@
   },
   {
     "type": "divider"
-  },
-  {% for leave in user_leaves %}
+  }
+  {% for leave in user_leaves %},
   {
     "type": "section",
     "text": {
       "type": "mrkdwn",
       "text": "{{leave.type_icon}} *{{ leave.type }}*\n{{ leave.duration }}\nComment: {{ leave.reason }}",
       "verbatim": false
+    },
+    "accessory": {
+      "type": "overflow",
+      "action_id": "timeoff_actions",
+      "options": [
+        {
+          "text": {
+            "type": "plain_text",
+            "text": "Show user profile",
+            "emoji": true
+          },
+          "value": "user_profile,{{ leave.user_id }}"
+        },
+        {
+          "text": {
+            "type": "plain_text",
+            "text": "Delete",
+            "emoji": true
+          },
+          "value": "delete,{{ leave.user_id }},list"
+        }
+      ]
     }
   },
   {
@@ -100,13 +131,20 @@
     "elements": [
       {
         "type": "mrkdwn",
-        "text": "{{ leave.status_icon }} {{leave.status}}",
+        "text": "Requested by",
+        "verbatim": false
+      },
+      {
+        "type": "image",
+        "image_url": "{{leave.user.profile.image_192 }}",
+        "alt_text": "user image"
+      },
+      {
+        "type": "mrkdwn",
+        "text": "*<@{{leave.user_id}}>*",
         "verbatim": false
       }
     ]
-  },
-  {% endfor %}
-  {
-    "type": "divider"
   }
+  {% endfor %}
 ]

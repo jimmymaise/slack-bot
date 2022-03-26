@@ -9,28 +9,31 @@ terraform {
 }
 
 module "lambda_function" {
-  source  = "registry.terraform.io/terraform-aws-modules/lambda/aws"
-  publish = true
-  timeout = 900
+  source                = "registry.terraform.io/terraform-aws-modules/lambda/aws"
+  publish               = true
+  timeout               = 900
   environment_variables = {
     SLACK_SIGNING_SECRET               = var.SLACK_SIGNING_SECRET
     SLACK_BOT_TOKEN                    = var.SLACK_BOT_TOKEN
     GOOGLE_SERVICE_BASE64_FILE_CONTENT = var.GOOGLE_SERVICE_BASE64_FILE_CONTENT
-    LEAVE_REGISTER_SHEET               = var.LEAVE_REGISTER_SHEET
     MANAGER_LEAVE_APPROVAL_CHANNEL     = var.MANAGER_LEAVE_APPROVAL_CHANNEL
     OOO_CHANNEL                        = var.OOO_CHANNEL
+    TEAM_SHEET                         = var.TEAM_SHEET
+    TEAM_MEMBER_SHEET                  = var.TEAM_MEMBER_SHEET
+    LEAVE_REGISTER_SHEET               = var.LEAVE_REGISTER_SHEET
+
   }
-  function_name   = "slack-bot-bip"
-  description     = "Slack bot bip for lambda"
-  handler         = "lambda_handler.handler"
-  build_in_docker = var.BUILD_IN_DOCKER
-  docker_image    = "lambci/lambda:build-python3.8"
-  runtime         = "python3.8"
-  source_path = [
+  function_name         = "slack-bot-bip"
+  description           = "Slack bot bip for lambda"
+  handler               = "lambda_handler.handler"
+  build_in_docker       = var.BUILD_IN_DOCKER
+  docker_image          = "lambci/lambda:build-python3.8"
+  runtime               = "python3.8"
+  source_path           = [
     {
       path             = "..",
       pip_requirements = true,
-      patterns = [
+      patterns         = [
         "!terraform/.*",
         "!tf_ci_account/.*",
         "!.github/.*",
@@ -45,14 +48,14 @@ module "lambda_function" {
 
     }
   ]
-  allowed_triggers = {
+  allowed_triggers      = {
     APIGatewayAny = {
       service    = "apigateway"
       source_arn = "${module.api_gateway.apigatewayv2_api_execution_arn}/*/*/${module.lambda_function.lambda_function_name}"
       stage      = ""
     }
   }
-  tags = {
+  tags                  = {
     Name = "slack-bot-bip"
   }
 }
