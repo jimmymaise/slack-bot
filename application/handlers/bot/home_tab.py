@@ -6,6 +6,7 @@ from slack_bolt import App
 from slack_bolt import BoltContext
 from slack_sdk import WebClient
 
+from application.handlers.bot.base_management import BaseManagement
 from application.handlers.bot.block_template_handler import BlockTemplateHandler
 from application.handlers.bot.leave_lookup import LeaveLookup
 from application.handlers.bot.leave_register import LeaveRegister
@@ -13,13 +14,12 @@ from application.handlers.bot.team_management import TeamManagement
 from application.handlers.database.leave_registry_db_handler import LeaveRegistryDBHandler
 
 
-class HomeTab:
+class HomeTab(BaseManagement):
     def __init__(
             self, app: App, client: WebClient, leave_lookup: LeaveLookup, leave_register: LeaveRegister,
             team_management: TeamManagement,
     ):
-        self.app = app
-        self.client = client
+        super().__init__(app, client)
         self.leave_lookup = leave_lookup
         self.leave_register = leave_register
         self.team_management = team_management
@@ -51,10 +51,14 @@ class HomeTab:
             ack=self.respond_to_slack_within_3_seconds, lazy=[self.get_my_team_time_off_lazy],
         )
         app.action('accept_request_home')(
-            ack=self.respond_to_slack_within_3_seconds, lazy=[self.process_leave_actions_from_home],
+            ack=self.respond_to_slack_within_3_seconds, lazy=[self.process_block_leave_action_from_manager_home],
         )
         app.action('reject_request_home')(
-            ack=self.respond_to_slack_within_3_seconds, lazy=[self.process_leave_actions_from_home],
+            ack=self.respond_to_slack_within_3_seconds, lazy=[self.process_overflow_leave_action_from_personal_home],
+        )
+
+        app.action('overflow_timeoff_actions_home_personal')(
+            ack=self.respond_to_slack_within_3_seconds, lazy=[self.process_overflow_leave_action_from_personal_home],
         )
         self.leave_register_db_handler = LeaveRegistryDBHandler()
 
@@ -62,9 +66,13 @@ class HomeTab:
     def respond_to_slack_within_3_seconds(ack):
         ack()
 
-    def process_leave_actions_from_home(self, body, ack):
-        self.leave_register.process_leave_actions(body, ack)
+    def process_block_leave_action_from_manager_home(self, body, ack):
+        self.leave_register.take_action_on_leave_from_action_block(body, ack)
         self.team_management.get_manager_view_by_user_id(body['user']['id'])
+
+    def process_overflow_leave_action_from_personal_home(self, body, ack):
+        self.leave_register.take_action_on_leave_from_overflow_block(body, ack)
+        self.team_management.get_personal_view_by_user_id(body['user']['id'])
 
     @staticmethod
     def get_panel(event):
@@ -95,9 +103,18 @@ class HomeTab:
             state, 'your_timeoff_end_filter', extra_field='selected_date',
             block_id='timeoff_filter',
         )
+        statuses = [
+            self.constant.LEAVE_REQUEST_STATUS_WAIT,
+            self.constant.LEAVE_REQUEST_STATUS_APPROVED,
+            self.constant.LEAVE_REQUEST_STATUS_REJECTED,
+        ]
+
         blocks = self.leave_lookup.get_my_time_off_filter_blocks(
-            user_id=user_id, start_date=start_date, end_date=end_date,
+            user_id=user_id,
+            start_date=start_date,
+            end_date=end_date,
             leave_type=leave_type,
+            statuses=statuses,
         )
 
         self.client.views_publish(

@@ -63,33 +63,31 @@ class LeaveLookup(BaseManagement):
             )
 
     def build_response_today_ooo(self, statuses, team_id=None):
-        today_ooo_items = self.leave_register_db_handler.get_today_ooo(statuses, team_id)
+        today_ooo_leaves = self.leave_register_db_handler.get_today_ooo(statuses, team_id)
         attachments = []
-        if not today_ooo_items:
+        if not today_ooo_leaves:
             return attachments
-        for item in today_ooo_items:
-            item_keys = getattr(item, '_fields')
-            item_values = getattr(item, '_data')
-            item_dict = dict(zip(item_keys, item_values))
+        for leave in today_ooo_leaves:
             attachments.append(
                 json.loads(
                     self.block_kit.ooo_attachment(
-                        username=item_dict['username'],
-                        leave_type=f"{self.constant.EMOJI_MAPPING[item_dict['leave_type']]} {item_dict['leave_type']}",
-                        status=f"{self.constant.EMOJI_MAPPING[item_dict['status']]} {item_dict['status']}",
-                        start_date=item_dict['start_date'],
-                        end_date=item_dict['end_date'],
+                        username=leave.username,
+                        leave_type=f'{self.constant.EMOJI_MAPPING[leave.leave_type]} {leave.leave_type}',
+                        status=f'{self.constant.EMOJI_MAPPING[leave.status]} {leave.status}',
+                        start_date=leave.start_date,
+                        end_date=leave.end_date,
                     ),
                 ),
             )
         return attachments
 
-    def get_my_time_off_filter_blocks(self, user_id, start_date, end_date, leave_type):
+    def get_my_time_off_filter_blocks(self, user_id, start_date, end_date, leave_type, statuses):
         user_leave_rows = self.leave_register_db_handler.get_leaves(
             start_date=start_date,
             end_date=end_date,
             user_id=user_id,
             leave_type=leave_type,
+            statuses=statuses,
         )
         user_leaves = self.build_leave_display_list(user_leave_rows)
         blocks = json.loads(

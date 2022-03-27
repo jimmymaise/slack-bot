@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import datetime
+
 from application.handlers.bot.block_template_handler import BlockTemplateHandler
 from application.handlers.database.leave_registry_db_handler import LeaveRegistryDBHandler
 from application.handlers.database.team_db_handler import TeamDBHandler
@@ -68,6 +70,23 @@ class BaseManagement:
     def get_slack_user_by_user_id(self, user_id):
         return self.client.users_info(user=user_id).data['user']
 
+    def get_today_date_str(self):
+        return self.convert_date_obj_to_date_str(datetime.datetime.now())
+
+    def convert_date_obj_to_date_str(self, date: datetime.date):
+        return date.strftime(self.constant.DATE_FORMAT)
+
+    def convert_date_str_to_date_obj(self, date_str: str):
+        return datetime.datetime.strptime(date_str, self.constant.DATE_FORMAT)
+
+    @staticmethod
+    def get_today_date_time_obj():
+        return datetime.datetime.now()
+
+    @staticmethod
+    def get_today_date_obj():
+        return datetime.datetime.now().date()
+
     @staticmethod
     def get_value_from_state(state, name, extra_field=None, block_id=None):
         if not state:
@@ -85,20 +104,24 @@ class BaseManagement:
     def build_leave_display_list(self, user_leave_rows, is_get_slack_user_info=False):
         user_leaves = []
         for leave_row in user_leave_rows:
+            is_past_leave = leave_row.end_date < self.get_today_date_obj()
+            allowed_user_leave_actions = []
+            if not is_past_leave or leave_row.status == self.constant.LEAVE_REQUEST_STATUS_WAIT:
+                allowed_user_leave_actions = ['edit', 'cancel']
             user_leave = {
                 'username': leave_row.username,
                 'user_id': leave_row.user_id,
                 'start_date': leave_row.start_date,
                 'end_date': leave_row.end_date,
-                'type_icon': self.constant.EMOJI_MAPPING[leave_row.leave_type],
+                'type_icon': self.constant.EMOJI_MAPPING.get(leave_row.leave_type, ''),
                 'duration': f"{leave_row.start_date.strftime('%A, %B, %d, %Y')} "
                             f"to {leave_row.end_date.strftime('%A, %B, %d, %Y')}",
-                'status_icon': self.constant.EMOJI_MAPPING[leave_row.status],
+                'status_icon': self.constant.EMOJI_MAPPING.get(leave_row.status, ''),
                 'reason': leave_row.reason,
                 'type': leave_row.leave_type,
                 'status': leave_row.status,
                 'id': leave_row.id,
-
+                'allowed_user_leave_actions': allowed_user_leave_actions,
             }
             if is_get_slack_user_info:
                 user_leave['user'] = self.get_slack_user_by_user_id(user_id=leave_row.user_id)

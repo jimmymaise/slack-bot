@@ -261,9 +261,15 @@ class TeamManagement(BaseManagement):
         is_already_manager = current_team and current_team.is_manager
         is_not_have_team = not (current_team or is_admin_or_owner)
 
+        statuses = [
+            self.constant.LEAVE_REQUEST_STATUS_WAIT,
+            self.constant.LEAVE_REQUEST_STATUS_APPROVED,
+        ]
+
         user_leave_rows = self.leave_register_db_handler.get_leaves(
             start_date=datetime.datetime.now().strftime('%Y-%m-%d'),
             user_id=user_id,
+            statuses=statuses,
         )
 
         user_leaves = self.build_leave_display_list(user_leave_rows)
