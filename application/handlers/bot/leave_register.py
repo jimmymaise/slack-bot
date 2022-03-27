@@ -24,16 +24,12 @@ class LeaveRegister(BaseManagement):
         )
 
         app.block_action({'block_id': 'approve_reject_vacation', 'action_id': 'approve'})(
-            ack=self.respond_to_slack_within_3_seconds, lazy=[self.process_leave_actions],
+            ack=self.respond_to_slack_within_3_seconds, lazy=[self.take_action_on_leave_from_action_block],
         )
         app.block_action({'block_id': 'approve_reject_vacation', 'action_id': 'reject'})(
             ack=self.respond_to_slack_within_3_seconds,
-            lazy=[self.process_leave_actions],
+            lazy=[self.take_action_on_leave_from_action_block],
         )
-
-    @staticmethod
-    def respond_to_slack_within_3_seconds(ack):
-        ack()
 
     def trigger_request_leave_command(self, client, body, ack):
         client.views_open(
@@ -82,6 +78,7 @@ class LeaveRegister(BaseManagement):
             overlap_leaves = self.leave_register_db_handler.get_leaves(
                 user_id=user_id, start_date=start_date_str,
                 end_date=end_date_str,
+                statuses=[self.constant.LEAVE_REQUEST_STATUS_APPROVED, self.constant.LEAVE_REQUEST_STATUS_WAIT],
             )
             is_query_db = True
         for overlap_leave in overlap_leaves:
@@ -169,72 +166,100 @@ class LeaveRegister(BaseManagement):
             blocks=confirm_requester_message_block,
         )
 
-    def process_leave_actions(self, body, ack):
-        decision = body.get('actions')[0].get('text').get('text')
+    def take_action_on_leave_from_action_block(self, body, ack):
+        action = body.get('actions')[0].get('text').get('text')
         leave_id = body.get('actions')[0].get('value')
-        status = self.constant.LEAVE_DECISION_TO_STATUS[decision]
-        leave = self.leave_register_db_handler.find_item_by_id(_id=leave_id)
-        message_ts = leave.message_ts.split('ts_')[1] if leave.message_ts else body.get('container').get(
-            'message_ts',
+        message_ts = body.get('container', {}).get('message_ts')
+        changed_by_user_id = body['user']['id']
+        self._take_action_on_leave(
+            leave_id=leave_id,
+            message_ts=message_ts,
+            action=action,
+            changed_by_user_id=changed_by_user_id,
         )
-        start_date = leave.start_date
-        end_date = leave.end_date
-        # Manager info
-        manager_id = body.get('user').get('id')
-        manager_info = self.client.users_info(user=manager_id)
 
-        manager_name = manager_info.get('user').get('real_name')
-        # User info
-        user_id = leave.user_id
-        user_info = self.client.users_info(user=user_id)
-        user_name = user_info.get('user').get('real_name')
+    def take_action_on_leave_from_overflow_block(self, body, ack):
+        action, leave_id = body['actions'][0]['selected_option']['value'].split(',')
+        changed_by_user_id = body['user']['id']
+        self._take_action_on_leave(
+            leave_id=leave_id,
+            message_ts=None,
+            action=action,
+            changed_by_user_id=changed_by_user_id,
+        )
+
+    def _take_action_on_leave(self, leave_id, changed_by_user_id, action, message_ts=None):
+
+        status = self.constant.LEAVE_DECISION_TO_STATUS[action]
+        leave = self.leave_register_db_handler.find_item_by_id(_id=leave_id)
+        if not message_ts:
+            message_ts = leave.message_ts
+
+        changed_by_user_id = changed_by_user_id
+        requester_user_id = leave.user_id
+        requester_name = self.get_username_by_user_id(user_id=leave.user_id)
+        changed_by_name = self.get_username_by_user_id(user_id=changed_by_user_id)
 
         self.leave_register_db_handler.change_leave_status(
             leave_id=leave_id,
-            manager_name=manager_name,
+            updated_by=changed_by_name,
             status=status,
         )
 
         # Delete responded message
-        managers = self.team_member_db_handler.get_managers_by_user_id(user_id=user_id)
+        managers = self.team_member_db_handler.get_managers_by_user_id(user_id=requester_user_id)
         manager_ids = [manager.user_id for manager in managers]
         if message_ts:
             for manager in managers:
                 self.client.chat_delete(channel=manager.user_id, ts=message_ts)
-        if decision == self.constant.LEAVE_REQUEST_ACTION_APPROVE:
+        if action == self.constant.LEAVE_REQUEST_ACTION_APPROVE:
+            manager_message = self.constant.APPROVE_MESSAGE_TO_MANAGER
+            requester_message = self.constant.APPROVE_MESSAGE_TO_REQUESTER
 
-            self.client.chat_postMessage(
-                channel=self.approval_channel,
-                text=f':tada:Leave Request for {user_name}<@{user_id}>  (From {start_date} To {end_date}) '
-                     f'has been approved by {manager_name} <@{manager_id}> . Leave Id: {leave_id}',
-            )
-
-            self.send_direct_message_to_multiple_slack_users(
-                user_ids=manager_ids,
-                text=f':tada:Leave Request for {user_name}<@{user_id}>  (From {start_date} To {end_date}) '
-                     f'has been approved by {manager_name} <@{manager_id}> .. Leave Id: {leave_id}',
-            )
-            self.client.chat_postMessage(
-                channel=user_id,
-                text=f':tada:Your leave request (From {start_date} to {end_date}) '
-                     f'has been approved by {manager_name} <@{manager_id}> :smiley: . Leave Id: {leave_id}',
-            )
+        elif action == self.constant.LEAVE_REQUEST_ACTION_REJECT:
+            manager_message = self.constant.REJECT_MESSAGE_TO_MANAGER
+            requester_message = self.constant.REJECT_MESSAGE_TO_REQUESTER
         else:
+            manager_message = self.constant.CANCEL_MESSAGE_TO_MANAGER
+            requester_message = self.constant.CANCEL_MESSAGE_TO_REQUESTER
 
-            self.send_direct_message_to_multiple_slack_users(
-                user_ids=manager_ids,
-                text=f':tada:Leave Request for {user_name}<@{user_id}>  (From {start_date} To {end_date}) '
-                     f'has been approved by {manager_name} <@{manager_id}> . Leave Id: {leave_id}',
-            )
-            self.client.chat_postMessage(
-                channel=self.approval_channel,
-                text=f':x:Leave Request for  {user_name}<@{user_id}>  (From {start_date} To {end_date}) '
-                     f'has been rejected by {manager_name} <@{manager_id}>  . Leave Id: {leave_id}',
-            )
-            self.client.chat_postMessage(
-                channel=user_id,
-                text=f':x:Your leave request (From {start_date} To {end_date}) '
-                     f'has been rejected by {manager_name} <@{manager_id}> :cry: . Leave Id: {leave_id}',
-            )
+        self.client.chat_postMessage(
+            channel=self.approval_channel,
+            text=manager_message.format(
+                leave_id=leave.id,
+                start_date=leave.start_date,
+                end_date=leave.end_date,
+                requester_user_id=requester_user_id,
+                requester_name=requester_name,
+                changed_by_name=changed_by_name,
+                changed_by_user_id=changed_by_user_id,
 
-        ack()
+            ),
+        )
+
+        self.send_direct_message_to_multiple_slack_users(
+            user_ids=manager_ids,
+            text=manager_message.format(
+                leave_id=leave.id,
+                start_date=leave.start_date,
+                end_date=leave.end_date,
+                requester_user_id=leave.user_id,
+                requester_name=requester_name,
+                changed_by_name=changed_by_name,
+                changed_by_user_id=changed_by_user_id,
+
+            ),
+        )
+        self.client.chat_postMessage(
+            channel=requester_user_id,
+            text=requester_message.format(
+                leave_id=leave.id,
+                start_date=leave.start_date,
+                end_date=leave.end_date,
+                requester_user_id=leave.user_id,
+                requester_name=requester_name,
+                changed_by_name=changed_by_name,
+                changed_by_user_id=changed_by_user_id,
+
+            ),
+        )

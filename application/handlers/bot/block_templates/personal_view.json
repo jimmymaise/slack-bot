@@ -117,6 +117,25 @@
       "text": "{{leave.type_icon}} *{{ leave.type }}*\n{{ leave.duration }}\nComment: {{ leave.reason }}",
       "verbatim": false
     }
+    {% if leave.allowed_user_leave_actions %},
+    "accessory": {
+      "type": "overflow",
+      "action_id": "overflow_timeoff_actions_home_personal",
+      "options": [
+        {% for action in leave.allowed_user_leave_actions %}
+        {
+          "text": {
+            "type": "plain_text",
+            "text": "{{action|title}}",
+            "emoji": true
+          },
+          "value": "{{action|title}},{{ leave.id }}"
+        }
+        {{ "," if not loop.last }}
+        {% endfor %}
+      ]
+    }
+    {% endif %}
   },
   {
     "type": "context",

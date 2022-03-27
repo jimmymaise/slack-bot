@@ -24,7 +24,7 @@ class LeaveRegistry(Base):
     reason = Column(String)
     created_time = Column(Date)
     status = Column(String)
-    approver = Column(String)
+    updated_by = Column(String)
     message_ts = Column(String)
 
     def __repr__(self):

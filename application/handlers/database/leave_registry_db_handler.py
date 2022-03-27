@@ -61,9 +61,9 @@ class LeaveRegistryDBHandler(BaseDBHandler):
 
         return result.all() if result.rowcount else []
 
-    def change_leave_status(self, leave_id, manager_name, status):
+    def change_leave_status(self, leave_id, updated_by, status):
         update_data = {
-            'approver': manager_name,
+            'updated_by': updated_by,
             'status': status,
         }
         self.update_item_with_retry(_id=leave_id, update_data=update_data)
@@ -83,3 +83,18 @@ class LeaveRegistryDBHandler(BaseDBHandler):
             'created_time': datetime.now(),
         }
         return self.add_item_with_retry(data=leave_data)
+
+    def cancel_a_leave(self, leave_id, updated_by):
+        return self.change_leave_status(
+            leave_id=leave_id,
+            updated_by=updated_by,
+            status=self.constant.LEAVE_REQUEST_STATUS_CANCELED,
+        )
+
+    def update_leave_dates(self, leave_id, start_date, end_date, update_by):
+        update_data = {
+            'start_date': start_date,
+            'end_date': end_date,
+            'update_by': update_by,
+        }
+        self.update_item_with_retry(_id=leave_id, update_data=update_data)

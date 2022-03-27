@@ -24,6 +24,7 @@ class BaseDBHandler:
         self.session = scoped_session(sessionmaker(bind=self.db.engine))
         self.table = table
         self.logger = Logger.get_logger()
+        self.constant = Constant
 
     def execute(self, query, **data):
         is_select_query = True
