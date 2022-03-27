@@ -61,3 +61,5 @@ class Constant:
     CANCEL_MESSAGE_TO_MANAGER = ':x:Leave Request for {requester_name}<@{requester_user_id}> ' \
                                 '(From {start_date} To {end_date}) ' \
                                 'has been canceled by {changed_by_name} <@{changed_by_user_id}> . Leave Id: {leave_id}'
+
+    BLOCK_TEMPLATE_PATH = './application/handlers/bot/block_templates'
