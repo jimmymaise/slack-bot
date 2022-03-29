@@ -42,7 +42,7 @@ class HomeTab(BaseManagement):
             ack=self.respond_to_slack_within_3_seconds, lazy=[self.get_my_team_time_off_lazy],
         )
         app.action(re.compile('your_timeoff_.*'))(
-            ack=self.respond_to_slack_within_3_seconds, lazy=[self.get_my_team_time_off_lazy],
+            ack=self.respond_to_slack_within_3_seconds, lazy=[self.get_my_time_off_lazy],
         )
         app.action(re.compile('team_timeoff_.*'))(
             ack=self.respond_to_slack_within_3_seconds, lazy=[self.get_my_team_time_off_lazy],
