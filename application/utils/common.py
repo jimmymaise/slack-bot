@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from uuid import UUID
+
 
 class Dict2Obj:
     def __init__(self, dictionary):
@@ -12,3 +14,8 @@ class Dict2Obj:
 
     def __getitem__(self, key):
         return self.__dict__[key]
+
+
+def uuid_convert(o):
+    if isinstance(o, UUID):
+        return str(o)

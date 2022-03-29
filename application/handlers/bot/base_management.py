@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import datetime
+from contextlib import suppress
 
 from application.handlers.bot.block_template_handler import BlockTemplateHandler
 from application.handlers.database.leave_registry_db_handler import LeaveRegistryDBHandler
+from application.handlers.database.leave_type_handler import LeaveTypeDBHandler
 from application.handlers.database.team_db_handler import TeamDBHandler
 from application.handlers.database.team_member_db_handler import TeamMemberDBHandler
 from application.utils.cache import LambdaCache
@@ -19,13 +21,19 @@ class BaseManagement:
 
         self.team_member_db_handler = TeamMemberDBHandler()
         self.leave_register_db_handler = LeaveRegistryDBHandler()
+        self.leave_type_db_handler = LeaveTypeDBHandler()
         self.team_db_handler = TeamDBHandler()
         self.constant = Constant
         self.block_kit = BlockTemplateHandler(self.constant.BLOCK_TEMPLATE_PATH).get_object_templates()
+        self.get_leave_types = self.leave_type_db_handler.get_all_leave_types_from_cache
 
     @staticmethod
     def respond_to_slack_within_3_seconds(ack):
         ack()
+
+    def chat_delete_message(self, channel, ts):
+        with suppress(Exception):
+            self.client.chat_delete(channel=channel, ts=ts)
 
     def send_direct_message_to_multiple_slack_users(self, user_ids, text, blocks=None):
         ts = None

@@ -3,7 +3,7 @@
     "type": "section",
     "text": {
       "type": "mrkdwn",
-      "text": "New time off request has just arrived. Please approve or decline:",
+      "text": "{{ message if message else 'New time off request has just arrived. Please approve or decline:'}}",
       "verbatim": false
     }
   },

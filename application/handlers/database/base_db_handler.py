@@ -25,6 +25,7 @@ class BaseDBHandler:
         self.table = table
         self.logger = Logger.get_logger()
         self.constant = Constant
+        self.lambda_cache = LambdaCache
 
     def execute(self, query, **data):
         is_select_query = True

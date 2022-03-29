@@ -32,9 +32,15 @@ class LeaveRegister(BaseManagement):
         )
 
     def trigger_request_leave_command(self, client, body, ack):
+        leave_types = self.get_leave_types()
         client.views_open(
             trigger_id=body.get('trigger_id'),
-            view=json.loads(self.block_kit.leave_input_view(callback_id='leave_input_view')),
+            view=json.loads(
+                self.block_kit.leave_input_view(
+                    callback_id='leave_input_view',
+                    leave_types=leave_types,
+                ),
+            ),
         )
 
     def get_leave_confirmation_view(self, body, ack):
@@ -56,14 +62,16 @@ class LeaveRegister(BaseManagement):
                 response_action='errors',
                 errors=errors,
             )
-
-        private_metadata = json.dumps({
+        private_metadata = json.loads(body['view']['private_metadata'])
+        private_metadata.update({
             'reason_of_leave': reason_of_leave,
             'leave_type': leave_type,
             'start_date_str': start_date_str,
             'end_date_str': end_date_str,
 
         })
+        leave_id = private_metadata.get('leave_id')
+        private_metadata_json_str = json.dumps(private_metadata)
         user_id = body['user']['id']
         user_overlap_leave_key = f'db_cache_{user_id}_{start_date_str}{end_date_str}_overlap_leave_key'
         overlap_leaves = []
@@ -82,14 +90,15 @@ class LeaveRegister(BaseManagement):
             )
             is_query_db = True
         for overlap_leave in overlap_leaves:
-            errors['vacation_start_date'] = f'Oh no! You already have time off scheduled for these dates' \
-                                            f' (leave id: {overlap_leave[0]}, from cache: {not is_query_db})'
-            if is_query_db:
-                LambdaCache.set_cache(user_overlap_leave_key, overlap_leave)
-            return ack(
-                response_action='errors',
-                errors=errors,
-            )
+            if not leave_id or leave_id != str(overlap_leave.id):
+                errors['vacation_start_date'] = f'Oh no! You already have time off scheduled for these dates' \
+                                                f' (leave id: {overlap_leave[0]}, from cache: {not is_query_db})'
+                if is_query_db:
+                    LambdaCache.set_cache(user_overlap_leave_key, overlap_leave)
+                return ack(
+                    response_action='errors',
+                    errors=errors,
+                )
         leave_confirmation_view = self.block_kit.leave_confirmation_view(
             callback_id='leave_confirmation_view',
             leave_type=leave_type,
@@ -99,7 +108,7 @@ class LeaveRegister(BaseManagement):
         )
 
         leave_confirmation_view = json.loads(leave_confirmation_view)
-        leave_confirmation_view['private_metadata'] = private_metadata
+        leave_confirmation_view['private_metadata'] = private_metadata_json_str
 
         ack(
             response_action='push',
@@ -121,11 +130,41 @@ class LeaveRegister(BaseManagement):
         end_date_str = private_metadata['end_date_str']
         start_date = datetime.datetime.strptime(start_date_str, '%Y-%m-%d')
         end_date = datetime.datetime.strptime(end_date_str, '%Y-%m-%d')
+        leave_id = private_metadata.get('leave_id')
 
-        leave_id = self.leave_register_db_handler.add_a_leave(
-            leave_type, reason_of_leave, user_name, user_id, start_date_str,
-            end_date_str,
-        )
+        old_leave_message_ts = private_metadata.get('leave_message_ts')
+        is_update_leave = bool(leave_id)
+
+        manager_ids = [
+            manager.user_id for manager in
+            self.team_member_db_handler.get_managers_by_user_id(user_id)
+        ]
+
+        if is_update_leave:
+            self.leave_register_db_handler.update_a_leave(
+                _id=private_metadata['leave_id'],
+                update_data={
+                    'start_date': start_date_str,
+                    'end_date': end_date_str,
+                    'reason': reason_of_leave,
+                    'status': self.constant.LEAVE_REQUEST_STATUS_WAIT,
+                },
+            )
+            manager_ask_for_approval_message = f'A time off request of *<{user_profile_url}|{user_name}>*' \
+                                               f' has been updated'
+            requester_confirm_message = 'You have just update a leave request.Please wait to manager approve'
+
+            if old_leave_message_ts:
+                for manager_user_id in manager_ids:
+                    self.chat_delete_message(channel=manager_user_id, ts=old_leave_message_ts)
+        else:
+            leave_id = self.leave_register_db_handler.add_a_leave(
+                leave_type, reason_of_leave, user_name, user_id, start_date_str,
+                end_date_str,
+            )
+            manager_ask_for_approval_message = f'New time off request from *<{user_profile_url}|{user_name}>*' \
+                                               f' has just arrived. Please approve or decline:'
+            requester_confirm_message = 'You have sent a new vacation request.Please wait to manager approve'
         channel_message_block = self.block_kit.new_vacation_request_channel_message_blocks(
             user_id=user_id,
             user_name=user_name,
@@ -134,14 +173,12 @@ class LeaveRegister(BaseManagement):
             leave_id=leave_id,
             start_date=start_date,
             end_date=end_date,
+            message=manager_ask_for_approval_message,
         )
-        manager_ids = [
-            manager.user_id for manager in
-            self.team_member_db_handler.get_managers_by_user_id(user_id)
-        ]
+
         message_ts = self.send_direct_message_to_multiple_slack_users(
             user_ids=manager_ids,
-            text=f'You have a new request:\n*<{user_profile_url}|{user_name} - New vacation request>*',
+            text=manager_ask_for_approval_message,
             blocks=channel_message_block,
         )
 
@@ -161,8 +198,7 @@ class LeaveRegister(BaseManagement):
         )
         self.client.chat_postMessage(
             channel=user_id,
-            text='You have sent a new vacation request. '
-                 'Please wait to manager approve',
+            text=requester_confirm_message,
             blocks=confirm_requester_message_block,
         )
 
@@ -181,11 +217,39 @@ class LeaveRegister(BaseManagement):
     def take_action_on_leave_from_overflow_block(self, body, ack):
         action, leave_id = body['actions'][0]['selected_option']['value'].split(',')
         changed_by_user_id = body['user']['id']
-        self._take_action_on_leave(
-            leave_id=leave_id,
-            message_ts=None,
-            action=action,
-            changed_by_user_id=changed_by_user_id,
+
+        if action == self.constant.LEAVE_REQUEST_ACTION_EDIT:
+            self.open_edit_leave_view(
+                leave_id=leave_id,
+                trigger_id=body['trigger_id'],
+            )
+        else:
+            self._take_action_on_leave(
+                leave_id=leave_id,
+                message_ts=None,
+                action=action,
+                changed_by_user_id=changed_by_user_id,
+            )
+
+    def open_edit_leave_view(self, leave_id, trigger_id):
+        leave = self.leave_register_db_handler.find_item_by_id(
+            _id=leave_id,
+        )
+        private_metadata = json.dumps({
+            'leave_id': leave_id,
+            'leave_message_ts': leave.message_ts.split('ts_')[1] if leave.message_ts else None,
+        })
+        leave_input_view = json.loads(
+            self.block_kit.leave_input_view(
+                callback_id='leave_input_view',
+                leave=leave,
+                leave_types=self.get_leave_types(),
+            ),
+        )
+        leave_input_view['private_metadata'] = private_metadata
+        self.client.views_open(
+            trigger_id=trigger_id,
+            view=leave_input_view,
         )
 
     def _take_action_on_leave(self, leave_id, changed_by_user_id, action, message_ts=None):
