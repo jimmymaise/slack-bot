@@ -15,13 +15,13 @@ class BaseManagement:
     def __init__(self, app, client):
         self.app = app
         self.client = client
-        self.block_kit = BlockTemplateHandler('./application/handlers/bot/block_templates').get_object_templates()
         self.logger = Logger.get_logger()
 
         self.team_member_db_handler = TeamMemberDBHandler()
         self.leave_register_db_handler = LeaveRegistryDBHandler()
         self.team_db_handler = TeamDBHandler()
         self.constant = Constant
+        self.block_kit = BlockTemplateHandler(self.constant.BLOCK_TEMPLATE_PATH).get_object_templates()
 
     @staticmethod
     def respond_to_slack_within_3_seconds(ack):

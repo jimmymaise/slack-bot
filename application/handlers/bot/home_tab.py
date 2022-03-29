@@ -7,11 +7,9 @@ from slack_bolt import BoltContext
 from slack_sdk import WebClient
 
 from application.handlers.bot.base_management import BaseManagement
-from application.handlers.bot.block_template_handler import BlockTemplateHandler
 from application.handlers.bot.leave_lookup import LeaveLookup
 from application.handlers.bot.leave_register import LeaveRegister
 from application.handlers.bot.team_management import TeamManagement
-from application.handlers.database.leave_registry_db_handler import LeaveRegistryDBHandler
 
 
 class HomeTab(BaseManagement):
@@ -30,7 +28,6 @@ class HomeTab(BaseManagement):
         app.action('check_ooo_today')(
             ack=self.respond_to_slack_within_3_seconds, lazy=[leave_lookup.trigger_today_ooo_command],
         )
-        self.block_kit = BlockTemplateHandler('./application/handlers/bot/block_templates').get_object_templates()
 
         app.action('become_manager')(
             ack=self.respond_to_slack_within_3_seconds, lazy=[team_management.get_create_team_view_lazy],
@@ -45,7 +42,7 @@ class HomeTab(BaseManagement):
             ack=self.respond_to_slack_within_3_seconds, lazy=[self.get_my_team_time_off_lazy],
         )
         app.action(re.compile('your_timeoff_.*'))(
-            ack=self.respond_to_slack_within_3_seconds, lazy=[self.get_my_team_time_off_lazy],
+            ack=self.respond_to_slack_within_3_seconds, lazy=[self.get_my_time_off_lazy],
         )
         app.action(re.compile('team_timeoff_.*'))(
             ack=self.respond_to_slack_within_3_seconds, lazy=[self.get_my_team_time_off_lazy],
@@ -60,7 +57,6 @@ class HomeTab(BaseManagement):
         app.action('overflow_timeoff_actions_home_personal')(
             ack=self.respond_to_slack_within_3_seconds, lazy=[self.process_overflow_leave_action_from_personal_home],
         )
-        self.leave_register_db_handler = LeaveRegistryDBHandler()
 
     @staticmethod
     def respond_to_slack_within_3_seconds(ack):
