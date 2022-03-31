@@ -44,14 +44,14 @@ class HomeTab(BaseManagement):
         app.action(re.compile('your_timeoff_.*'))(
             ack=self.respond_to_slack_within_3_seconds, lazy=[self.get_my_time_off_lazy],
         )
-        app.action(re.compile('team_timeoff_.*'))(
+        app.action(re.compile('team_timeoff.*'))(
             ack=self.respond_to_slack_within_3_seconds, lazy=[self.get_my_team_time_off_lazy],
         )
         app.action('accept_request_home')(
             ack=self.respond_to_slack_within_3_seconds, lazy=[self.process_block_leave_action_from_manager_home],
         )
         app.action('reject_request_home')(
-            ack=self.respond_to_slack_within_3_seconds, lazy=[self.process_overflow_leave_action_from_personal_home],
+            ack=self.respond_to_slack_within_3_seconds, lazy=[self.process_block_leave_action_from_manager_home],
         )
 
         app.action('overflow_timeoff_actions_home_personal')(

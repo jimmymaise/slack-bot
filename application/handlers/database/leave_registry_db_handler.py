@@ -84,6 +84,9 @@ class LeaveRegistryDBHandler(BaseDBHandler):
         }
         return self.add_item_with_retry(data=leave_data)
 
+    def update_a_leave(self, _id, update_data):
+        return self.update_item_with_retry(_id=_id, update_data=update_data)
+
     def cancel_a_leave(self, leave_id, updated_by):
         return self.change_leave_status(
             leave_id=leave_id,

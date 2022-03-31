@@ -4,7 +4,9 @@ import uuid
 
 from sqlalchemy import Column
 from sqlalchemy import Date
+from sqlalchemy import Float
 from sqlalchemy import ForeignKey
+from sqlalchemy import Integer
 from sqlalchemy import String
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
@@ -64,3 +66,18 @@ class TeamMember(Base):
     def __repr__(self):
         return f'TeamMember(id={self.id!r}, user_id={self.user_id!r}, ' \
                f'team_id={self.team_id!r},is_manager={self.is_manager!r})'
+
+
+class LeaveType(Base):
+    __tablename__ = Constant.LEAVE_TYPE_SHEET
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    code = Column(String)
+    display_name = Column(String)
+    description = Column(String)
+    icon = Column(Date)
+    day = Column(Float)
+    is_default = Column(Integer)
+
+    def __repr__(self):
+        return f'LeaveType(id={self.id!r}, name={self.name!r},code={self.code!r} ' \
+               f'description={self.description!r},icon={self.icon!r},day={self.day!r})'
