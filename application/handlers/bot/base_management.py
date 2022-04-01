@@ -26,6 +26,7 @@ class BaseManagement:
         self.constant = Constant
         self.block_kit = BlockTemplateHandler(self.constant.BLOCK_TEMPLATE_PATH).get_object_templates()
         self.get_leave_types = self.leave_type_db_handler.get_all_leave_types_from_cache
+        self.get_leave_type_detail_from_cache = self.leave_type_db_handler.get_leave_type_detail_from_cache
 
     @staticmethod
     def respond_to_slack_within_3_seconds(ack):
@@ -121,7 +122,7 @@ class BaseManagement:
                 'user_id': leave_row.user_id,
                 'start_date': leave_row.start_date,
                 'end_date': leave_row.end_date,
-                'type_icon': self.constant.EMOJI_MAPPING.get(leave_row.leave_type, ''),
+                'type_icon': self.get_leave_type_detail_from_cache(leave_row.leave_type)['icon'],
                 'duration': f"{leave_row.start_date.strftime('%A, %B, %d, %Y')} "
                             f"to {leave_row.end_date.strftime('%A, %B, %d, %Y')}",
                 'status_icon': self.constant.EMOJI_MAPPING.get(leave_row.status, ''),
