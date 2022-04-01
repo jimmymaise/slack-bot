@@ -24,7 +24,7 @@ jobs:
           python-version: '3.8'
 
       - name: Configuration for dev branch
-        if: ${{ github.ref == 'refs/heads/dev' }}
+        if: ${{ github.ref == 'refs/heads/dev'}}
         # Side note, I can run any Linux command here, not just 'echo'
         run: |
           echo "TF_VAR_SLACK_SIGNING_SECRET=${{ secrets.DEV_TF_VAR_SLACK_SIGNING_SECRET }}" >> $GITHUB_ENV
@@ -50,7 +50,7 @@ jobs:
 
 
       - name: Configuration for main branch
-        if: ${{ github.ref == 'refs/heads/main' }}
+        if: ${{ github.ref == 'refs/heads/main'  || github.event_name == 'pull_request' }}
         run: |
           echo "TF_VAR_SLACK_SIGNING_SECRET=${{ secrets.TF_VAR_SLACK_SIGNING_SECRET }}" >> $GITHUB_ENV
           echo "TF_VAR_SLACK_BOT_TOKEN=${{ secrets.TF_VAR_SLACK_BOT_TOKEN }}" >> $GITHUB_ENV
