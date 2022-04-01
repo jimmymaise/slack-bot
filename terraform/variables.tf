@@ -14,7 +14,9 @@ variable "TEAM_MEMBER_SHEET" {
   type    = string
 }
 variable "LEAVE_REGISTER_SHEET" {
-  default = "https://docs.google.com/spreadsheets/d/1QUU0J_LaggqQQHmCFnQfzFXngl9ECqfE96qwwqT2ADM/edit#gid=1723079437"
+  type    = string
+}
+variable "LEAVE_TYPE_SHEET" {
   type    = string
 }
 variable "MANAGER_LEAVE_APPROVAL_CHANNEL" {

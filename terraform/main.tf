@@ -21,6 +21,7 @@ module "lambda_function" {
     TEAM_SHEET                         = var.TEAM_SHEET
     TEAM_MEMBER_SHEET                  = var.TEAM_MEMBER_SHEET
     LEAVE_REGISTER_SHEET               = var.LEAVE_REGISTER_SHEET
+    LEAVE_TYPE_SHEET                   = var.LEAVE_TYPE_SHEET
 
   }
   function_name         = "slack-bot-bip"
