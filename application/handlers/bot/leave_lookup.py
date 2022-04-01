@@ -68,11 +68,12 @@ class LeaveLookup(BaseManagement):
         if not today_ooo_leaves:
             return attachments
         for leave in today_ooo_leaves:
+            leave_type_detail = self.get_leave_type_detail_from_cache(leave.leave_type)
             attachments.append(
                 json.loads(
                     self.block_kit.ooo_attachment(
                         username=leave.username,
-                        leave_type=f'{self.constant.EMOJI_MAPPING[leave.leave_type]} {leave.leave_type}',
+                        leave_type=f'{leave_type_detail["icon"]} {leave.leave_type}',
                         status=f'{self.constant.EMOJI_MAPPING[leave.status]} {leave.status}',
                         start_date=leave.start_date,
                         end_date=leave.end_date,
@@ -93,6 +94,7 @@ class LeaveLookup(BaseManagement):
         blocks = json.loads(
             self.block_kit.all_your_time_off_blocks(
                 user_leaves=user_leaves,
+                leave_types=self.get_leave_types(),
             ),
         )
         return blocks
@@ -110,6 +112,8 @@ class LeaveLookup(BaseManagement):
         blocks = json.loads(
             self.block_kit.all_your_team_time_off_blocks(
                 user_leaves=user_leaves,
+                leave_types=self.get_leave_types(),
+
             ),
         )
         return blocks
