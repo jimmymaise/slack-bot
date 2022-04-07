@@ -22,11 +22,22 @@ class MustReadMessage(BaseManagement):
             lazy=[self.get_my_must_read_messages_not_completed_read],
         )
 
-    def add_must_read_message_lazy(self, body, context):
+    def add_must_read_message_lazy(self, body, context, say):
         tagged_users = self.get_tagged_users_from_message(body['event'])
+
         normalize_content = re.sub(r"""<.+?>""", '', body['event']['text']).replace('\n', '').replace('#must-read', '')
         short_content: str = normalize_content[0:100]
         channel = body['event']['channel']
+
+        if not tagged_users:
+            return self.client.chat_postEphemeral(
+                channel=channel,
+                user=context.user_id,
+                text='You might try to create must read message but forgot to tag anyone.'
+                     'Please delete it and create again if you want to do so',
+
+            )
+
         permalink = self.app.client.chat_getPermalink(message_ts=body['event']['ts'], channel=channel)[
             'permalink'
         ]
@@ -38,6 +49,7 @@ class MustReadMessage(BaseManagement):
             permalink=permalink,
             channel=channel,
         )
+
         for tagged_user_id in tagged_users:
             self.client.chat_postMessage(
                 channel=tagged_user_id,
@@ -50,6 +62,14 @@ class MustReadMessage(BaseManagement):
                     ),
                 ),
             )
+        return self.client.chat_postEphemeral(
+            channel=channel,
+            user=context.user_id,
+            text='You just made a must read message and I have informed it '
+                 f'to the following tagged users {",".join([f"<@{tagged_user}>" for tagged_user in tagged_users])}.'
+                 f'You can type the command `/must-read-not-completed ` to check its status',
+
+        )
 
     def get_my_must_read_messages_not_completed_read(self, body, context, respond):
         must_read_message_rows = self.must_read_db_handler.get_must_read_messages(
