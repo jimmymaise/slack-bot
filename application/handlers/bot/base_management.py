@@ -173,6 +173,13 @@ class BaseManagement:
             oldest=message_ts,
             limit=1,
         )
+        if not result['messages']:
+            result = self.client.conversations_replies(
+                channel=channel_id,
+                inclusive=True,
+                ts=message_ts,
+                limit=1,
+            )
 
         message = result['messages'][0]
         return message
