@@ -10,7 +10,7 @@
     "type": "section",
     "text": {
       "type": "mrkdwn",
-      "text": "Hello, Here is your must read daily reminder. The author is monitoring the its acknowledge status. Please come and read. You need to send reaction :{{ reaction }}: to acknowledge that you have read it"
+      "text": "Hello, Here is your must read daily reminder. Please come and read. You need to send reaction :{{ reaction }}: to acknowledge that you have read it"
     }
   }
   {% for remind_message_obj  in remind_message_objs %},
