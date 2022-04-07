@@ -59,6 +59,7 @@ class MustReadMessage(BaseManagement):
             author_user_id=context.user_id,
         )
         my_message_objs = []
+
         for must_read_message_row in must_read_message_rows:
             message_ts = must_read_message_row.message_ts.split('ts_')[1]
             message_detail = self.get_one_slack_message(
@@ -72,6 +73,15 @@ class MustReadMessage(BaseManagement):
                 message_ts=message_ts,
             )
             posted_date = datetime.fromtimestamp(float(message_ts)).strftime('%b %d at %H:%M')
+            not_read_user_ids = list(set(tagged_users) - set(reacted_users))
+            if not not_read_user_ids:
+                self.must_read_db_handler.update_item_with_retry(
+                    _id=must_read_message_row.id,
+                    update_data={
+                        'status': self.constant.MUST_READ_STATUS_COMPLETED,
+                    },
+                )
+                continue
             my_message_obj = {
                 'message_ts': message_ts,
                 'message_detail': message_detail,
@@ -82,6 +92,12 @@ class MustReadMessage(BaseManagement):
                 'not_read_user_ids': list(set(tagged_users) - set(reacted_users)),
             }
             my_message_objs.append(my_message_obj)
+
+        if not my_message_objs:
+            return respond(
+                response_type='ephemeral',
+                text='Congratulation, your teammates have read all your must read message!',
+            )
         return respond(
             response_type='ephemeral',
             blocks=json.loads(
