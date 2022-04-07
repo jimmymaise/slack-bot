@@ -123,6 +123,6 @@ jobs:
       - name: Terraform Apply
         if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev') && github.event_name == 'push'
         run: |
-           terraform destroy -target=module.trigger_must_read.aws_cloudwatch_event_rule.this -auto-approve
-           terraform destroy -target=module.trigger_today_ooo.aws_cloudwatch_event_rule.this -auto-approve
-           terraform apply -auto-approve
+          terraform state rm module.trigger_must_read.aws_cloudwatch_event_rule.this
+          terraform state rm module.trigger_today_ooo.aws_cloudwatch_event_rule.this
+          terraform apply -auto-approve
