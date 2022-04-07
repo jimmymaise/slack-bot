@@ -23,8 +23,6 @@ class MustReadMessage(BaseManagement):
         )
 
     def add_must_read_message_lazy(self, body, context):
-        self.remind_must_read_message()
-
         tagged_users = self.get_tagged_users_from_message(body['event'])
         normalize_content = re.sub(r"""<.+?>""", '', body['event']['text']).replace('\n', '').replace('#must-read', '')
         short_content: str = normalize_content[0:100]
