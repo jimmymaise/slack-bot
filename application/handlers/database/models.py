@@ -81,3 +81,17 @@ class LeaveType(Base):
     def __repr__(self):
         return f'LeaveType(id={self.id!r}, name={self.name!r},code={self.code!r} ' \
                f'description={self.description!r},icon={self.icon!r},day={self.day!r})'
+
+
+class MustReadMessage(Base):
+    __tablename__ = Constant.MUST_READ_SHEET
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    message_ts = Column(String)
+    status = Column(String)
+    author_user_id = Column(String)
+    short_content = Column(String)
+    channel = Column(String)
+    permalink = Column(String)
+
+    def __repr__(self):
+        return f'MustReadMessage(id={self.id!r}, message_ts={self.message_ts!r},status={self.status!r}'

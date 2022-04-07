@@ -19,19 +19,21 @@ for understanding requirements
 
 5. Go to 'OAuth & Permissions' under 'Features'. Then scoll down to the 'Scopes' section and add an OAuth scope for:
 
-    1. channels:history
-    2. channels:manage
-    3. channels:read
-    4. chat:write
-    5. chat:write.public
-    6. commands
-    7. groups:history
-    8. groups:read
-    9. im:read
-    10. im:write
-    11. mpim:read
-    12. team:read
-    13. users:read
+    - channels:history
+    - channels:manage
+    - channels:read
+    - chat:write
+    - chat:write.public
+    - commands
+    - groups:history
+    - groups:read
+    - im:read
+    - im:write
+    - mpim:read
+    - reactions:read
+    - team:read
+    - users:read
+    - usergroups:read
 
 6. In the same section, we will find a 'Bot User OAuth Access Token'. Copy and use it as `SLACK_BOT_TOKEN` for
    environment variable
@@ -153,6 +155,8 @@ TF_VAR_SLACK_SIGNING_SECRET
 TF_VAR_TEAM_SHEET TF_VAR_TEAM_MEMBER_SHEET
 
 TF_VAR_LEAVE_TYPE_SHEET
+
+TF_VAR_MUST_READ_SHEET
 
 With dev env, we will add the prefix DEV_, Example: TF_VAR_LEAVE_TYPE_SHEET becomes DEV_TF_VAR_LEAVE_TYPE_SHEET
 

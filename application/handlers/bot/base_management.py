@@ -3,9 +3,12 @@ from __future__ import annotations
 import datetime
 from contextlib import suppress
 
+from slack_sdk import WebClient
+
 from application.handlers.bot.block_template_handler import BlockTemplateHandler
 from application.handlers.database.leave_registry_db_handler import LeaveRegistryDBHandler
 from application.handlers.database.leave_type_handler import LeaveTypeDBHandler
+from application.handlers.database.must_read_db_handler import MustReadDBHandler
 from application.handlers.database.team_db_handler import TeamDBHandler
 from application.handlers.database.team_member_db_handler import TeamMemberDBHandler
 from application.utils.cache import LambdaCache
@@ -14,7 +17,7 @@ from application.utils.logger import Logger
 
 
 class BaseManagement:
-    def __init__(self, app, client):
+    def __init__(self, app, client: WebClient):
         self.app = app
         self.client = client
         self.logger = Logger.get_logger()
@@ -22,6 +25,7 @@ class BaseManagement:
         self.team_member_db_handler = TeamMemberDBHandler()
         self.leave_register_db_handler = LeaveRegistryDBHandler()
         self.leave_type_db_handler = LeaveTypeDBHandler()
+        self.must_read_db_handler = MustReadDBHandler()
         self.team_db_handler = TeamDBHandler()
         self.constant = Constant
         self.block_kit = BlockTemplateHandler(self.constant.BLOCK_TEMPLATE_PATH).get_object_templates()
@@ -137,3 +141,38 @@ class BaseManagement:
 
             user_leaves.append(user_leave)
         return user_leaves
+
+    def get_tagged_users_from_message(self, message_event):
+        message_block = message_event['blocks'][0]
+        tagged_users = []
+        channel_members = []
+        user_group_members = []
+        for element in message_block['elements'][0]['elements']:
+            if element['type'] == 'user':
+                tagged_users.append(element['user_id'])
+            elif element['type'] == 'usergroup':
+                user_group_members = self.client.usergroups_users_list(usergroup=element['usergroup_id'])['users']
+            elif element['type'] == 'broadcast' and element['range'] == 'channel':
+                channel_members = self.client.conversations_members(channel=message_event['channel'])['members']
+
+        tagged_users = list(set(tagged_users + channel_members + user_group_members))
+        return tagged_users
+
+    def get_users_make_reaction_to_message(self, channel, message_ts, reaction_name):
+        reaction_info = self.client.reactions_get(channel=channel, timestamp=message_ts, reaction_name=reaction_name)
+        reactions = reaction_info['message'].get('reactions', [])
+        for reaction in reactions:
+            if reaction['name'] == reaction_name:
+                return reaction['users']
+        return []
+
+    def get_one_slack_message(self, channel_id, message_ts):
+        result = self.client.conversations_history(
+            channel=channel_id,
+            inclusive=True,
+            oldest=message_ts,
+            limit=1,
+        )
+
+        message = result['messages'][0]
+        return message

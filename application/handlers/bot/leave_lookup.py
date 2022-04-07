@@ -15,10 +15,6 @@ class LeaveLookup(BaseManagement):
         super().__init__(app, client)
         app.command('/ooo-today')(ack=self.respond_to_slack_within_3_seconds, lazy=[self.trigger_today_ooo_command])
 
-    @staticmethod
-    def respond_to_slack_within_3_seconds(ack):
-        ack()
-
     def trigger_today_ooo_command(self, body, respond):
         user_id = body.get('user_id') or body['user']['id']
         team_id = self.get_team_id_by_user_id(user_id)

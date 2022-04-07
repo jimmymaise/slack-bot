@@ -35,6 +35,7 @@ jobs:
           echo "TF_VAR_TEAM_MEMBER_SHEET=${{ secrets.DEV_TF_VAR_TEAM_MEMBER_SHEET }}" >> $GITHUB_ENV
           echo "TF_VAR_TEAM_SHEET=${{ secrets.DEV_TF_VAR_TEAM_SHEET }}" >> $GITHUB_ENV
           echo "TF_VAR_LEAVE_TYPE_SHEET=${{ secrets.DEV_TF_VAR_LEAVE_TYPE_SHEET }}" >> $GITHUB_ENV
+          echo "TF_VAR_MUST_READ_SHEET=${{ secrets.DEV_TF_VAR_MUST_READ_SHEET }}" >> $GITHUB_ENV
 
 
           echo "TF_VAR_REGION=${{ secrets.DEV_AWS_REGION }}" >> $GITHUB_ENV
@@ -60,6 +61,7 @@ jobs:
           echo "TF_VAR_TEAM_MEMBER_SHEET=${{ secrets.TF_VAR_TEAM_MEMBER_SHEET }}" >> $GITHUB_ENV
           echo "TF_VAR_TEAM_SHEET=${{ secrets.TF_VAR_TEAM_SHEET }}" >> $GITHUB_ENV
           echo "TF_VAR_LEAVE_TYPE_SHEET=${{ secrets.TF_VAR_LEAVE_TYPE_SHEET }}" >> $GITHUB_ENV
+          echo "TF_VAR_MUST_READ_SHEET=${{ secrets.TF_VAR_MUST_READ_SHEET }}" >> $GITHUB_ENV
 
 
           echo "TF_VAR_REGION=${{ secrets.AWS_REGION }}" >> $GITHUB_ENV
@@ -67,6 +69,7 @@ jobs:
 
           echo "TF_VAR_MANAGER_LEAVE_APPROVAL_CHANNEL=${{ secrets.TF_VAR_MANAGER_LEAVE_APPROVAL_CHANNEL }}" >> $GITHUB_ENV
           echo "TF_VAR_OOO_CHANNEL=${{ secrets.TF_VAR_OOO_CHANNEL }}" >> $GITHUB_ENV
+          
           echo "TF_VAR_S3_BACKEND_BUCKET=${{ secrets.TF_VAR_S3_BACKEND_BUCKET }}" >> $GITHUB_ENV
           echo "TF_VAR_BUILD_IN_DOCKER=${{ secrets.TF_VAR_BUILD_IN_DOCKER }}" >> $GITHUB_ENV
 
