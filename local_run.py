@@ -50,7 +50,7 @@ def run(app: App):
     def slack_events():
         return handler.handle(request)
 
-    flask_app.run(port=5000, debug=True)
+    flask_app.run()
 
 
 run(bolt_app)

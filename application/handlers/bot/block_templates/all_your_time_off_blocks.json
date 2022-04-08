@@ -1,0 +1,92 @@
+[
+  {
+    "type": "section",
+    "text": {
+      "type": "mrkdwn",
+      "text": "*Your time offs*",
+      "verbatim": false
+    },
+    "accessory": {
+      "type": "button",
+      "action_id": "back_to_personal_home",
+      "text": {
+        "type": "plain_text",
+        "text": "Back",
+        "emoji": true
+      }
+    }
+  },
+  {
+    "type": "actions",
+    "block_id": "timeoff_filter",
+    "elements": [
+      {
+        "type": "static_select",
+        "action_id": "your_timeoff_type_filter",
+        "placeholder": {
+          "type": "plain_text",
+          "text": "Select type",
+          "emoji": true
+        },
+      "options": [
+          {% for leave_type in leave_types %}
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "{{leave_type.icon}} {{ leave_type.display_name }}",
+              "emoji": true
+            },
+            "value": "{{ leave_type.code }}"
+          }
+          {{ "," if not loop.last }}
+
+          {% endfor %}
+        ]
+      },
+      {
+        "type": "datepicker",
+        "action_id": "your_timeoff_start_filter",
+        "placeholder": {
+          "type": "plain_text",
+          "text": "From date",
+          "emoji": true
+        }
+      },
+      {
+        "type": "datepicker",
+        "action_id": "your_timeoff_end_filter",
+        "placeholder": {
+          "type": "plain_text",
+          "text": "To date",
+          "emoji": true
+        }
+      }
+    ]
+  },
+  {
+    "type": "divider"
+  },
+  {% for leave in user_leaves %}
+  {
+    "type": "section",
+    "text": {
+      "type": "mrkdwn",
+      "text": "{{leave.type_icon}} *{{ leave.type }}*\n{{ leave.duration }}\nComment: {{ leave.reason }}",
+      "verbatim": false
+    }
+  },
+  {
+    "type": "context",
+    "elements": [
+      {
+        "type": "mrkdwn",
+        "text": "{{ leave.status_icon }} {{leave.status}}",
+        "verbatim": false
+      }
+    ]
+  },
+  {% endfor %}
+  {
+    "type": "divider"
+  }
+]

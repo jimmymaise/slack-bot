@@ -23,7 +23,6 @@ class LambdaCache:
 
     @classmethod
     def reset_all_db_cache(cls):
-        keys = cls._lambda_cache.keys()
-        for key in keys:
+        for key in list(cls._lambda_cache):
             if key.startswith('db_cache'):
                 del cls._lambda_cache[key]

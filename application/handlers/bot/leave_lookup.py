@@ -5,92 +5,111 @@ import json
 from slack_bolt import App
 from slack_sdk import WebClient
 
-from application.handlers.bot.block_template_handler import BlockTemplateHandler
-from application.handlers.database.google_sheet import GoogleSheetDB
-from application.handlers.database.leave_registry_db_handler import LeaveRegistryDBHandler
-from application.utils.constant import Constant
+from application.handlers.bot.base_management import BaseManagement
 
 
-class LeaveLookup:
+class LeaveLookup(BaseManagement):
     def __init__(
-            self, app: App, client: WebClient, google_sheet_db: GoogleSheetDB,
-            leave_register_sheet,
+            self, app: App, client: WebClient,
     ):
-        self.app = app
-        self.client: WebClient = client
-        self.block_kit = BlockTemplateHandler('./application/handlers/bot/block_templates').get_object_templates()
-        self.google_sheet_db = google_sheet_db
-        self.leave_register_sheet = leave_register_sheet
+        super().__init__(app, client)
         app.command('/ooo-today')(ack=self.respond_to_slack_within_3_seconds, lazy=[self.trigger_today_ooo_command])
 
-        self.leave_register_db_handler = LeaveRegistryDBHandler(
-            google_sheet_db=google_sheet_db,
-            leave_register_sheet=leave_register_sheet,
-        )
-
-    @staticmethod
-    def respond_to_slack_within_3_seconds(ack):
-        ack()
-
     def trigger_today_ooo_command(self, body, respond):
+        user_id = body.get('user_id') or body['user']['id']
+        team_id = self.get_team_id_by_user_id(user_id)
         statuses = [
-            Constant.LEAVE_REQUEST_STATUS_APPROVED,
-            Constant.LEAVE_REQUEST_STATUS_WAIT,
+            self.constant.LEAVE_REQUEST_STATUS_APPROVED,
+            self.constant.LEAVE_REQUEST_STATUS_WAIT,
         ]
-        attachments = self.build_response_today_ooo(statuses)
+        attachments = self.build_response_today_ooo(statuses, team_id)
 
         if attachments:
-            text = 'As your request, Here is the list of users OOO today'
+            text = 'As your request, Here is the list of users in your team OOO today'
         else:
-            text = 'Sorry but nobody is OOO today'
+            text = 'Sorry but nobody in your team is OOO today'
         if body.get('response_url'):
             return respond(
                 response_type='ephemeral',
                 text=text,
                 attachments=attachments,
             )
-        user_id = body['user']['id']
         return self.client.chat_postMessage(
             channel=user_id,
             text=text,
             attachments=attachments,
         )
 
-    def today_ooo_schedule(self, channel):
+    def today_ooo_schedule(self):
         statuses = [
-            Constant.LEAVE_REQUEST_STATUS_APPROVED,
-            Constant.LEAVE_REQUEST_STATUS_WAIT,
+            self.constant.LEAVE_REQUEST_STATUS_APPROVED,
+            self.constant.LEAVE_REQUEST_STATUS_WAIT,
         ]
+        teams = self.team_db_handler.get_all_teams()
+        for team in teams:
+            attachments = self.build_response_today_ooo(statuses, team_id=team.id)
+            if attachments:
+                text = f'Hey, the following users (team {team.name}) are OOO today'
+            else:
+                text = f'Huray!, Nobody (team {team.name}) is OOO today'
+            self.client.chat_postMessage(
+                channel=team.announcement_channel_id,
+                text=text,
+                attachments=attachments,
+            )
 
-        attachments = self.build_response_today_ooo(statuses)
-        if attachments:
-            text = 'Hey, the following users are OOO today'
-        else:
-            text = 'Huray!, Nobody is OOO today'
-        self.client.chat_postMessage(
-            channel=channel,
-            text=text,
-            attachments=attachments,
-        )
-
-    def build_response_today_ooo(self, statuses):
-        today_ooo_items = self.leave_register_db_handler.get_today_ooo(statuses)
+    def build_response_today_ooo(self, statuses, team_id=None):
+        today_ooo_leaves = self.leave_register_db_handler.get_today_ooo(statuses, team_id)
         attachments = []
-        if not today_ooo_items:
+        if not today_ooo_leaves:
             return attachments
-        for item in today_ooo_items:
-            item_keys = getattr(item, '_fields')
-            item_values = getattr(item, '_data')
-            item_dict = dict(zip(item_keys, item_values))
+        for leave in today_ooo_leaves:
+            leave_type_detail = self.get_leave_type_detail_from_cache(leave.leave_type)
             attachments.append(
                 json.loads(
                     self.block_kit.ooo_attachment(
-                        username=item_dict['username'],
-                        leave_type=f"{Constant.EMOJI_MAPPING[item_dict['leave_type']]} {item_dict['leave_type']}",
-                        status=f"{Constant.EMOJI_MAPPING[item_dict['status']]} {item_dict['status']}",
-                        start_date=item_dict['start_date'],
-                        end_date=item_dict['end_date'],
+                        username=leave.username,
+                        leave_type=f'{leave_type_detail["icon"]} {leave.leave_type}',
+                        status=f'{self.constant.EMOJI_MAPPING[leave.status]} {leave.status}',
+                        start_date=leave.start_date,
+                        end_date=leave.end_date,
                     ),
                 ),
             )
         return attachments
+
+    def get_my_time_off_filter_blocks(self, user_id, start_date, end_date, leave_type, statuses):
+        user_leave_rows = self.leave_register_db_handler.get_leaves(
+            start_date=start_date,
+            end_date=end_date,
+            user_id=user_id,
+            leave_type=leave_type,
+            statuses=statuses,
+        )
+        user_leaves = self.build_leave_display_list(user_leave_rows)
+        blocks = json.loads(
+            self.block_kit.all_your_time_off_blocks(
+                user_leaves=user_leaves,
+                leave_types=self.get_leave_types(),
+            ),
+        )
+        return blocks
+
+    def get_my_team_off_filter_blocks(self, team_id, user_id=None, start_date=None, end_date=None, leave_type=None):
+        user_leave_rows = self.leave_register_db_handler.get_leaves(
+            team_id=team_id,
+            start_date=start_date,
+            end_date=end_date,
+            user_id=user_id,
+            leave_type=leave_type,
+
+        )
+        user_leaves = self.build_leave_display_list(user_leave_rows, is_get_slack_user_info=True)
+        blocks = json.loads(
+            self.block_kit.all_your_team_time_off_blocks(
+                user_leaves=user_leaves,
+                leave_types=self.get_leave_types(),
+
+            ),
+        )
+        return blocks

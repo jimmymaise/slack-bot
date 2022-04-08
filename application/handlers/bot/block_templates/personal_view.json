@@ -1,0 +1,282 @@
+[
+  {
+    "type": "section",
+    "text": {
+      "type": "mrkdwn",
+      "text": "*Personal panel*",
+      "verbatim": false
+    }
+    {% if is_able_to_create_team == true %},
+    "accessory": {
+      "type": "button",
+      "action_id": "become_manager",
+      "text": {
+        "type": "plain_text",
+        "text": "Become Manager",
+        "emoji": true
+      }
+    }
+    {% elif is_already_manager == true %},
+    "accessory": {
+      "type": "button",
+      "action_id": "switch_manager",
+      "text": {
+        "type": "plain_text",
+        "text": ":arrows_counterclockwise:  Switch to Manager",
+        "emoji": true
+      }
+    }
+    {% elif is_not_have_team == true %},
+    "text": {
+      "type": "mrkdwn",
+      "text": ":interrobang: Your account has not been configured to belong a team. Check with your manager for more detail",
+      "verbatim": false
+    }
+    {% else %}
+    {% endif %}
+  },
+  {
+    "type": "divider"
+  },
+  {
+    "type": "context",
+    "elements": [
+      {
+        "type": "plain_text",
+        "text": "Welcome to Bimodal Slack Bot.{% if team_name %} Your team is {{ team_name }}{% endif %}",
+        "emoji": true
+      }
+    ]
+  },
+  {
+    "type": "actions",
+    "elements": [
+      {
+        "type": "button",
+        "action_id": "book_vacation",
+        "text": {
+          "type": "plain_text",
+          "text": "Add Time Off",
+          "emoji": true
+        },
+        "style": "primary"
+      },
+      {
+        "type": "button",
+        "action_id": "my_all_time_offs",
+        "text": {
+          "type": "plain_text",
+          "text": "All Time Offs",
+          "emoji": true
+        }
+      },
+      {
+        "type": "button",
+        "action_id": "check_ooo_today",
+        "text": {
+          "type": "plain_text",
+          "text": "Who's OOO",
+          "emoji": true
+        },
+        "url": "slack://app?id=A031MPR62MB&tab=messages"
+      }
+    ]
+  },
+  {
+    "type": "section",
+    "text": {
+      "type": "plain_text",
+      "text": " ",
+      "emoji": true
+    }
+  },
+  {
+    "type": "section",
+    "text": {
+      "type": "plain_text",
+      "text": " ",
+      "emoji": true
+    }
+  },
+  {
+    "type": "section",
+    "text": {
+      "type": "mrkdwn",
+      "text": "*My time offs*",
+      "verbatim": false
+    }
+  },
+  {
+    "type": "divider"
+  },
+  {% for leave in user_leaves %}
+  {
+    "type": "section",
+    "text": {
+      "type": "mrkdwn",
+      "text": "{{leave.type_icon}} *{{ leave.type }}*\n{{ leave.duration }}\nComment: {{ leave.reason }}",
+      "verbatim": false
+    }
+    {% if leave.allowed_user_leave_actions %},
+    "accessory": {
+      "type": "overflow",
+      "action_id": "overflow_timeoff_actions_home_personal",
+      "options": [
+        {% for action in leave.allowed_user_leave_actions %}
+        {
+          "text": {
+            "type": "plain_text",
+            "text": "{{action|title}}",
+            "emoji": true
+          },
+          "value": "{{action|title}},{{ leave.id }}"
+        }
+        {{ "," if not loop.last }}
+        {% endfor %}
+      ]
+    }
+    {% endif %}
+  },
+  {
+    "type": "context",
+    "elements": [
+      {
+        "type": "mrkdwn",
+        "text": "{{ leave.status_icon }} {{leave.status}}",
+        "verbatim": false
+      }
+    ]
+  },
+  {% endfor %}
+  {
+    "type": "section",
+    "text": {
+      "type": "plain_text",
+      "text": " ",
+      "emoji": true
+    }
+  },
+  {
+    "type": "section",
+    "text": {
+      "type": "plain_text",
+      "text": " ",
+      "emoji": true
+    }
+  },
+  {
+    "type": "section",
+    "text": {
+      "type": "mrkdwn",
+      "text": "*Upcoming holidays*",
+      "verbatim": false
+    }
+  },
+  {
+    "type": "divider"
+  },
+  {
+    "type": "section",
+    "text": {
+      "type": "mrkdwn",
+      "text": "_There are no events yet._",
+      "verbatim": false
+    }
+  },
+  {
+    "type": "section",
+    "text": {
+      "type": "plain_text",
+      "text": " ",
+      "emoji": true
+    }
+  },
+  {
+    "type": "section",
+    "text": {
+      "type": "plain_text",
+      "text": " ",
+      "emoji": true
+    }
+  },
+  {
+    "type": "section",
+    "text": {
+      "type": "mrkdwn",
+      "text": "*Helpful links*",
+      "verbatim": false
+    }
+  },
+  {
+    "type": "divider"
+  },
+  {
+    "type": "actions",
+    "elements": [
+      {
+        "type": "button",
+        "action_id": "open_settings",
+        "text": {
+          "type": "plain_text",
+          "text": ":gear: Settings",
+          "emoji": true
+        },
+        "url": "slack://app?id=A031MPR62MB&tab=messages"
+      },
+      {
+        "type": "button",
+        "action_id": "WaBVL",
+        "text": {
+          "type": "plain_text",
+          "text": ":link: View Website",
+          "emoji": true
+        },
+        "url": "https://bimodalconsulting.com/"
+      },
+      {
+        "type": "button",
+        "action_id": "h1tf",
+        "text": {
+          "type": "plain_text",
+          "text": ":book: Help Center",
+          "emoji": true
+        },
+        "url": "https://bimodalconsulting.com/"
+      },
+      {
+        "type": "button",
+        "action_id": "share_feedback",
+        "text": {
+          "type": "plain_text",
+          "text": ":email: Contact Us",
+          "emoji": true
+        },
+        "url": "https://bimodalconsulting.com/"
+      }
+    ]
+  },
+  {
+    "type": "section",
+    "text": {
+      "type": "mrkdwn",
+      "text": "BIP Bot is a slack bot providing a better way to implement the Bimodal Internal Process:zap:. At the very first MVP, BIP Bot will help us to schedule the PTO time.Read the <https://docs.google.com/document/d/1ruRofzWX7pkLEdNZ9T7N71tEV6AL0zmx5DcLW2OSNb8/edit|*[BIP - leave management & attendance management]> for understanding requirements",
+      "verbatim": false
+    }
+  },
+  {
+    "type": "section",
+    "text": {
+      "type": "plain_text",
+      "text": " ",
+      "emoji": true
+    }
+  },
+  {
+    "type": "section",
+    "text": {
+      "type": "plain_text",
+      "text": " ",
+      "emoji": true
+    }
+  }
+]

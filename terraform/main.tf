@@ -9,28 +9,33 @@ terraform {
 }
 
 module "lambda_function" {
-  source  = "registry.terraform.io/terraform-aws-modules/lambda/aws"
-  publish = true
-  timeout = 900
+  source                = "registry.terraform.io/terraform-aws-modules/lambda/aws"
+  publish               = true
+  timeout               = 900
   environment_variables = {
     SLACK_SIGNING_SECRET               = var.SLACK_SIGNING_SECRET
     SLACK_BOT_TOKEN                    = var.SLACK_BOT_TOKEN
     GOOGLE_SERVICE_BASE64_FILE_CONTENT = var.GOOGLE_SERVICE_BASE64_FILE_CONTENT
-    LEAVE_REGISTER_SHEET               = var.LEAVE_REGISTER_SHEET
     MANAGER_LEAVE_APPROVAL_CHANNEL     = var.MANAGER_LEAVE_APPROVAL_CHANNEL
     OOO_CHANNEL                        = var.OOO_CHANNEL
+    TEAM_SHEET                         = var.TEAM_SHEET
+    TEAM_MEMBER_SHEET                  = var.TEAM_MEMBER_SHEET
+    LEAVE_REGISTER_SHEET               = var.LEAVE_REGISTER_SHEET
+    LEAVE_TYPE_SHEET                   = var.LEAVE_TYPE_SHEET
+    MUST_READ_SHEET                    = var.MUST_READ_SHEET
+
   }
-  function_name   = "slack-bot-bip"
-  description     = "Slack bot bip for lambda"
-  handler         = "lambda_handler.handler"
-  build_in_docker = var.BUILD_IN_DOCKER
-  docker_image    = "lambci/lambda:build-python3.8"
-  runtime         = "python3.8"
-  source_path = [
+  function_name         = "slack-bot-bip"
+  description           = "Slack bot bip for lambda"
+  handler               = "lambda_handler.handler"
+  build_in_docker       = var.BUILD_IN_DOCKER
+  docker_image          = "lambci/lambda:build-python3.8"
+  runtime               = "python3.8"
+  source_path           = [
     {
       path             = "..",
       pip_requirements = true,
-      patterns = [
+      patterns         = [
         "!terraform/.*",
         "!tf_ci_account/.*",
         "!.github/.*",
@@ -45,14 +50,14 @@ module "lambda_function" {
 
     }
   ]
-  allowed_triggers = {
+  allowed_triggers      = {
     APIGatewayAny = {
       service    = "apigateway"
       source_arn = "${module.api_gateway.apigatewayv2_api_execution_arn}/*/*/${module.lambda_function.lambda_function_name}"
       stage      = ""
     }
   }
-  tags = {
+  tags                  = {
     Name = "slack-bot-bip"
   }
 }
@@ -125,6 +130,16 @@ resource "aws_iam_role_policy_attachment" "add_permission_for_lambda_invoke_itse
 }
 
 //Schedule
+
+module "trigger_must_read" {
+  source                      = "./modules/cloud_watch_event_trigger_lambda_schedule"
+  schedule_name               = "trigger_must_read"
+  schedule_desc               = "trigger_must_read"
+  schedule_expression         = "cron(0 16 ? * MON-FRI *)"
+  schedule_lambda_target_arn  = module.lambda_function.lambda_function_arn
+  schedule_lambda_target_name = module.lambda_function.lambda_function_name
+  trigger_input               = { "lambda_trigger_event" : "SCHEDULER_MUST_READ" }
+}
 
 module "trigger_today_ooo" {
   source                      = "./modules/cloud_watch_event_trigger_lambda_schedule"

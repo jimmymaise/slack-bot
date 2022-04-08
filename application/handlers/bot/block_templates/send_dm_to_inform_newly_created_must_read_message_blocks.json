@@ -1,0 +1,23 @@
+[
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "Hi <@{{ tagged_user_id }}> :wave:"
+      }
+    },
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "You have a new must read message. You need to send reaction :{{ reaction }}: to acknowledge that you have read it"
+      }
+    },
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "<{{ permalink }}| {{short_content}}>"
+      }
+    }
+  ]

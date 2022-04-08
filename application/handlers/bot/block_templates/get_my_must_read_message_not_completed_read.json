@@ -1,0 +1,18 @@
+[
+  {
+    "type": "section",
+    "text": {
+      "type": "mrkdwn",
+      "text": "Here is the list of your must read messages which haven't read by your teammates. Ask them put reaction :{{ reaction }}: to acknowledge that they read it. \nI will remind them to read these messages every day until they acknowledge"
+    }
+  }
+  {% for my_message_obj  in my_message_objs %},
+  {
+    "type": "section",
+    "text": {
+      "type": "mrkdwn",
+      "text": "_{{ my_message_obj.posted_date }}_ <{{ my_message_obj.permalink }}| {{my_message_obj.short_content}}> have not acknowledged by ({{ my_message_obj.not_read_user_ids|length }}) {%  for user_id in  my_message_obj.not_read_user_ids %} <@{{ user_id }}>  {{ "," if not loop.last }}{% endfor %})"
+    }
+  }
+  {% endfor %}
+]

@@ -4,19 +4,8 @@ on:
   push:
     branches:
       - main
+      - dev
   pull_request:
-
-env:
-  ## Sets environment variable
-  TF_VAR_SLACK_SIGNING_SECRET: ${{ secrets.TF_VAR_SLACK_SIGNING_SECRET }}
-  TF_VAR_SLACK_BOT_TOKEN: ${{ secrets.TF_VAR_SLACK_BOT_TOKEN }}
-  TF_VAR_GOOGLE_SERVICE_BASE64_FILE_CONTENT: ${{ secrets.TF_VAR_GOOGLE_SERVICE_BASE64_FILE_CONTENT }}
-  TF_VAR_LEAVE_REGISTER_SHEET: ${{ secrets.TF_VAR_LEAVE_REGISTER_SHEET }}
-  TF_VAR_REGION: ${{ secrets.AWS_REGION }}
-  TF_VAR_MANAGER_LEAVE_APPROVAL_CHANNEL: ${{ secrets.TF_VAR_MANAGER_LEAVE_APPROVAL_CHANNEL }}
-  TF_VAR_OOO_CHANNEL: ${{ secrets.TF_VAR_OOO_CHANNEL }}
-  TF_VAR_S3_BACKEND_BUCKET: ${{ secrets.TF_VAR_S3_BACKEND_BUCKET }}
-  TF_VAR_BUILD_IN_DOCKER: ${{ secrets.TF_VAR_BUILD_IN_DOCKER }}
 
 
 jobs:
@@ -34,18 +23,61 @@ jobs:
         with:
           python-version: '3.8'
 
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
+      - name: Configuration for dev branch
+        if: ${{ github.ref == 'refs/heads/dev'}}
+        # Side note, I can run any Linux command here, not just 'echo'
+        run: |
+          echo "TF_VAR_SLACK_SIGNING_SECRET=${{ secrets.DEV_TF_VAR_SLACK_SIGNING_SECRET }}" >> $GITHUB_ENV
+          echo "TF_VAR_SLACK_BOT_TOKEN=${{ secrets.DEV_TF_VAR_SLACK_BOT_TOKEN }}" >> $GITHUB_ENV
+          echo "TF_VAR_GOOGLE_SERVICE_BASE64_FILE_CONTENT=${{ secrets.DEV_TF_VAR_GOOGLE_SERVICE_BASE64_FILE_CONTENT }}" >> $GITHUB_ENV
+
+          echo "TF_VAR_LEAVE_REGISTER_SHEET=${{ secrets.DEV_TF_VAR_LEAVE_REGISTER_SHEET }}" >> $GITHUB_ENV
+          echo "TF_VAR_TEAM_MEMBER_SHEET=${{ secrets.DEV_TF_VAR_TEAM_MEMBER_SHEET }}" >> $GITHUB_ENV
+          echo "TF_VAR_TEAM_SHEET=${{ secrets.DEV_TF_VAR_TEAM_SHEET }}" >> $GITHUB_ENV
+          echo "TF_VAR_LEAVE_TYPE_SHEET=${{ secrets.DEV_TF_VAR_LEAVE_TYPE_SHEET }}" >> $GITHUB_ENV
+          echo "TF_VAR_MUST_READ_SHEET=${{ secrets.DEV_TF_VAR_MUST_READ_SHEET }}" >> $GITHUB_ENV
+
+
+          echo "TF_VAR_REGION=${{ secrets.DEV_AWS_REGION }}" >> $GITHUB_ENV
+          echo "AWS_REGION=${{ secrets.DEV_AWS_REGION }}" >> $GITHUB_ENV
+
+          echo "TF_VAR_MANAGER_LEAVE_APPROVAL_CHANNEL=${{ secrets.DEV_TF_VAR_MANAGER_LEAVE_APPROVAL_CHANNEL }}" >> $GITHUB_ENV
+          echo "TF_VAR_OOO_CHANNEL=${{ secrets.DEV_TF_VAR_OOO_CHANNEL }}" >> $GITHUB_ENV
+          echo "TF_VAR_S3_BACKEND_BUCKET=${{ secrets.DEV_TF_VAR_S3_BACKEND_BUCKET }}" >> $GITHUB_ENV
+          echo "TF_VAR_BUILD_IN_DOCKER=${{ secrets.DEV_TF_VAR_BUILD_IN_DOCKER }}" >> $GITHUB_ENV
+
+          echo "AWS_ACCESS_KEY_ID=${{ secrets.DEV_AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
+          echo "AWS_SECRET_ACCESS_KEY=${{ secrets.DEV_AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
+
+
+      - name: Configuration for main branch
+        if: ${{ github.ref == 'refs/heads/main'  || github.event_name == 'pull_request' }}
+        run: |
+          echo "TF_VAR_SLACK_SIGNING_SECRET=${{ secrets.TF_VAR_SLACK_SIGNING_SECRET }}" >> $GITHUB_ENV
+          echo "TF_VAR_SLACK_BOT_TOKEN=${{ secrets.TF_VAR_SLACK_BOT_TOKEN }}" >> $GITHUB_ENV
+          echo "TF_VAR_GOOGLE_SERVICE_BASE64_FILE_CONTENT=${{ secrets.TF_VAR_GOOGLE_SERVICE_BASE64_FILE_CONTENT }}" >> $GITHUB_ENV
+
+          echo "TF_VAR_LEAVE_REGISTER_SHEET=${{ secrets.TF_VAR_LEAVE_REGISTER_SHEET }}" >> $GITHUB_ENV
+          echo "TF_VAR_TEAM_MEMBER_SHEET=${{ secrets.TF_VAR_TEAM_MEMBER_SHEET }}" >> $GITHUB_ENV
+          echo "TF_VAR_TEAM_SHEET=${{ secrets.TF_VAR_TEAM_SHEET }}" >> $GITHUB_ENV
+          echo "TF_VAR_LEAVE_TYPE_SHEET=${{ secrets.TF_VAR_LEAVE_TYPE_SHEET }}" >> $GITHUB_ENV
+          echo "TF_VAR_MUST_READ_SHEET=${{ secrets.TF_VAR_MUST_READ_SHEET }}" >> $GITHUB_ENV
+
+
+          echo "TF_VAR_REGION=${{ secrets.AWS_REGION }}" >> $GITHUB_ENV
+          echo "AWS_REGION=${{ secrets.AWS_REGION }}" >> $GITHUB_ENV
+
+          echo "TF_VAR_MANAGER_LEAVE_APPROVAL_CHANNEL=${{ secrets.TF_VAR_MANAGER_LEAVE_APPROVAL_CHANNEL }}" >> $GITHUB_ENV
+          echo "TF_VAR_OOO_CHANNEL=${{ secrets.TF_VAR_OOO_CHANNEL }}" >> $GITHUB_ENV
+
+          echo "TF_VAR_S3_BACKEND_BUCKET=${{ secrets.TF_VAR_S3_BACKEND_BUCKET }}" >> $GITHUB_ENV
+          echo "TF_VAR_BUILD_IN_DOCKER=${{ secrets.TF_VAR_BUILD_IN_DOCKER }}" >> $GITHUB_ENV
+
+          echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
+          echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v1
-        with:
-          # terraform_version: 0.13.0:
-          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
 
       - name: Terraform Init
         id: init
@@ -89,5 +121,5 @@ jobs:
         run: exit 1
 
       - name: Terraform Apply
-        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev') && github.event_name == 'push'
         run: terraform apply -auto-approve

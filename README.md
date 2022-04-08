@@ -19,17 +19,21 @@ for understanding requirements
 
 5. Go to 'OAuth & Permissions' under 'Features'. Then scoll down to the 'Scopes' section and add an OAuth scope for:
 
-    1. channels:history
-    2. channels:manage
-    3. channels:read
-    4. chat:write
-    5. commands
-    6. groups:history
-    7. groups:read
-    8. im:read
-    9. mpim:read
-    10. team:read
-    11. users:read
+    - channels:history
+    - channels:manage
+    - channels:read
+    - chat:write
+    - chat:write.public
+    - commands
+    - groups:history
+    - groups:read
+    - im:read
+    - im:write
+    - mpim:read
+    - reactions:read
+    - team:read
+    - users:read
+    - usergroups:read
 
 6. In the same section, we will find a 'Bot User OAuth Access Token'. Copy and use it as `SLACK_BOT_TOKEN` for
    environment variable
@@ -49,6 +53,7 @@ the `permanent address`: https://xyz123.execute-api.us-west-1.amazonaws.com/slac
     1. message.channels
     2. message.groups
     3. app_home_opened
+    4. team_join
 
 11. Go to 'Interactivity & Shortcuts' under 'Features'. In the 'Request URL' field type the above address
 
@@ -100,7 +105,7 @@ the bot to this channel. For example #my_testing_channel (Should have #)
 3. Setup backend bucket
 
     1. Add below environment variable to the deployment machine. Replace us-west-2 and leave-management-bimodal depend
-       on environment you are working for.
+       on environment you are working for (using us-west-1 and dev-leave-management-bimodal for dev env)
         1. export REGION="us-west-2"
         2. export S3_BACKEND_BUCKET="leave-management-bimodal"
     2. aws s3api create-bucket --bucket "${S3_BACKEND_BUCKET}" --region "${REGION}" --create-bucket-configuration
@@ -115,7 +120,7 @@ the bot to this channel. For example #my_testing_channel (Should have #)
 
 1. Run file local_run.py
 2. Using application like ngrok to map a localhost address to an internet address
-3. Using this internet address to bot configuration (http://xyz.com/slack-bot/events)
+3. Using this internet address to bot configuration (http://abc-..-..-xyz.ngrok.io)
 
 ## How to use the bot
 
@@ -123,7 +128,9 @@ Currently, the bot just support two commands `/vacation` and `/ooo-today`. Let's
 
 ## How to setup Github Action
 
-Go to Settings->Secrets->Action and add below secrets AWS_ACCESS_KEY_ID
+Go to Repo Settings->Secrets->Action and add below secrets (Using repo secret not organization secret)
+
+AWS_ACCESS_KEY_ID
 
 AWS_REGION
 
@@ -144,6 +151,14 @@ TF_VAR_S3_BACKEND_BUCKET
 TF_VAR_SLACK_BOT_TOKEN
 
 TF_VAR_SLACK_SIGNING_SECRET
+
+TF_VAR_TEAM_SHEET TF_VAR_TEAM_MEMBER_SHEET
+
+TF_VAR_LEAVE_TYPE_SHEET
+
+TF_VAR_MUST_READ_SHEET
+
+With dev env, we will add the prefix DEV_, Example: TF_VAR_LEAVE_TYPE_SHEET becomes DEV_TF_VAR_LEAVE_TYPE_SHEET
 
 ## How to create CI user
 
