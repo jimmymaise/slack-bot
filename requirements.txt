@@ -1,3 +1,5 @@
+python-dotenv
+flask
 google-auth==2.6.0
 jinja2
 requests==2.27.1

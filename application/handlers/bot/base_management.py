@@ -145,17 +145,16 @@ class BaseManagement:
     def get_tagged_users_from_message(self, message_event):
         message_block = message_event['blocks'][0]
         tagged_users = []
-        channel_members = []
-        user_group_members = []
         for element in message_block['elements'][0]['elements']:
             if element['type'] == 'user':
                 tagged_users.append(element['user_id'])
             elif element['type'] == 'usergroup':
-                user_group_members = self.client.usergroups_users_list(usergroup=element['usergroup_id'])['users']
+                tagged_users += self.client.usergroups_users_list(usergroup=element['usergroup_id'])['users']
             elif element['type'] == 'broadcast' and element['range'] == 'channel':
-                channel_members = self.client.conversations_members(channel=message_event['channel'])['members']
+                tagged_users += \
+                    self.client.conversations_members(channel=message_event['channel'])['members']
 
-        tagged_users = list(set(tagged_users + channel_members + user_group_members))
+        tagged_users = list(set(tagged_users))
         return tagged_users
 
     def get_users_make_reaction_to_message(self, channel, message_ts, reaction_name):
