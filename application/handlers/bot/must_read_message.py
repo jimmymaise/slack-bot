@@ -80,18 +80,12 @@ class MustReadMessage(BaseManagement):
 
         for must_read_message_row in must_read_message_rows:
             message_ts = must_read_message_row.message_ts.split('ts_')[1]
-            message_detail = self.get_one_slack_message(
-                channel_id=must_read_message_row.channel,
-                message_ts=message_ts,
-            )
-            tagged_users = self.get_tagged_users_from_message(message_detail)
-            reacted_users = self.get_users_make_reaction_to_message(
-                channel=must_read_message_row.channel,
-                reaction_name=self.constant.ACK_EMOJI,
-                message_ts=message_ts,
-            )
+            message_detail, tagged_users, acked_users = \
+                self.get_message_detail_tagged_users_acked_users_from_message_ts(
+                    message_ts=message_ts, channel_id=must_read_message_row.channel,
+                )
             posted_date = datetime.fromtimestamp(float(message_ts)).strftime('%b %d at %H:%M')
-            not_read_user_ids = list(set(tagged_users) - set(reacted_users))
+            not_read_user_ids = list(set(tagged_users) - set(acked_users))
             if not not_read_user_ids:
                 self.must_read_db_handler.update_item_with_retry(
                     _id=must_read_message_row.id,
@@ -107,7 +101,7 @@ class MustReadMessage(BaseManagement):
                 'permalink': must_read_message_row.permalink,
                 'channel': must_read_message_row.channel,
                 'posted_date': posted_date,
-                'not_read_user_ids': list(set(tagged_users) - set(reacted_users)),
+                'not_read_user_ids': list(set(tagged_users) - set(acked_users)),
             }
             my_message_objs.append(my_message_obj)
 
@@ -133,16 +127,10 @@ class MustReadMessage(BaseManagement):
         )
         for must_read_message_row in must_read_message_rows:
             message_ts = must_read_message_row.message_ts.split('ts_')[1]
-            message_detail = self.get_one_slack_message(
-                channel_id=must_read_message_row.channel,
-                message_ts=message_ts,
-            )
-            tagged_users = self.get_tagged_users_from_message(message_detail)
-            reacted_users = self.get_users_make_reaction_to_message(
-                channel=must_read_message_row.channel,
-                reaction_name=self.constant.ACK_EMOJI,
-                message_ts=message_ts,
-            )
+            message_detail, tagged_users, acked_users = \
+                self.get_message_detail_tagged_users_acked_users_from_message_ts(
+                    message_ts=message_ts, channel_id=must_read_message_row.channel,
+                )
             posted_date = datetime.fromtimestamp(float(message_ts)).strftime('%b %d at %H:%M')
             remind_message_obj = {
                 'author_user_id': must_read_message_row.author_user_id,
@@ -153,7 +141,7 @@ class MustReadMessage(BaseManagement):
                 'channel': must_read_message_row.channel,
                 'posted_date': posted_date,
             }
-            reminder_users = list(set(tagged_users) - set(reacted_users))
+            reminder_users = list(set(tagged_users) - set(acked_users))
             if not reminder_users:
                 self.must_read_db_handler.update_item_with_retry(
                     _id=must_read_message_row.id,
@@ -176,3 +164,17 @@ class MustReadMessage(BaseManagement):
                     ),
                 ),
             )
+
+    def get_message_detail_tagged_users_acked_users_from_message_ts(self, message_ts, channel_id):
+        message_detail = self.get_one_slack_message(
+            channel_id=channel_id,
+            message_ts=message_ts,
+        )
+        message_detail['channel'] = channel_id
+        tagged_users = self.get_tagged_users_from_message(message_detail)
+        acked_users = self.get_users_make_reaction_to_message(
+            channel=channel_id,
+            reaction_name=self.constant.ACK_EMOJI,
+            message_ts=message_ts,
+        )
+        return message_detail, tagged_users, acked_users

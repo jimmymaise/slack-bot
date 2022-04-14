@@ -23,6 +23,8 @@ bolt_app = App(
 
 slack_listener = SlackListener(bolt_app, client)
 
+slack_listener.must_read_message.remind_must_read_message()
+
 
 def handler(event, context):
     schedule_event = event.get('lambda_trigger_event')
@@ -35,6 +37,6 @@ def handler(event, context):
 
 def schedule_process(schedule_event):
     if schedule_event == Constant.SCHEDULER_OOO_TODAY:
-        slack_listener.leave_lookup.today_ooo_schedule(os.getenv('OOO_CHANNEL'))
+        slack_listener.leave_lookup.today_ooo_schedule()
     elif schedule_event == Constant.SCHEDULER_MUST_READ:
         slack_listener.must_read_message.remind_must_read_message()
