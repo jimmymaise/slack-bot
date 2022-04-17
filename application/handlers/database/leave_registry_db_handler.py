@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime
+from datetime import timedelta
 
 from sqlalchemy import select
 
@@ -21,6 +22,17 @@ class LeaveRegistryDBHandler(BaseDBHandler):
             start_date=today_date_str, end_date=today_date_str,
             statuses=statuses,
             team_id=team_id,
+        )
+
+    def get_upcoming_ooo(self, statuses, team_id=None):
+        start_date_str = (datetime.now() + timedelta(days=1)).strftime('%Y-%m-%d')
+        end_date_str = (datetime.now() + timedelta(days=7)).strftime('%Y-%m-%d')
+        return self.get_leaves(
+            start_date=start_date_str,
+            end_date=end_date_str,
+            statuses=statuses,
+            team_id=team_id,
+            is_exclude_request_time_off_before_start_date=True,
         )
 
     def get_leaves(

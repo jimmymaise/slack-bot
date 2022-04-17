@@ -47,7 +47,8 @@ class LeaveLookup(BaseManagement):
         ]
         teams = self.team_db_handler.get_all_teams()
         for team in teams:
-            attachments = self.build_response_today_ooo(statuses, team_id=team.id)
+            today_ooo_leaves = self.leave_register_db_handler.get_today_ooo(statuses, team.id)
+            attachments = self.build_response_ooo(statuses, team_id=team.id, leaves=today_ooo_leaves)
             if attachments:
                 text = f'Hey, the following users (team {team.name}) are OOO today'
             else:
@@ -58,12 +59,32 @@ class LeaveLookup(BaseManagement):
                 attachments=attachments,
             )
 
-    def build_response_today_ooo(self, statuses, team_id=None):
-        today_ooo_leaves = self.leave_register_db_handler.get_today_ooo(statuses, team_id)
+    def upcoming_ooo_schedule(self):
+        statuses = [
+            self.constant.LEAVE_REQUEST_STATUS_APPROVED,
+            self.constant.LEAVE_REQUEST_STATUS_WAIT,
+        ]
+        teams = self.team_db_handler.get_all_teams()
+        for team in teams:
+            upcoming_ooo_leaves = self.leave_register_db_handler.get_today_ooo(statuses, team.id)
+            attachments = self.build_response_ooo(statuses, team_id=team.id, leaves=upcoming_ooo_leaves)
+            if attachments:
+                text = f'Hey, just wanted to remind you that some team members in your team  (team {team.name})' \
+                       f' are OOO soon:'
+            else:
+                return
+            self.client.chat_postMessage(
+                channel=team.announcement_channel_id,
+                text=text,
+                attachments=attachments,
+            )
+
+    def build_response_ooo(self, statuses, leaves, team_id=None):
+
         attachments = []
-        if not today_ooo_leaves:
+        if not leaves:
             return attachments
-        for leave in today_ooo_leaves:
+        for leave in leaves:
             leave_type_detail = self.get_leave_type_detail_from_cache(leave.leave_type)
             attachments.append(
                 json.loads(
