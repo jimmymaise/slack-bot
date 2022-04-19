@@ -38,7 +38,8 @@ class Team(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     name = Column(String)
     announcement_channel_id = Column(String)
-    holiday_country = Column(String)
+    holiday_group_id = Column(String)
+    # Delete orphan doesn't work as a bug of shillelagh https://github.com/betodealmeida/shillelagh/issues/206
     members = relationship(
         'TeamMember',
         backref='team',
@@ -48,7 +49,7 @@ class Team(Base):
 
     def __repr__(self):
         return f'Team(id={self.id!r}, name={self.name!r}, announcement_channel_id={self.announcement_channel_id!r},' \
-               f' holiday_country={self.holiday_country!r})'
+               f' holiday_group_id={self.holiday_group_id!r})'
 
 
 class TeamMember(Base):
@@ -59,7 +60,8 @@ class TeamMember(Base):
         String, ForeignKey(f'{Team.__tablename__}.id', ondelete='cascade'), nullable=False,
         primary_key=True,
     )
-    is_manager = Column(String)
+    # We can't use boolean here as a bug of shillelagh https://github.com/betodealmeida/shillelagh/issues/207
+    is_manager = Column(Integer)
 
     # team = relationship("Team", backref=backref("members", cascade="all, delete-orphan"))
 
@@ -95,3 +97,43 @@ class MustReadMessage(Base):
 
     def __repr__(self):
         return f'MustReadMessage(id={self.id!r}, message_ts={self.message_ts!r},status={self.status!r}'
+
+
+class Weekdays(Base):
+    __tablename__ = Constant.WEEKDAYS_SHEET
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    team_id = Column(UUID(as_uuid=True))
+    is_mon = Column(Integer)
+    is_tue = Column(Integer)
+    is_wed = Column(Integer)
+    is_thu = Column(Integer)
+    is_fri = Column(Integer)
+    is_sat = Column(Integer)
+    is_sun = Column(Integer)
+
+    def __repr__(self):
+        return f'Weekdays(id={self.id!r}'
+
+
+class Holidays(Base):
+    __tablename__ = Constant.HOLIDAYS_SHEET
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    holiday_group_id = Column(String)
+    date = Column(Integer)
+    description = Column(Integer)
+    is_custom = Column(Integer)
+    is_enabled = Column(Integer)
+
+    def __repr__(self):
+        return f'Holidays(id={self.id!r}'
+
+
+class HolidayGroups(Base):
+    __tablename__ = Constant.HOLIDAY_GROUPS_SHEET
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    name = Column(String)
+    country_based_on = Column(String)
+    description = Column(Integer)
+
+    def __repr__(self):
+        return f'Holidays(id={self.id!r}'

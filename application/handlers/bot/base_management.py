@@ -6,11 +6,14 @@ from contextlib import suppress
 from slack_sdk import WebClient
 
 from application.handlers.bot.block_template_handler import BlockTemplateHandler
+from application.handlers.database.holiday_groups_db_handler import HolidayGroupsDBHandler
+from application.handlers.database.holidays_db_handler import HolidaysDBHandler
 from application.handlers.database.leave_registry_db_handler import LeaveRegistryDBHandler
 from application.handlers.database.leave_type_handler import LeaveTypeDBHandler
 from application.handlers.database.must_read_db_handler import MustReadDBHandler
 from application.handlers.database.team_db_handler import TeamDBHandler
 from application.handlers.database.team_member_db_handler import TeamMemberDBHandler
+from application.handlers.database.weekdays_db_handler import WeekdaysDBHandler
 from application.utils.cache import LambdaCache
 from application.utils.constant import Constant
 from application.utils.logger import Logger
@@ -27,6 +30,10 @@ class BaseManagement:
         self.leave_type_db_handler = LeaveTypeDBHandler()
         self.must_read_db_handler = MustReadDBHandler()
         self.team_db_handler = TeamDBHandler()
+        self.holidays_handler = HolidaysDBHandler()
+        self.holiday_groups_handler = HolidayGroupsDBHandler()
+        self.weekdays_handler = WeekdaysDBHandler()
+
         self.constant = Constant
         self.block_kit = BlockTemplateHandler(self.constant.BLOCK_TEMPLATE_PATH).get_object_templates()
         self.get_leave_types = self.leave_type_db_handler.get_all_leave_types_from_cache

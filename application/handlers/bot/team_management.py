@@ -83,7 +83,7 @@ class TeamManagement(BaseManagement):
         if action_id == 'new_crew_member_approve':
             self.team_member_db_handler.add_user_to_team(
                 user_id=member_user_id,
-                team_id=team_id, is_manager=False,
+                team_id=team_id, is_manager=0,
             )
             message = '<@{member_user_id}> has been successfully added to {team_name} by <@{manager_user_id}>!'
         else:
@@ -156,7 +156,7 @@ class TeamManagement(BaseManagement):
             data={
                 'announcement_channel_id': data.get('announcement_channel_id'),
                 'name': data['team_name'],
-                'holiday_country': 'US',
+                'holiday_group_id': self.constant.DEFAULT_HOLIDAY_GROUP_ID,
 
             },
         )
@@ -185,7 +185,6 @@ class TeamManagement(BaseManagement):
             update_data={
                 'announcement_channel_id': data['announcement_channel_id'],
                 'name': data['team_name'],
-                'holiday_country': 'US',
             },
             _id=team_id,
         )
@@ -315,9 +314,9 @@ class TeamManagement(BaseManagement):
         managers = list(set(managers) - set(slack_bots))
         normal_members = list(set(normal_members) - set(managers) - set(slack_bots))
 
-        all_team_members = [{'user_id': manager, 'is_manager': True} for manager in managers]
+        all_team_members = [{'user_id': manager, 'is_manager': 1} for manager in managers]
         all_team_members += [
-            {'user_id': normal_member, 'is_manager': False} for normal_member in
+            {'user_id': normal_member, 'is_manager': 0} for normal_member in
             normal_members
         ]
         return_data.update({

@@ -63,3 +63,8 @@ class Constant:
     TEAM_SHEET = os.environ['TEAM_SHEET']
     TEAM_MEMBER_SHEET = os.environ['TEAM_MEMBER_SHEET']
     MUST_READ_SHEET = os.environ['MUST_READ_SHEET']
+
+    HOLIDAYS_SHEET = os.environ['HOLIDAYS_SHEET']
+    WEEKDAYS_SHEET = os.environ['WEEKDAYS_SHEET']
+    HOLIDAY_GROUPS_SHEET = os.environ['HOLIDAY_GROUPS_SHEET']
+    DEFAULT_HOLIDAY_GROUP_ID = '5b150047-ff50-438f-ad81-8dabks31edc3'
