@@ -119,6 +119,108 @@
           "emoji": true
         }
       }
+    },
+    {
+      "type": "section",
+      "block_id": "select_holiday_group",
+      "text": {
+        "type": "mrkdwn",
+        "text": "Select a holiday group to configure public holiday"
+      },
+      "accessory": {
+        "action_id": "select_holiday_group",
+        "type": "static_select",
+        "placeholder": {
+          "type": "plain_text",
+          "text": "Select a group"
+        },
+        "options": [
+          {% for holiday_group in holiday_groups %}
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "{{ holiday_group.name}}"
+            },
+            "value": "{{ holiday_group.id}}"
+          }
+          {{ "," if not loop.last }}
+          {% endfor %}
+        ]
+      }
+    },
+    {
+      "type": "section",
+      "text": {
+        "type": "plain_text",
+        "text": "Working day"
+      },
+      "accessory": {
+        "type": "checkboxes",
+        "action_id": "working_day",
+        "initial_options": [
+          {% for working_day in working_days %}
+
+          {
+            "value": "{{working_day}}",
+            "text": {
+              "type": "plain_text",
+              "text": "{{working_day}}"
+            }
+          }
+          {{ "," if not loop.last }}
+        ],
+        "options": [
+          {
+            "value": "Mon",
+            "text": {
+              "type": "plain_text",
+              "text": "Mon"
+            }
+          },
+          {
+            "value": "Tue",
+            "text": {
+              "type": "plain_text",
+              "text": "Tue"
+            }
+          },
+          {
+            "value": "Wed",
+            "text": {
+              "type": "plain_text",
+              "text": "Wed"
+            }
+          },
+          {
+            "value": "Thu",
+            "text": {
+              "type": "plain_text",
+              "text": "Thu"
+            }
+          },
+          {
+            "value": "Fri",
+            "text": {
+              "type": "plain_text",
+              "text": "Fri"
+            }
+          },
+          {
+            "value": "Sat",
+            "text": {
+              "type": "plain_text",
+              "text": "Sat"
+            }
+          },
+          {
+            "value": "Sun",
+            "text": {
+              "type": "plain_text",
+              "text": "Sun"
+            }
+          }
+        ]
+      }
     }
   ],
   "private_metadata": "",
