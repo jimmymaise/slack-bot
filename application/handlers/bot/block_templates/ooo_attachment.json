@@ -8,7 +8,8 @@
       "short": true
     },
     {
-      "value": "{{leave_type}}",
+
+      "value": "{{leave_type}} ({{number_of_leave_days}} days )",
       "title": "What?",
       "short": true
     },

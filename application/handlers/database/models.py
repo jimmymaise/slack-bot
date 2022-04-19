@@ -22,6 +22,7 @@ class LeaveRegistry(Base):
     user_id = Column(String)
     start_date = Column(Date)
     end_date = Column(Date)
+    number_of_leave_days = Column(Integer)
     leave_type = Column(String)
     reason = Column(String)
     created_time = Column(Date)

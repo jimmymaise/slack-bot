@@ -17,7 +17,7 @@
       },
       {
         "type": "mrkdwn",
-        "text": "*What?*\n{{ leave_type }}",
+        "text": "*What?*\n{{ leave_type }} ({{number_of_leave_days}} days )",
         "verbatim": false
       }
     ]

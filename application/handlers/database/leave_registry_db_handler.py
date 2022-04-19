@@ -82,7 +82,8 @@ class LeaveRegistryDBHandler(BaseDBHandler):
 
     def add_a_leave(
             self, leave_type, reason_of_leave, user_name, user_id, start_date,
-            end_date,
+            end_date, number_of_leave_days,
+
     ):
         leave_data = {
             'username': user_name,
@@ -93,6 +94,7 @@ class LeaveRegistryDBHandler(BaseDBHandler):
             'reason': reason_of_leave,
             'status': Constant.LEAVE_REQUEST_STATUS_WAIT,
             'created_time': datetime.now(),
+            'number_of_leave_days': number_of_leave_days,
         }
         return self.add_item_with_retry(data=leave_data)
 

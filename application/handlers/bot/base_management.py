@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import datetime
 from contextlib import suppress
+from datetime import timedelta
 
 from slack_sdk import WebClient
 
@@ -189,3 +190,23 @@ class BaseManagement:
 
         message = result['messages'][0]
         return message
+
+    def get_working_days_from_date_range_by_team_id(self, team_id, start_date_str: str, end_date_str: str):
+
+        start_date = self.convert_date_str_to_date_obj(start_date_str)
+        end_date = self.convert_date_str_to_date_obj(end_date_str)
+
+        delta = end_date - start_date  # returns timedelta
+        weekdays = self.weekdays_handler.get_weekdays_by_team_id(team_id=team_id)
+        holiday_rows = self.holidays_handler.get_holidays_by_team_id(team_id=team_id)
+        holidays = [holiday_row.date for holiday_row in holiday_rows]
+        working_days = []
+
+        for i in range(delta.days + 1):
+            day = start_date + timedelta(days=i)
+            is_weekday = day.strftime('%A') in weekdays
+            is_holiday = day in holidays
+            is_working_day = is_weekday and not is_holiday
+            if is_working_day:
+                working_days.append(day)
+        return working_days
