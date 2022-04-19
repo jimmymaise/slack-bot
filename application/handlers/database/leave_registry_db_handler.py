@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime
+from datetime import timedelta
 
 from sqlalchemy import select
 
@@ -21,6 +22,17 @@ class LeaveRegistryDBHandler(BaseDBHandler):
             start_date=today_date_str, end_date=today_date_str,
             statuses=statuses,
             team_id=team_id,
+        )
+
+    def get_upcoming_ooo(self, statuses, team_id=None):
+        start_date_str = (datetime.now() + timedelta(days=1)).strftime('%Y-%m-%d')
+        end_date_str = (datetime.now() + timedelta(days=7)).strftime('%Y-%m-%d')
+        return self.get_leaves(
+            start_date=start_date_str,
+            end_date=end_date_str,
+            statuses=statuses,
+            team_id=team_id,
+            is_exclude_request_time_off_before_start_date=True,
         )
 
     def get_leaves(
@@ -70,7 +82,8 @@ class LeaveRegistryDBHandler(BaseDBHandler):
 
     def add_a_leave(
             self, leave_type, reason_of_leave, user_name, user_id, start_date,
-            end_date,
+            end_date, number_of_leave_days,
+
     ):
         leave_data = {
             'username': user_name,
@@ -81,6 +94,7 @@ class LeaveRegistryDBHandler(BaseDBHandler):
             'reason': reason_of_leave,
             'status': Constant.LEAVE_REQUEST_STATUS_WAIT,
             'created_time': datetime.now(),
+            'number_of_leave_days': number_of_leave_days,
         }
         return self.add_item_with_retry(data=leave_data)
 

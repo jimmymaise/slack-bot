@@ -131,6 +131,14 @@ class LeaveRegister(BaseManagement):
         start_date = datetime.datetime.strptime(start_date_str, '%Y-%m-%d')
         end_date = datetime.datetime.strptime(end_date_str, '%Y-%m-%d')
         leave_id = private_metadata.get('leave_id')
+        team_id = self.get_team_id_by_user_id(user_id=user_id)
+        number_of_leave_days = len(
+            self.get_working_days_from_date_range_by_team_id(
+                team_id=team_id,
+                start_date_str=start_date_str,
+                end_date_str=end_date_str,
+            ),
+        )
 
         old_leave_message_ts = private_metadata.get('leave_message_ts')
         is_update_leave = bool(leave_id)
@@ -148,6 +156,7 @@ class LeaveRegister(BaseManagement):
                     'end_date': end_date_str,
                     'reason': reason_of_leave,
                     'status': self.constant.LEAVE_REQUEST_STATUS_WAIT,
+                    'number_of_leave_days': number_of_leave_days,
                 },
             )
             manager_ask_for_approval_message = f'A time off request of *<{user_profile_url}|{user_name}>*' \
@@ -160,7 +169,8 @@ class LeaveRegister(BaseManagement):
         else:
             leave_id = self.leave_register_db_handler.add_a_leave(
                 leave_type, reason_of_leave, user_name, user_id, start_date_str,
-                end_date_str,
+                end_date_str, number_of_leave_days,
+
             )
             manager_ask_for_approval_message = f'New time off request from *<{user_profile_url}|{user_name}>*' \
                                                f' has just arrived. Please approve or decline:'
@@ -175,6 +185,8 @@ class LeaveRegister(BaseManagement):
             start_date=start_date,
             end_date=end_date,
             message=manager_ask_for_approval_message,
+            number_of_leave_days=number_of_leave_days,
+
         )
 
         message_ts = self.send_direct_message_to_multiple_slack_users(
@@ -193,6 +205,8 @@ class LeaveRegister(BaseManagement):
                 start_date=start_date,
                 end_date=end_date,
                 reason_of_leave=reason_of_leave,
+                number_of_leave_days=number_of_leave_days,
+
             ),
         )
         self.leave_register_db_handler.update_item_with_retry(

@@ -11,7 +11,7 @@
     "fields": [
       {
         "type": "mrkdwn",
-        "text": "*Leave Type:*\n{{leave_type}}"
+        "text": "*Leave Type:*\n{{leave_type}} ({{number_of_leave_days}} days)"
       },
       {
         "type": "mrkdwn",

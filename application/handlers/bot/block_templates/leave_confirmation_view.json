@@ -8,7 +8,7 @@
       "block_id": "B/i",
       "text": {
         "type": "mrkdwn",
-        "text": "*What?*\n:palm_tree: {{leave_type}}",
+        "text": "*What?*\n{{ leave_type }}",
         "verbatim": false
       }
     },

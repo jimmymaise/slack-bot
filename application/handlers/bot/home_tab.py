@@ -58,10 +58,6 @@ class HomeTab(BaseManagement):
             ack=self.respond_to_slack_within_3_seconds, lazy=[self.process_overflow_leave_action_from_personal_home],
         )
 
-    @staticmethod
-    def respond_to_slack_within_3_seconds(ack):
-        ack()
-
     def process_block_leave_action_from_manager_home(self, body, ack):
         self.leave_register.take_action_on_leave_from_action_block(body, ack)
         self.team_management.get_manager_view_by_user_id(body['user']['id'])

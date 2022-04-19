@@ -15,18 +15,17 @@ class LeaveLookup(BaseManagement):
         super().__init__(app, client)
         app.command('/ooo-today')(ack=self.respond_to_slack_within_3_seconds, lazy=[self.trigger_today_ooo_command])
 
-    @staticmethod
-    def respond_to_slack_within_3_seconds(ack):
-        ack()
-
     def trigger_today_ooo_command(self, body, respond):
         user_id = body.get('user_id') or body['user']['id']
         team_id = self.get_team_id_by_user_id(user_id)
+
         statuses = [
             self.constant.LEAVE_REQUEST_STATUS_APPROVED,
             self.constant.LEAVE_REQUEST_STATUS_WAIT,
         ]
-        attachments = self.build_response_today_ooo(statuses, team_id)
+        today_ooo_leaves = self.leave_register_db_handler.get_today_ooo(statuses, team_id)
+
+        attachments = self.build_response_ooo(today_ooo_leaves)
 
         if attachments:
             text = 'As your request, Here is the list of users in your team OOO today'
@@ -51,7 +50,8 @@ class LeaveLookup(BaseManagement):
         ]
         teams = self.team_db_handler.get_all_teams()
         for team in teams:
-            attachments = self.build_response_today_ooo(statuses, team_id=team.id)
+            today_ooo_leaves = self.leave_register_db_handler.get_today_ooo(statuses, team.id)
+            attachments = self.build_response_ooo(leaves=today_ooo_leaves)
             if attachments:
                 text = f'Hey, the following users (team {team.name}) are OOO today'
             else:
@@ -62,12 +62,32 @@ class LeaveLookup(BaseManagement):
                 attachments=attachments,
             )
 
-    def build_response_today_ooo(self, statuses, team_id=None):
-        today_ooo_leaves = self.leave_register_db_handler.get_today_ooo(statuses, team_id)
+    def upcoming_ooo_schedule(self):
+        statuses = [
+            self.constant.LEAVE_REQUEST_STATUS_APPROVED,
+            self.constant.LEAVE_REQUEST_STATUS_WAIT,
+        ]
+        teams = self.team_db_handler.get_all_teams()
+        for team in teams:
+            upcoming_ooo_leaves = self.leave_register_db_handler.get_today_ooo(statuses, team.id)
+            attachments = self.build_response_ooo(leaves=upcoming_ooo_leaves)
+            if attachments:
+                text = f'Hey, just wanted to remind you that some team members in your team  (team {team.name})' \
+                       f' are OOO soon:'
+            else:
+                return
+            self.client.chat_postMessage(
+                channel=team.announcement_channel_id,
+                text=text,
+                attachments=attachments,
+            )
+
+    def build_response_ooo(self, leaves):
+
         attachments = []
-        if not today_ooo_leaves:
+        if not leaves:
             return attachments
-        for leave in today_ooo_leaves:
+        for leave in leaves:
             leave_type_detail = self.get_leave_type_detail_from_cache(leave.leave_type)
             attachments.append(
                 json.loads(
@@ -77,6 +97,7 @@ class LeaveLookup(BaseManagement):
                         status=f'{self.constant.EMOJI_MAPPING[leave.status]} {leave.status}',
                         start_date=leave.start_date,
                         end_date=leave.end_date,
+                        number_of_leave_days=leave.number_of_leave_days,
                     ),
                 ),
             )
