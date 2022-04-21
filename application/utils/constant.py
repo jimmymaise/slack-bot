@@ -57,14 +57,12 @@ class Constant:
 
     BLOCK_TEMPLATE_PATH = './application/handlers/bot/block_templates'
     ACK_EMOJI = 'white_check_mark'
-
-    LEAVE_TYPE_SHEET = os.environ['LEAVE_TYPE_SHEET']
-    LEAVE_REGISTER_SHEET = os.environ['LEAVE_REGISTER_SHEET']
-    TEAM_SHEET = os.environ['TEAM_SHEET']
-    TEAM_MEMBER_SHEET = os.environ['TEAM_MEMBER_SHEET']
-    MUST_READ_SHEET = os.environ['MUST_READ_SHEET']
-
-    HOLIDAYS_SHEET = os.environ['HOLIDAYS_SHEET']
-    WEEKDAYS_SHEET = os.environ['WEEKDAYS_SHEET']
-    HOLIDAY_GROUPS_SHEET = os.environ['HOLIDAY_GROUPS_SHEET']
-    DEFAULT_HOLIDAY_GROUP_ID = '5b150047-ff50-438f-ad81-8dabks31edc3'
+    DB_SPREADSHEET_ID = os.environ['DB_SPREADSHEET_ID']
+    LEAVE_TYPES_SHEET = 'bot_leave_types'
+    LEAVE_RECORDS_SHEET = 'bot_leave_records'
+    TEAMS_SHEET = 'bot_teams'
+    TEAM_MEMBERS_SHEET = 'bot_team_members'
+    MUST_READ_MESSAGES_SHEET = 'bot_must_read_messages'
+    HOLIDAYS_SHEET = 'bot_holidays'
+    WEEKDAYS_SHEET = 'bot_weekdays'
+    HOLIDAY_GROUPS_SHEET = 'bot_holiday_groups'

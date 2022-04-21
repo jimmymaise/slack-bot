@@ -1,7 +1,8 @@
-python-dotenv
 flask
 google-auth==2.6.0
+gspread
 jinja2
+python-dotenv
 requests==2.27.1
 shillelagh==1.0.10
 slack-bolt==1.11.4
