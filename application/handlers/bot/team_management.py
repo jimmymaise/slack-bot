@@ -289,10 +289,11 @@ class TeamManagement(BaseManagement):
             user_id=user_id,
             statuses=statuses,
         )
+
         upcoming_holidays = self.holidays_handler.get_holidays_by_team_id(
             team_id=current_team.team_id,
             start_date=self.get_today_date_str(),
-        )
+        ) if current_team else []
         self.get_today_date_str()
 
         user_leaves = self.build_leave_display_list(user_leave_rows)
