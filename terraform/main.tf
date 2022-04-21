@@ -16,14 +16,7 @@ module "lambda_function" {
     SLACK_SIGNING_SECRET               = var.SLACK_SIGNING_SECRET
     SLACK_BOT_TOKEN                    = var.SLACK_BOT_TOKEN
     GOOGLE_SERVICE_BASE64_FILE_CONTENT = var.GOOGLE_SERVICE_BASE64_FILE_CONTENT
-    MANAGER_LEAVE_APPROVAL_CHANNEL     = var.MANAGER_LEAVE_APPROVAL_CHANNEL
-    OOO_CHANNEL                        = var.OOO_CHANNEL
-    TEAM_SHEET                         = var.TEAM_SHEET
-    TEAM_MEMBER_SHEET                  = var.TEAM_MEMBER_SHEET
-    LEAVE_REGISTER_SHEET               = var.LEAVE_REGISTER_SHEET
-    LEAVE_TYPE_SHEET                   = var.LEAVE_TYPE_SHEET
-    MUST_READ_SHEET                    = var.MUST_READ_SHEET
-
+    DB_SPREADSHEET_ID = var.DB_SPREADSHEET_ID
   }
   function_name         = "slack-bot-bip"
   description           = "Slack bot bip for lambda"
