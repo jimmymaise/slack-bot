@@ -80,15 +80,9 @@ class MustReadMessage(BaseManagement):
 
         for must_read_message_row in must_read_message_rows:
             message_ts = must_read_message_row.message_ts.split('ts_')[1]
-            message_detail = self.get_one_slack_message(
-                channel_id=must_read_message_row.channel,
-                message_ts=message_ts,
-            )
-            tagged_users = self.get_tagged_users_from_message(message_detail)
-            reacted_users = self.get_users_make_reaction_to_message(
-                channel=must_read_message_row.channel,
-                reaction_name=self.constant.ACK_EMOJI,
-                message_ts=message_ts,
+            tagged_users, reacted_users = self._get_tagged_users_ack_user_from_message(
+                message_ts,
+                must_read_message_row.channel,
             )
             posted_date = datetime.fromtimestamp(float(message_ts)).strftime('%b %d at %H:%M')
             not_read_user_ids = list(set(tagged_users) - set(reacted_users))
@@ -102,7 +96,6 @@ class MustReadMessage(BaseManagement):
                 continue
             my_message_obj = {
                 'message_ts': message_ts,
-                'message_detail': message_detail,
                 'short_content': must_read_message_row.short_content,
                 'permalink': must_read_message_row.permalink,
                 'channel': must_read_message_row.channel,
@@ -133,21 +126,14 @@ class MustReadMessage(BaseManagement):
         )
         for must_read_message_row in must_read_message_rows:
             message_ts = must_read_message_row.message_ts.split('ts_')[1]
-            message_detail = self.get_one_slack_message(
-                channel_id=must_read_message_row.channel,
-                message_ts=message_ts,
-            )
-            tagged_users = self.get_tagged_users_from_message(message_detail)
-            reacted_users = self.get_users_make_reaction_to_message(
-                channel=must_read_message_row.channel,
-                reaction_name=self.constant.ACK_EMOJI,
-                message_ts=message_ts,
+            tagged_users, reacted_users = self._get_tagged_users_ack_user_from_message(
+                message_ts,
+                must_read_message_row.channel,
             )
             posted_date = datetime.fromtimestamp(float(message_ts)).strftime('%b %d at %H:%M')
             remind_message_obj = {
                 'author_user_id': must_read_message_row.author_user_id,
                 'message_ts': message_ts,
-                'message_detail': message_detail,
                 'short_content': must_read_message_row.short_content,
                 'permalink': must_read_message_row.permalink,
                 'channel': must_read_message_row.channel,
@@ -176,3 +162,17 @@ class MustReadMessage(BaseManagement):
                     ),
                 ),
             )
+
+    def _get_tagged_users_ack_user_from_message(self, message_ts, channel):
+
+        message_detail = self.get_one_slack_message(
+            channel_id=channel,
+            message_ts=message_ts,
+        )
+        tagged_users = self.get_tagged_users_from_message(message_detail)
+        reacted_users = self.get_users_make_reaction_to_message(
+            channel=channel,
+            reaction_name=self.constant.ACK_EMOJI,
+            message_ts=message_ts,
+        )
+        return tagged_users, reacted_users

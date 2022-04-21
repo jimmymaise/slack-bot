@@ -118,6 +118,12 @@ class BaseManagement:
             extra_field_list = extra_field.split('.')
             for field in extra_field_list:
                 value = value[field]
+
+            if isinstance(value, dict):
+                value = value.get('value')
+
+            if isinstance(value, list):
+                value = [item['value'] if isinstance(item, dict) and item.get('value') else item for item in value]
         except KeyError:
             return None
         return value

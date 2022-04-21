@@ -26,6 +26,5 @@ class HolidaysDBHandler(BaseDBHandler):
             select_query = select_query.where(
                 Holidays.date <= end_date,
             )
-        print(select_query)
         result = self.execute(select_query)
         return result.all() if result.rowcount else []
