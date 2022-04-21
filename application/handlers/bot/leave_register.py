@@ -57,7 +57,8 @@ class LeaveRegister(BaseManagement):
         end_date = datetime.datetime.strptime(end_date_str, '%Y-%m-%d')
         if start_date > end_date:
             errors['vacation_start_date'] = "Start date can't be later than the end date"
-
+        # todo: validate start_date and end_date not weekday
+        if errors:
             return ack(
                 response_action='errors',
                 errors=errors,

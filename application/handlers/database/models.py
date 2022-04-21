@@ -120,8 +120,8 @@ class Holidays(Base):
     __tablename__ = Constant.HOLIDAYS_SHEET
     id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
     holiday_group_id = Column(String)
-    date = Column(Integer)
-    description = Column(Integer)
+    date = Column(String)
+    description = Column(String)
     is_custom = Column(Integer)
     is_enabled = Column(Integer)
 

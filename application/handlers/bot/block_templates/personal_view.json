@@ -175,14 +175,29 @@
   {
     "type": "divider"
   },
+  {% for holiday in upcoming_holidays %}
   {
     "type": "section",
-    "text": {
-      "type": "mrkdwn",
-      "text": "_There are no events yet._",
-      "verbatim": false
-    }
+    "fields": [
+      {
+        "type": "mrkdwn",
+        "text": ":tada: *{{ holiday.description }}*",
+        "verbatim": false
+      },
+      {
+        "type": "mrkdwn",
+        "text": " ",
+        "verbatim": false
+      },
+      {
+        "type": "mrkdwn",
+        "text": "{{ holiday.date.strftime('%A, %B, %d, %Y') }}",
+        "verbatim": false
+      }
+    ]
   },
+  {% endfor %}
+
   {
     "type": "section",
     "text": {

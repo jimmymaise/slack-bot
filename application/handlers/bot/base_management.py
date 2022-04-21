@@ -141,6 +141,7 @@ class BaseManagement:
                 'start_date': leave_row.start_date,
                 'end_date': leave_row.end_date,
                 'type_icon': self.get_leave_type_detail_from_cache(leave_row.leave_type)['icon'],
+                'number_of_leave_days': leave_row.number_of_leave_days,
                 'duration': f"{leave_row.start_date.strftime('%A, %B, %d, %Y')} "
                             f"to {leave_row.end_date.strftime('%A, %B, %d, %Y')}",
                 'status_icon': self.constant.EMOJI_MAPPING.get(leave_row.status, ''),
