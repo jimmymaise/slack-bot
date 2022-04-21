@@ -169,6 +169,8 @@ class MustReadMessage(BaseManagement):
             channel_id=channel,
             message_ts=message_ts,
         )
+        message_detail['channel'] = channel
+
         tagged_users = self.get_tagged_users_from_message(message_detail)
         reacted_users = self.get_users_make_reaction_to_message(
             channel=channel,
