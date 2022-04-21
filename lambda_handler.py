@@ -36,7 +36,7 @@ def handler(event, context):
 def schedule_process(schedule_event):
     logger.info(f'RUNNING {schedule_event}')
     if schedule_event == Constant.SCHEDULER_OOO_TODAY:
-        slack_listener.leave_lookup.today_ooo_schedule(os.getenv('OOO_CHANNEL'))
+        slack_listener.leave_lookup.today_ooo_schedule()
     elif schedule_event == Constant.SCHEDULER_MUST_READ:
         slack_listener.must_read_message.remind_must_read_message()
     elif schedule_event == Constant.SCHEDULER_WARM_UP_LAMBDA:
