@@ -19,6 +19,15 @@ from application.utils.cache import LambdaCache
 from application.utils.constant import Constant
 from application.utils.logger import Logger
 
+team_member_db_handler = TeamMemberDBHandler()
+leave_register_db_handler = LeaveRegistryDBHandler()
+leave_type_db_handler = LeaveTypeDBHandler()
+must_read_db_handler = MustReadDBHandler()
+team_db_handler = TeamDBHandler()
+holidays_handler = HolidaysDBHandler()
+holiday_groups_handler = HolidayGroupsDBHandler()
+weekdays_handler = WeekdaysDBHandler()
+
 
 class BaseManagement:
     def __init__(self, app, client: WebClient):
@@ -26,14 +35,14 @@ class BaseManagement:
         self.client = client
         self.logger = Logger.get_logger()
 
-        self.team_member_db_handler = TeamMemberDBHandler()
-        self.leave_register_db_handler = LeaveRegistryDBHandler()
-        self.leave_type_db_handler = LeaveTypeDBHandler()
-        self.must_read_db_handler = MustReadDBHandler()
-        self.team_db_handler = TeamDBHandler()
-        self.holidays_handler = HolidaysDBHandler()
-        self.holiday_groups_handler = HolidayGroupsDBHandler()
-        self.weekdays_handler = WeekdaysDBHandler()
+        self.team_member_db_handler = team_member_db_handler
+        self.leave_register_db_handler = leave_register_db_handler
+        self.leave_type_db_handler = leave_type_db_handler
+        self.must_read_db_handler = must_read_db_handler
+        self.team_db_handler = team_db_handler
+        self.holidays_handler = holidays_handler
+        self.holiday_groups_handler = holiday_groups_handler
+        self.weekdays_handler = weekdays_handler
 
         self.constant = Constant
         self.block_kit = BlockTemplateHandler(self.constant.BLOCK_TEMPLATE_PATH).get_object_templates()
