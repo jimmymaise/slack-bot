@@ -119,6 +119,124 @@
           "emoji": true
         }
       }
+    },
+    {
+      "type": "input",
+      "block_id": "holiday_group",
+      "optional": false,
+      "label": {
+        "type": "plain_text",
+        "text": "Select a holiday group to configure public holiday",
+        "emoji": true
+      },
+      "element": {
+        "action_id": "holiday_group_value",
+        "type": "static_select",
+        "placeholder": {
+          "type": "plain_text",
+          "text": "Select a group"
+        },
+        {% if  initial_holiday_group %}
+        "initial_option":      {
+            "text": {
+              "type": "plain_text",
+              "text": "{{ initial_holiday_group.name}}"
+            },
+            "value": "{{ initial_holiday_group.id}}"
+          },
+        {% endif%}
+        "options": [
+          {% for holiday_group in holiday_groups %}
+          {
+            "text": {
+              "type": "plain_text",
+              "text": "{{ holiday_group.name}}"
+            },
+            "value": "{{ holiday_group.id}}"
+          }
+          {{ "," if not loop.last }}
+          {% endfor %}
+        ]
+      }
+    },
+    {
+      "type": "input",
+      "block_id": "working_days",
+      "label": {
+        "type": "plain_text",
+        "text": "Working day",
+        "emoji": true
+      },
+      "element": {
+        "type": "multi_static_select",
+        "action_id": "working_days_value",
+        {% if initial_working_days %}
+        "initial_options": [
+          {% for working_day in initial_working_days %}
+
+          {
+            "value": "{{working_day}}",
+            "text": {
+              "type": "plain_text",
+              "text": "{{working_day}}"
+            }
+          }
+          {{ "," if not loop.last }}
+          {% endfor %}
+        ],
+        {% endif %}
+        "options": [
+          {
+            "value": "Monday",
+            "text": {
+              "type": "plain_text",
+              "text": "Monday"
+            }
+          },
+          {
+            "value": "Tuesday",
+            "text": {
+              "type": "plain_text",
+              "text": "Tuesday"
+            }
+          },
+          {
+            "value": "Wednesday",
+            "text": {
+              "type": "plain_text",
+              "text": "Wednesday"
+            }
+          },
+          {
+            "value": "Thursday",
+            "text": {
+              "type": "plain_text",
+              "text": "Thursday"
+            }
+          },
+          {
+            "value": "Friday",
+            "text": {
+              "type": "plain_text",
+              "text": "Friday"
+            }
+          },
+          {
+            "value": "Saturday",
+            "text": {
+              "type": "plain_text",
+              "text": "Saturday"
+            }
+          },
+          {
+            "value": "Sunday",
+            "text": {
+              "type": "plain_text",
+              "text": "Sunday"
+            }
+          }
+        ]
+      }
     }
   ],
   "private_metadata": "",

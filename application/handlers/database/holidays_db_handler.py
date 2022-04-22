@@ -17,7 +17,8 @@ class HolidaysDBHandler(BaseDBHandler):
             HolidayGroups, Holidays.holiday_group_id == HolidayGroups.id,
         ).join(
             Team, HolidayGroups.id == Team.holiday_group_id,
-        )
+        ).where(Team.id == team_id)
+
         if start_date:
             select_query = select_query.where(
                 Holidays.date >= start_date,
@@ -26,6 +27,6 @@ class HolidaysDBHandler(BaseDBHandler):
             select_query = select_query.where(
                 Holidays.date <= end_date,
             )
-        print(select_query)
+        select_query.order_by(getattr(Holidays.date, 'desc')())
         result = self.execute(select_query)
         return result.all() if result.rowcount else []

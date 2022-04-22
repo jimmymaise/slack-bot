@@ -10,14 +10,16 @@ class MustReadDBHandler(BaseDBHandler):
     def __init__(self):
         super().__init__(MustReadMessage)
 
-    def get_must_read_messages(self, statuses=None, author_user_id=None):
+    def get_must_read_messages(self, statuses=None, author_user_id=None, message_ts=None):
         select_query = select(self.table)
-        if statuses is not None:
+        if statuses:
             select_query = select_query.filter(
                 self.table.status.in_(statuses),
             )
-        if author_user_id is not None:
+        if author_user_id:
             select_query = select_query.filter(self.table.author_user_id == author_user_id)
+        if message_ts:
+            select_query = select_query.filter(self.table.message_ts == f'ts_{message_ts}')
         select_query = select_query.order_by(self.table.message_ts.desc())
         result = self.execute(select_query)
         return result.all() if result.rowcount else []
@@ -26,7 +28,7 @@ class MustReadDBHandler(BaseDBHandler):
         self.add_item(
             data={
                 ''
-                'message_ts': message_ts,
+                'message_ts': f'ts_{message_ts}',
                 'author_user_id': author_user_id,
                 'status': status,
                 'short_content': short_content,

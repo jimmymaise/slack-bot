@@ -6,7 +6,7 @@
       "text": "*Personal panel*",
       "verbatim": false
     }
-    {% if is_able_to_create_team == true %},
+    {% if is_able_to_create_team %},
     "accessory": {
       "type": "button",
       "action_id": "become_manager",
@@ -16,7 +16,7 @@
         "emoji": true
       }
     }
-    {% elif is_already_manager == true %},
+    {% elif is_already_manager%},
     "accessory": {
       "type": "button",
       "action_id": "switch_manager",
@@ -26,7 +26,7 @@
         "emoji": true
       }
     }
-    {% elif is_not_have_team == true %},
+    {% elif is_not_have_team %},
     "text": {
       "type": "mrkdwn",
       "text": ":interrobang: Your account has not been configured to belong a team. Check with your manager for more detail",
@@ -114,7 +114,7 @@
     "type": "section",
     "text": {
       "type": "mrkdwn",
-      "text": "{{leave.type_icon}} *{{ leave.type }}*\n{{ leave.duration }}\nComment: {{ leave.reason }}",
+      "text": "{{leave.type_icon}} *{{ leave.type }}*\n{{ leave.duration }} ({{ leave.number_of_leave_days }} days)\nComment: {{ leave.reason }}",
       "verbatim": false
     }
     {% if leave.allowed_user_leave_actions %},
@@ -175,14 +175,29 @@
   {
     "type": "divider"
   },
+  {% for holiday in upcoming_holidays %}
   {
     "type": "section",
-    "text": {
-      "type": "mrkdwn",
-      "text": "_There are no events yet._",
-      "verbatim": false
-    }
+    "fields": [
+      {
+        "type": "mrkdwn",
+        "text": ":tada: *{{ holiday.description }}*",
+        "verbatim": false
+      },
+      {
+        "type": "mrkdwn",
+        "text": " ",
+        "verbatim": false
+      },
+      {
+        "type": "mrkdwn",
+        "text": "{{ holiday.date.strftime('%A, %B, %d, %Y') }}",
+        "verbatim": false
+      }
+    ]
   },
+  {% endfor %}
+
   {
     "type": "section",
     "text": {

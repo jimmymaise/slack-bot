@@ -16,12 +16,14 @@ from application.utils.constant import Constant
 from application.utils.logger import Logger
 
 Base = declarative_base()
+db = DBConnection.get_db()
 
 
 class BaseDBHandler:
     def __init__(self, table):
-        self.db = DBConnection.get_db()
+        self.db = db
         self.session = scoped_session(sessionmaker(bind=self.db.engine))
+
         self.table = table
         self.logger = Logger.get_logger()
         self.constant = Constant

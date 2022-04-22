@@ -13,7 +13,6 @@ class SlackListener:
     def __init__(self, bolt_app, client):
         leave_register = LeaveRegister(
             bolt_app, client,
-            approval_channel=os.getenv('MANAGER_LEAVE_APPROVAL_CHANNEL'),
         )
         self.leave_lookup = LeaveLookup(bolt_app, client)
         self.team_management = TeamManagement(bolt_app, client)

@@ -12,10 +12,9 @@ from application.utils.cache import LambdaCache
 
 class LeaveRegister(BaseManagement):
     def __init__(
-            self, app: App, client: WebClient, approval_channel,
+            self, app: App, client: WebClient,
     ):
         super().__init__(app, client)
-        self.approval_channel = approval_channel
         app.command('/vacation')(ack=self.respond_to_slack_within_3_seconds, lazy=[self.trigger_request_leave_command])
         app.view('leave_input_view')(self.get_leave_confirmation_view)
         app.view('leave_confirmation_view')(
@@ -57,7 +56,8 @@ class LeaveRegister(BaseManagement):
         end_date = datetime.datetime.strptime(end_date_str, '%Y-%m-%d')
         if start_date > end_date:
             errors['vacation_start_date'] = "Start date can't be later than the end date"
-
+        # todo: validate start_date and end_date not weekday
+        if errors:
             return ack(
                 response_action='errors',
                 errors=errors,
@@ -303,20 +303,6 @@ class LeaveRegister(BaseManagement):
         else:
             manager_message = self.constant.CANCEL_MESSAGE_TO_MANAGER
             requester_message = self.constant.CANCEL_MESSAGE_TO_REQUESTER
-
-        self.client.chat_postMessage(
-            channel=self.approval_channel,
-            text=manager_message.format(
-                leave_id=leave.id,
-                start_date=leave.start_date,
-                end_date=leave.end_date,
-                requester_user_id=requester_user_id,
-                requester_name=requester_name,
-                changed_by_name=changed_by_name,
-                changed_by_user_id=changed_by_user_id,
-
-            ),
-        )
 
         self.send_direct_message_to_multiple_slack_users(
             user_ids=manager_ids,

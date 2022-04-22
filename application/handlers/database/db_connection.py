@@ -10,4 +10,5 @@ class DBConnection:
         return GoogleSheetDB(
             service_account_file_content=Constant.GOOGLE_SERVICE_BASE64_FILE_CONTENT,
             is_encode_base_64=True,
+            db_spreadsheet_id=Constant.DB_SPREADSHEET_ID,
         )

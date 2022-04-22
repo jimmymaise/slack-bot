@@ -1,6 +1,5 @@
 flask
 google-auth==2.6.0
-gspread
 jinja2
 python-dotenv
 requests==2.27.1

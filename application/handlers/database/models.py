@@ -4,7 +4,6 @@ import uuid
 
 from sqlalchemy import Column
 from sqlalchemy import Date
-from sqlalchemy import Float
 from sqlalchemy import ForeignKey
 from sqlalchemy import Integer
 from sqlalchemy import String
@@ -12,12 +11,13 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
 from application.handlers.database.base_db_handler import Base
+from application.handlers.database.base_db_handler import db
 from application.utils.constant import Constant
 
 
 class LeaveRegistry(Base):
-    __tablename__ = Constant.LEAVE_REGISTER_SHEET
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    __tablename__ = db.get_sheet_url_by_name(Constant.LEAVE_RECORDS_SHEET)
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
     username = Column(String)
     user_id = Column(String)
     start_date = Column(Date)
@@ -35,8 +35,8 @@ class LeaveRegistry(Base):
 
 
 class Team(Base):
-    __tablename__ = Constant.TEAM_SHEET
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    __tablename__ = db.get_sheet_url_by_name(Constant.TEAMS_SHEET)
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
     name = Column(String)
     announcement_channel_id = Column(String)
     holiday_group_id = Column(String)
@@ -54,8 +54,8 @@ class Team(Base):
 
 
 class TeamMember(Base):
-    __tablename__ = Constant.TEAM_MEMBER_SHEET
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    __tablename__ = db.get_sheet_url_by_name(Constant.TEAM_MEMBERS_SHEET)
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
     user_id = Column(String)
     team_id = Column(
         String, ForeignKey(f'{Team.__tablename__}.id', ondelete='cascade'), nullable=False,
@@ -72,13 +72,12 @@ class TeamMember(Base):
 
 
 class LeaveType(Base):
-    __tablename__ = Constant.LEAVE_TYPE_SHEET
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    __tablename__ = db.get_sheet_url_by_name(Constant.LEAVE_TYPES_SHEET)
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
     code = Column(String)
     display_name = Column(String)
     description = Column(String)
     icon = Column(Date)
-    day = Column(Float)
     is_default = Column(Integer)
 
     def __repr__(self):
@@ -87,8 +86,8 @@ class LeaveType(Base):
 
 
 class MustReadMessage(Base):
-    __tablename__ = Constant.MUST_READ_SHEET
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    __tablename__ = db.get_sheet_url_by_name(Constant.MUST_READ_MESSAGES_SHEET)
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
     message_ts = Column(String)
     status = Column(String)
     author_user_id = Column(String)
@@ -101,9 +100,9 @@ class MustReadMessage(Base):
 
 
 class Weekdays(Base):
-    __tablename__ = Constant.WEEKDAYS_SHEET
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    team_id = Column(UUID(as_uuid=True))
+    __tablename__ = db.get_sheet_url_by_name(Constant.WEEKDAYS_SHEET)
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
+    team_id = Column(UUID(as_uuid=False))
     is_mon = Column(Integer)
     is_tue = Column(Integer)
     is_wed = Column(Integer)
@@ -117,11 +116,11 @@ class Weekdays(Base):
 
 
 class Holidays(Base):
-    __tablename__ = Constant.HOLIDAYS_SHEET
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    __tablename__ = db.get_sheet_url_by_name(Constant.HOLIDAYS_SHEET)
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
     holiday_group_id = Column(String)
-    date = Column(Integer)
-    description = Column(Integer)
+    date = Column(String)
+    description = Column(String)
     is_custom = Column(Integer)
     is_enabled = Column(Integer)
 
@@ -130,8 +129,8 @@ class Holidays(Base):
 
 
 class HolidayGroups(Base):
-    __tablename__ = Constant.HOLIDAY_GROUPS_SHEET
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    __tablename__ = db.get_sheet_url_by_name(Constant.HOLIDAY_GROUPS_SHEET)
+    id = Column(UUID(as_uuid=False), primary_key=True, default=uuid.uuid4)
     name = Column(String)
     country_based_on = Column(String)
     description = Column(Integer)

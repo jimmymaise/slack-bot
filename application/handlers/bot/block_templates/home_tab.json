@@ -28,7 +28,7 @@
           "emoji": true
         }
       }
-      {% if is_able_to_create_team == true %},
+      {% if is_able_to_create_team %},
       {
         "type": "button",
         "action_id": "become_manager",

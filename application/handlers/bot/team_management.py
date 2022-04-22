@@ -106,11 +106,14 @@ class TeamManagement(BaseManagement):
 
     def get_create_team_view_lazy(self, event, context: BoltContext, client: WebClient, body):
         user_name = self.get_username_by_user_id(context.user_id)
+        holiday_groups = self.holiday_groups_handler.get_all_items()
+        initial_working_days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']
         client.views_open(
             trigger_id=body.get('trigger_id'),
             view=json.loads(
                 self.block_kit.create_update_team_view(
                     callback_id='create_team_view',
+                    initial_working_days=initial_working_days,
                     initial_team_name=f"{user_name}'s team",
 
                     initial_normal_members=[
@@ -118,6 +121,7 @@ class TeamManagement(BaseManagement):
                     initial_managers=[context.user_id],
                     title='Create a team',
                     submit_type='Create',
+                    holiday_groups=holiday_groups,
                 ),
             ),
         )
@@ -126,10 +130,15 @@ class TeamManagement(BaseManagement):
         team_id = self.get_team_id_by_user_id(context.user_id)
         team_info = self.get_team_by_team_id(team_id)
         all_team_members = self.team_member_db_handler.get_all_team_members_by_team_id(team_id=team_id)
+        initial_holiday_group = self.holiday_groups_handler.find_item_by_id(team_info.holiday_group_id)
+        initial_working_days = self.weekdays_handler.get_weekdays_by_team_id(team_id)
+        holiday_groups = self.holiday_groups_handler.get_all_items()
         update_team_view = json.loads(
             self.block_kit.create_update_team_view(
                 callback_id='update_team_view',
                 initial_team_name=team_info.name,
+                initial_holiday_group=initial_holiday_group,
+                initial_working_days=initial_working_days,
                 initial_managers=[
                     member.user_id for member in all_team_members if
                     member.is_manager
@@ -141,6 +150,8 @@ class TeamManagement(BaseManagement):
                 initial_conversation=team_info.announcement_channel_id,
                 title='Update team',
                 submit_type='Update',
+                holiday_groups=holiday_groups,
+
             ),
         )
         update_team_view['private_metadata'] = json.dumps({'team_id': team_id})
@@ -152,13 +163,16 @@ class TeamManagement(BaseManagement):
     def create_team_lazy(self, client, body, ack):
         user_id = body['user']['id']
         data = self._parse_data_from_create_update_team_view(body)
+
         team_id = self.team_db_handler.add_item(
             data={
                 'announcement_channel_id': data.get('announcement_channel_id'),
                 'name': data['team_name'],
-                'holiday_group_id': self.constant.DEFAULT_HOLIDAY_GROUP_ID,
-
+                'holiday_group_id': data['holiday_group_id'],
             },
+        )
+        self.weekdays_handler.add_weekdays_config(
+            weekdays=data['working_days'], team_id=team_id,
         )
 
         all_team_members = [{'user_id': member['user_id'], 'is_manager': member['is_manager'], 'team_id': team_id} for
@@ -185,9 +199,14 @@ class TeamManagement(BaseManagement):
             update_data={
                 'announcement_channel_id': data['announcement_channel_id'],
                 'name': data['team_name'],
+                'holiday_group_id': data['holiday_group_id'],
             },
             _id=team_id,
         )
+        self.weekdays_handler.update_weekdays_config_by_team_id(
+            weekdays=data['working_days'], team_id=team_id,
+        )
+
         self.team_member_db_handler.replace_members_from_team(team_id, all_team_members)
         self.get_manager_view_by_user_id(user_id)
 
@@ -271,6 +290,12 @@ class TeamManagement(BaseManagement):
             statuses=statuses,
         )
 
+        upcoming_holidays = self.holidays_handler.get_holidays_by_team_id(
+            team_id=current_team.team_id,
+            start_date=self.get_today_date_str(),
+        ) if current_team else []
+        self.get_today_date_str()
+
         user_leaves = self.build_leave_display_list(user_leave_rows)
 
         blocks = json.loads(
@@ -280,6 +305,7 @@ class TeamManagement(BaseManagement):
                 is_not_have_team=is_not_have_team,
                 user_leaves=user_leaves,
                 team_name=team_name,
+                upcoming_holidays=upcoming_holidays[:5],
             ),
         )
 
@@ -304,6 +330,8 @@ class TeamManagement(BaseManagement):
 
         team_name = self.get_value_from_state(state, 'name', 'value')
         announcement_channel_id = self.get_value_from_state(state, 'channel', 'selected_conversation')
+        holiday_group_id = self.get_value_from_state(state, 'holiday_group', 'selected_option')
+        working_days = self.get_value_from_state(state, 'working_days', 'selected_options')
 
         managers = self.get_value_from_state(state, 'managers', 'selected_users')
         if user_id not in managers:
@@ -323,6 +351,8 @@ class TeamManagement(BaseManagement):
             'team_name': team_name,
             'announcement_channel_id': announcement_channel_id,
             'name': team_name,
+            'holiday_group_id': holiday_group_id,
             'all_team_members': all_team_members,
+            'working_days': working_days,
         })
         return return_data

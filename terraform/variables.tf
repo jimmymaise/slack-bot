@@ -17,28 +17,6 @@ variable "BUILD_IN_DOCKER" {
   default = true
 }
 
-variable "OOO_CHANNEL" {
-  default = "#bimodal-qpto-internal-project"
+variable "DB_SPREADSHEET_ID" {
   type    = string
-}
-
-variable "MANAGER_LEAVE_APPROVAL_CHANNEL" {
-  default = "#bimodal-qpto-internal-project"
-  type    = string
-}
-
-variable "TEAM_SHEET" {
-  type = string
-}
-variable "TEAM_MEMBER_SHEET" {
-  type = string
-}
-variable "LEAVE_REGISTER_SHEET" {
-  type = string
-}
-variable "LEAVE_TYPE_SHEET" {
-  type = string
-}
-variable "MUST_READ_SHEET" {
-  type = string
 }
