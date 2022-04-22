@@ -114,7 +114,7 @@
     "type": "section",
     "text": {
       "type": "mrkdwn",
-      "text": "{{leave.type_icon}} *{{ leave.type }}*\n{{ leave.duration }}\nComment: {{ leave.reason }}",
+      "text": "{{leave.type_icon}} *{{ leave.type }}*\n{{ leave.duration }} ({{ leave.number_of_leave_days }} days)\nComment: {{ leave.reason }}",
       "verbatim": false
     }
     {% if leave.allowed_user_leave_actions %},
