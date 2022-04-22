@@ -86,15 +86,9 @@ Read [this instruction](https://support.google.com/a/answer/7378726?hl=en) to kn
 enable Google Sheets API. After having the service account, go to key tab and click Add key. A new key file will be
 downloaded. Open this file and encode its content as base64
 
-`LEAVE_REGISTER_SHEET`: The url of the Google sheet that the bot uses to put the leave record. We also need to invite
-the Service account to access this file (Example jimmy-301@elated-chariot-341105.iam.gserviceaccount.com)
-
-`MANAGER_LEAVE_APPROVAL_CHANNEL`: The manager's channel to push the leave of request for approval. We should also invite
-the bot to this channel. For example #my_testing_channel (Should have #)
-
 `REGION`: The AWS region
 
-`OOO_CHANNEL`: The channel to get ooo notification
+`DB_SPREADSHEET_ID`: The id of Spreadsheet. It should have some sheets like the samples https://docs.google.com/spreadsheets/d/1QUU0J_LaggqQQHmCFnQfzFXngl9ECqfE96qwwqT2ADM/edit?headers=1#gid=444918440
 
 ### Deploy steps
 
