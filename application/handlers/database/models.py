@@ -4,7 +4,6 @@ import uuid
 
 from sqlalchemy import Column
 from sqlalchemy import Date
-from sqlalchemy import Float
 from sqlalchemy import ForeignKey
 from sqlalchemy import Integer
 from sqlalchemy import String
@@ -79,7 +78,6 @@ class LeaveType(Base):
     display_name = Column(String)
     description = Column(String)
     icon = Column(Date)
-    day = Column(Float)
     is_default = Column(Integer)
 
     def __repr__(self):
