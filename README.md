@@ -1,11 +1,5 @@
 ## Introduction
 
-BIP Bot is a slack bot providing a better way to implement the Bimodal Internal Process
-
-At the very first MVP, BIP Bot will help us to schedule the PTO time Read
-the [BIP - leave management & attendance management](https://docs.google.com/document/d/1ruRofzWX7pkLEdNZ9T7N71tEV6AL0zmx5DcLW2OSNb8/edit)
-for understanding requirements
-
 ## How to create an internal bot
 
 1. Visit: https://api.slack.com/
