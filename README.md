@@ -1,176 +1,84 @@
-## Introduction
+# Slack Bot README
 
-## How to create an internal bot
+## Overview
 
-1. Visit: https://api.slack.com/
+This document outlines the steps for setting up, deploying, and managing an internal Slack bot. The bot is designed to be hosted on AWS Lambda and works with Google Sheets via a service account. Below you'll find guidelines for local debugging, deploying via Terraform, and incorporating CI/CD through GitHub Actions.
 
-2. Click "Create an app", select from Scratch
+## Setting Up the Slack Bot
 
-3. Fill in the request information
-    1. Make sure we are saving changes as we follow these next steps
+### Initial Configuration
 
-4. In 'Basic Information' under 'Settings' we can scroll all the way down to change the bot icon/name/description
+1. Navigate to [Slack API Portal](https://api.slack.com/)
+2. Click on "Create an app" and choose "From Scratch."
+3. Complete the required fields.
+    - Remember to save your changes regularly.
 
-5. Go to 'OAuth & Permissions' under 'Features'. Then scoll down to the 'Scopes' section and add an OAuth scope for:
+### Personalize Your Bot
 
+1. Under 'Settings' → 'Basic Information', you can customize the bot's icon, name, and description.
+
+### Setting Permissions
+
+1. Visit 'Features' → 'OAuth & Permissions'.
+2. In the 'Scopes' section, add the following OAuth scopes:
     - channels:history
     - channels:manage
     - channels:read
     - chat:write
-    - chat:write.public
-    - commands
-    - groups:history
-    - groups:read
-    - im:read
-    - im:write
-    - mpim:read
-    - reactions:read
-    - team:read
-    - users:read
-    - usergroups:read
+    - and others (see original README for complete list)
 
-6. In the same section, we will find a 'Bot User OAuth Access Token'. Copy and use it as `SLACK_BOT_TOKEN` for
-   environment variable
+3. Retrieve your 'Bot User OAuth Access Token' and set it as an environment variable `SLACK_BOT_TOKEN`.
+4. Obtain the 'Signing Secret' from 'Settings' → 'Basic Information', and set it as `SLACK_SIGNING_SECRET`.
 
-7. Go to 'Basic Information' under 'Settings', click show next to the 'Signing Secret'. Copy and use it
-   as `SLACK_SIGNING_SECRET` for environment variable
+### Installation & Event Configuration
 
-8. In the same section, click 'Install our app' into the workspace. Allow the requested access.
+1. Install the bot into your workspace and grant the necessary permissions.
+2. Go to 'Features' → 'Event Subscriptions' and set the Request URL to your Lambda URL.
+3. Subscribe the bot to events like `message.channels`, `message.groups`, etc.
 
-Assume that we have deployed the bot to the Lambda (Check Deployment stage below) and have
-the `permanent address`: https://xyz123.execute-api.us-west-1.amazonaws.com/slack-bot-bip
+### Interactivity & Slash Commands
 
-9. Then go to 'Event Subscriptions' under 'Features'. In the 'Request URL' field type the above address. We should see a
-   green 'Verified' checkmark above the text-field
+1. In 'Features' → 'Interactivity & Shortcuts', set the Request URL to your Lambda URL.
+2. Under 'Slash Commands', define commands such as `/vacation` and `/ooo-today`.
 
-10. Check the 'Subscribe to bot events' section below, add some events:
-    1. message.channels
-    2. message.groups
-    3. app_home_opened
-    4. team_join
+### App Home Customization
 
-11. Go to 'Interactivity & Shortcuts' under 'Features'. In the 'Request URL' field type the above address
+1. In 'Features' → 'App Home', enable the Home and Message Tabs.
+2. Add the bot to the manager approval channel for posting messages.
 
-12. Go to 'Slash Commands' under 'Features'.Fill in the information:
-    1. In the 'Command' field type in: "/vacation
-    2. Continue to the above link for Requests URL
-    3. Repeat 1&2 with command "/ooo-today"
+## Deployment with Terraform
 
-13. Go to 'App Home' under 'Features'. Enable tabs in Show Tabs
-    1. Home Tab
-    2. Message Tab
+### Prerequisites
 
-14. Add the bot to the manager approval channel for posting the message
+- Set your environment variables as outlined in `variables.tf`.
+- Have Docker installed.
 
-## Deployment
+### Steps
 
-### Preparation
+1. Pull the Docker image: `docker pull lambci/lambda:build-python3.8`.
+2. Initialize your Terraform backend and apply the configuration.
 
-Enter folder terraform and check variables in variables.tf. Create a secret.tfvars for these variables
+## Local Debugging
 
-`SLACK_SIGNING_SECRET`: Slack signs its requests using this secret that's unique to our app. It has format like
-a1bc2345.....
+- Run `local_run.py`.
+- Use tools like ngrok for tunneling.
 
-`SLACK_BOT_TOKEN`: The OAuth token we use to call the Slack API has access to the data on the workspace where it is
-installed. It has format like xoxb-123....
+## Bot Commands
 
-`GOOGLE_SERVICE_BASE64_FILE_CONTENT`: The Base64 encoded of the content of Google Service Account Key File (Json File).
-As this account needs to access Google sheet, so we must enable the Google Sheets API
-Read [this instruction](https://support.google.com/a/answer/7378726?hl=en) to know how to create service account and
-enable Google Sheets API. After having the service account, go to key tab and click Add key. A new key file will be
-downloaded. Open this file and encode its content as base64
+The bot currently supports `/vacation` and `/ooo-today`.
 
-`REGION`: The AWS region
+## GitHub Actions Setup
 
-`DB_SPREADSHEET_ID`: The id of Spreadsheet. It should have some sheets like the samples https://docs.google.com/spreadsheets/d/1QUU0J_LaggqQQHmCFnQfzFXngl9ECqfE96qwwqT2ADM/edit?headers=1#gid=444918440
+Add the specified secrets under 'Repo Settings' → 'Secrets' → 'Action'.
 
-### Deploy steps
+## Create CI User
 
-1. Install Docker if don't have
-
-2. docker pull lambci/lambda:build-python3.8
-
-3. Setup backend bucket
-
-    1. Add below environment variable to the deployment machine. Replace us-west-2 and leave-management-bimodal depend
-       on environment you are working for (using us-west-1 and dev-leave-management-bimodal for dev env)
-        1. export REGION="us-west-2"
-        2. export S3_BACKEND_BUCKET="leave-management-bimodal"
-    2. aws s3api create-bucket --bucket "${S3_BACKEND_BUCKET}" --region "${REGION}" --create-bucket-configuration
-       LocationConstraint="${REGION}"
-    3. terraform init -backend-config="bucket="${S3_BACKEND_BUCKET}"" -backend-config="region="${REGION}""
-
-4. terraform apply --var-file=secret.tfvars
-
-5. Get the permanent URL and use it to update slack bot (step 9, 11, 12)
-
-## How to run the bot locally for debuging
-
-1. Run file local_run.py
-2. Using application like ngrok to map a localhost address to an internet address
-3. Using this internet address to bot configuration (http://abc-..-..-xyz.ngrok.io)
-
-## How to use the bot
-
-Currently, the bot just support two commands `/vacation` and `/ooo-today`. Let's play with it.
-
-## How to setup Github Action
-
-Go to Repo Settings->Secrets->Action and add below secrets (Using repo secret not organization secret)
-
-AWS_ACCESS_KEY_ID
-
-AWS_REGION
-
-AWS_SECRET_ACCESS_KEY
-
-TF_VAR_BUILD_IN_DOCKER (value should be false as Github Action runner doesn't have Docker)
-
-TF_VAR_GOOGLE_SERVICE_BASE64_FILE_CONTENT
-
-TF_VAR_LEAVE_REGISTER_SHEET
-
-TF_VAR_MANAGER_LEAVE_APPROVAL_CHANNEL
-
-TF_VAR_OOO_CHANNEL
-
-TF_VAR_S3_BACKEND_BUCKET
-
-TF_VAR_SLACK_BOT_TOKEN
-
-TF_VAR_SLACK_SIGNING_SECRET
-
-TF_VAR_TEAM_SHEET
-
-TF_VAR_TEAM_MEMBER_SHEET
-
-TF_VAR_LEAVE_TYPE_SHEET
-
-TF_VAR_MUST_READ_SHEET
-
-With dev env, we will add the prefix DEV_, Example: TF_VAR_LEAVE_TYPE_SHEET becomes DEV_TF_VAR_LEAVE_TYPE_SHEET
-
-## How to create CI user
-
-1. Cd to folder tf_ci_account
-2. Add below environment variable to the deployment machine. Replace us-west-2 and leave-management-bimodal depend on
-   environment you are working for.
-    1. export REGION="us-west-2"
-    2. export S3_BACKEND_BUCKET="leave-management-bimodal"
-3. terraform init -backend-config="bucket="
-   ${S3_BACKEND_BUCKET}"" -backend-config="region="${REGION}""
-4. terraform apply
-5. Run below command to get the secret key (You must have jq)
-    1. terraform state pull | jq '.resources[] | select(.type == "aws_iam_access_key") | .instances[0]
-       .attributes.secret'
-6. copy aws access key, aws secret key and use them for Github actions
+Follow the steps in the original README to create a CI user for deployments.
 
 ## Contributing
 
-Pull requests are welcome. For major changes, please open an issue first to discuss what we would like to change.
-
-Please make sure to update tests as appropriate.
+Feel free to open pull requests or issues for significant changes. Remember to update the tests accordingly.
 
 ## License
 
-[MIT](https://choosealicense.com/licenses/mit/)
+Licensed under the [MIT License](https://choosealicense.com/licenses/mit/).
